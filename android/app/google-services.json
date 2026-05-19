@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "650008545794",
+    "project_id": "tale-trace-app",
+    "storage_bucket": "tale-trace-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650008545794:android:9fd195f2265148f067751b",
+        "android_client_info": {
+          "package_name": "com.example.tale_trace"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-FNH6WfZ3GLNDhigDKjULcDRZUhmaTs8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
