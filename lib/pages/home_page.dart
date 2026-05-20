@@ -18,8 +18,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late GoogleMapController mapController;
+  GoogleMapController? mapController;
   final LatLng _initialPosition = const LatLng(35.681236, 139.767125); // 東京駅
+
+  @override
+  void dispose() {
+    mapController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
             zoomControlsEnabled: false,
             mapToolbarEnabled: false,
             onMapCreated: (controller) {
-              mapController = controller;
+              setState(() {
+                mapController = controller;
+              });
             },
           ),
 
@@ -123,22 +131,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMapControls(ThemeData theme) {
+    final controller = mapController;
+
     return Column(
       children: [
         _miniMapBtn(
           Icons.add,
-          () => mapController.animateCamera(CameraUpdate.zoomIn()),
+          controller == null
+              ? null
+              : () => controller.animateCamera(CameraUpdate.zoomIn()),
         ),
         const SizedBox(height: 12),
         _miniMapBtn(
           Icons.remove,
-          () => mapController.animateCamera(CameraUpdate.zoomOut()),
+          controller == null
+              ? null
+              : () => controller.animateCamera(CameraUpdate.zoomOut()),
         ),
         const SizedBox(height: 12),
         FloatingActionButton(
-          onPressed: () => mapController.animateCamera(
-            CameraUpdate.newLatLng(_initialPosition),
-          ),
+          onPressed: controller == null
+              ? null
+              : () => controller.animateCamera(
+                    CameraUpdate.newLatLng(_initialPosition),
+                  ),
           backgroundColor: theme.colorScheme.primary,
           child: const Icon(Icons.my_location, color: Colors.black),
         ),
@@ -146,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _miniMapBtn(IconData icon, VoidCallback onPressed) {
+  Widget _miniMapBtn(IconData icon, VoidCallback? onPressed) {
     return SizedBox(
       width: 40,
       height: 40,

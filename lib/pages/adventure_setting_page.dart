@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/adventure_provider.dart';
+import '../providers/route_provider.dart';
 import '../router/app_router.dart';
-import '../utils/colors.dart';
 import '../constants/app_sizes.dart';
-import '../constants/app_strings.dart';
 
 class AdventureSettingPage extends ConsumerWidget {
   const AdventureSettingPage({super.key});
@@ -53,7 +52,7 @@ class AdventureSettingPage extends ConsumerWidget {
             ),
 
             // ── 下部：ルート生成ボタン ──
-            _buildGenerateButton(context, state),
+            _buildGenerateButton(context, ref, state),
           ],
         ),
       ),
@@ -390,8 +389,11 @@ class AdventureSettingPage extends ConsumerWidget {
   // ── ルート生成ボタン ──────────────────────────
   Widget _buildGenerateButton(
     BuildContext context,
+    WidgetRef ref,
     AdventureSettingState state,
   ) {
+    final canGenerate = state.isRandom || state.destination.trim().isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(AppSizes.p16),
       decoration: const BoxDecoration(
@@ -402,19 +404,23 @@ class AdventureSettingPage extends ConsumerWidget {
         width: double.infinity,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFB8860B),
+            backgroundColor: canGenerate
+                ? const Color(0xFFB8860B)
+                : const Color(0xFF7A5C3A),
             padding: const EdgeInsets.all(AppSizes.p16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSizes.radiusM),
             ),
           ),
-          onPressed: () {
-            // TODO: Gemini APIでルート生成後、RouteSelectPageへ
-            context.go(AppRoutes.routeSelect);
-          },
-          child: const Text(
-            'ルートを生成する ✨',
-            style: TextStyle(
+          onPressed: canGenerate
+              ? () {
+                  ref.read(routeSelectProvider.notifier).generateRoutes();
+                  context.go(AppRoutes.routeSelect);
+                }
+              : null,
+          child: Text(
+            canGenerate ? 'ルートを生成する ✨' : '目的地を入力するか、おまかせを選択',
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,

@@ -37,6 +37,9 @@ class AdventureModel {
       parsedEndTime = (map['endTime'] as dynamic).toDate();
     }
 
+    final steps = map['steps'];
+    final distance = map['distance'];
+
     return AdventureModel(
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
@@ -44,6 +47,8 @@ class AdventureModel {
       status: map['status'] ?? 'walking',
       startTime: parsedStartTime,
       endTime: parsedEndTime,
+      steps: steps is num ? steps.toInt() : 0,
+      distance: distance is num ? distance.toDouble() : 0.0,
       fragmentIds: List<String>.from(map['fragmentIds'] ?? []),
       aiReport: map['aiReport'] ?? '',
     );
@@ -58,6 +63,8 @@ class AdventureModel {
       'status': status,
       'startTime': startTime,
       'endTime': endTime,
+      'steps': steps,
+      'distance': distance,
       'fragmentIds': fragmentIds,
       'aiReport': aiReport,
     };
