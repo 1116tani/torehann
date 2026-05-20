@@ -47,7 +47,7 @@ class NavigationState {
 class NavigationNotifier extends Notifier<NavigationState> {
   @override
   NavigationState build() {
-    // 💡 build内での ref.listen は削除して、スッキリ初期状態を返すよ！
+    // 💡 修正ポイント：build() の中では何もリッスンせず、初期状態を返すだけにします！
     return const NavigationState();
   }
 
@@ -59,11 +59,11 @@ class NavigationNotifier extends Notifier<NavigationState> {
       isAdventureStarted: true,
       progress: 0.0,
     );
-    // 最初のスポットをセットするよ
+    // 最初の目的地を安全にセット
     _initializeNextSpot();
   }
 
-  // 🛰️ 位置情報が更新されたら、外（UIのref.listenなど）からこれを呼んでもらうよ！
+  // 🛰️ 位置情報が更新されたら、画面側から自動で呼び出されるメソッド
   void updateLocation(Position position) {
     if (!state.isAdventureStarted || state.currentRoute == null) return;
 
@@ -75,7 +75,7 @@ class NavigationNotifier extends Notifier<NavigationState> {
     double? distanceToNext;
     SpotModel? targetSpot;
 
-    // みぃくんの作った「20m以内なら次々にスキップする」天才的ロジックだよ！
+    // みぃくんの作った「20m以内なら次々にスキップする」自動判定ループだよ！
     while (reachedNewSpot) {
       reachedNewSpot = false;
       targetSpot = null;
@@ -96,7 +96,7 @@ class NavigationNotifier extends Notifier<NavigationState> {
           targetSpot.lng,
         );
 
-        // 📍 20メートル以内に近づいたら到達とみなして、即座に次のスポットの判定へ！
+        // 📍 20メートル以内に近づいたら到達とみなして、次のスポットへ進む
         if (distanceToNext < 20.0) {
           updatedVisitedSpots.add(targetSpot.id);
           reachedNewSpot = true;
@@ -119,7 +119,7 @@ class NavigationNotifier extends Notifier<NavigationState> {
     );
   }
 
-  // 💡 最初に次のスポットだけを安全にセットする内部メソッドだよ
+  // 💡 最初のスポットを初期化するメソッド
   void _initializeNextSpot() {
     if (state.currentRoute == null) return;
     final route = state.currentRoute!;
