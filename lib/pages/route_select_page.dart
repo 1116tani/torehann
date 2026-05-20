@@ -10,6 +10,7 @@ import '../constants/app_sizes.dart';
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
 import '../providers/route_provider.dart';
+import '../providers/navigation_provider.dart';
 import '../router/app_router.dart';
 import '../widgets/route/route_preview_map.dart';
 import '../widgets/route/route_tag.dart';
@@ -60,6 +61,8 @@ class RouteSelectPage extends ConsumerWidget {
               _StartNavigationBar(
                 onStart: () {
                   notifier.selectRoute(selectedRoute.id);
+                  // 冒険を開始する
+                  ref.read(navigationProvider.notifier).startAdventure(selectedRoute);
                   context.go(AppRoutes.navigation);
                 },
               ),

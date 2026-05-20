@@ -61,7 +61,7 @@ class PartnerCharacter extends StatelessWidget {
                 // ⚠️ ここにあった glowColor を消して boxShadow だけにしたよ！
                 boxShadow: [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.2),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),

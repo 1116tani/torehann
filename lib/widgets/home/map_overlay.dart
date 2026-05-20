@@ -18,7 +18,7 @@ class MapOverlay extends StatelessWidget {
               center: Alignment.center,
               radius: 1.2,
               colors: [
-                theme.colorScheme.primary.withOpacity(0.3),
+                theme.colorScheme.primary.withValues(alpha: 0.3),
                 Colors.transparent,
               ],
             ),
@@ -36,7 +36,7 @@ class MapOverlay extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: theme.colorScheme.primary.withOpacity(0.4),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.4),
                       width: 1.5,
                     ),
                   ),
@@ -49,7 +49,7 @@ class MapOverlay extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: theme.colorScheme.primary.withOpacity(0.2),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
                       width: 1.0,
                     ),
                   ),
@@ -70,7 +70,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = gridColor.withOpacity(0.2)
+      ..color = gridColor.withValues(alpha: 0.2)
       ..strokeWidth = 0.5;
 
     const double step = 40.0;

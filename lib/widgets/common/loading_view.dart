@@ -14,7 +14,7 @@ class LoadingView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      color: Colors.black.withOpacity(0.75), // 画面全体を薄暗くして集中させる
+      color: Colors.black.withValues(alpha: 0.75), // 画面全体を薄暗くして集中させる
       width: double.infinity,
       height: double.infinity,
       child: Center(

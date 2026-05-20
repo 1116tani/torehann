@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
             child: Icon(Icons.person, color: theme.colorScheme.primary),
           ),
           const SizedBox(width: 12),
@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: LinearProgressIndicator(
                     value: 0.65,
                     minHeight: 6,
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       theme.colorScheme.primary,
                     ),
@@ -183,9 +183,9 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.85),
+            color: Colors.black.withValues(alpha: 0.85),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: ListView(
             controller: scrollController,
@@ -282,12 +282,12 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 color: isLocked
                     ? Colors.white10
-                    : theme.colorScheme.primary.withOpacity(0.1),
+                    : theme.colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isLocked
                       ? Colors.transparent
-                      : theme.colorScheme.primary.withOpacity(0.3),
+                      : theme.colorScheme.primary.withValues(alpha: 0.3),
                 ),
               ),
               child: Icon(
