@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # tale_trace
 
 A new Flutter project.
@@ -16,7 +15,3 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
-=======
-# -
-ナビアプリ
->>>>>>> bf72973a61696b28b02ae44725881d81112457d6
