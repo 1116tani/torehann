@@ -230,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPartnerCharacter() {
     final textList = [
-      "今日はいい冒険日र्मु和だね！",
+      "今日はいい冒険日和だね！",
       "次の角を曲がってみない？",
       "何かおもしろい物語の断片がありそう！",
       "新しい発見があるかも！",
