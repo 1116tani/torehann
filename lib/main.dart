@@ -1,15 +1,16 @@
 // lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'pages/home_page.dart';
+import 'package:tale_trace/firebase_options.dart';
+import 'package:tale_trace/themes/app_theme.dart';
+import 'package:tale_trace/router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -17,11 +18,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Tale Trace',
-      theme: ThemeData.dark(),
-      // 入り口の画面として、新しい home_page.dart の HomeScreen を呼び出す
-      home: const HomeScreen(),
+      theme: AppTheme.darkTheme,
+      debugShowCheckedModeBanner: false,
+      routerConfig: appRouter,
     );
   }
 }
