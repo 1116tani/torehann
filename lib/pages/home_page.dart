@@ -1,9 +1,14 @@
 // lib/pages/home_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:go_router/go_router.dart';
+
+// ここを「tale_trace」に修正したよ！
 import 'package:tale_trace/router/app_router.dart';
+import 'package:tale_trace/widgets/common/glass_card.dart';
+import 'package:tale_trace/widgets/home/map_overlay.dart';
+import 'package:tale_trace/widgets/home/partner_character.dart';
+import 'package:tale_trace/widgets/home/adventure_start_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,6 +23,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -25,304 +32,260 @@ class _HomeScreenState extends State<HomeScreen> {
           GoogleMap(
             initialCameraPosition: CameraPosition(
               target: _initialPosition,
-              zoom: 15,
+              zoom: 16,
+              tilt: 45,
             ),
             myLocationEnabled: true,
             zoomControlsEnabled: false,
+            mapToolbarEnabled: false,
             onMapCreated: (controller) {
               mapController = controller;
             },
           ),
 
-          // ② 上部ヘッダー
-          Positioned(top: 50, left: 16, right: 16, child: _buildHeader()),
+          // ② サイバーグリッド・オーバーレイ
+          const MapOverlay(),
 
-          // ③ 相棒キャラ
-          Positioned(left: 16, bottom: 200, child: _buildPartnerCharacter()),
-
-          // ④ マップ操作ボタン群
+          // ③ 上部ヘッダー（ステータス画面）
           Positioned(
-            right: 16,
-            bottom: 200,
-            child: Column(
-              children: [
-                FloatingActionButton(
-                  mini: true,
-                  backgroundColor: Colors.black87,
-                  onPressed: () {
-                    mapController.animateCamera(
-                      CameraUpdate.newCameraPosition(
-                        CameraPosition(
-                          target: _initialPosition,
-                          zoom: 15,
-                          bearing: 0,
-                          tilt: 0,
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Icon(Icons.explore, color: Colors.orange),
-                ),
-                const SizedBox(height: 8),
-                FloatingActionButton(
-                  mini: true,
-                  backgroundColor: Colors.black87,
-                  onPressed: () =>
-                      mapController.animateCamera(CameraUpdate.zoomIn()),
-                  child: const Icon(Icons.add, color: Colors.white),
-                ),
-                const SizedBox(height: 8),
-                FloatingActionButton(
-                  mini: true,
-                  backgroundColor: Colors.black87,
-                  onPressed: () =>
-                      mapController.animateCamera(CameraUpdate.zoomOut()),
-                  child: const Icon(Icons.remove, color: Colors.white),
-                ),
-                const SizedBox(height: 8),
-                FloatingActionButton(
-                  backgroundColor: Colors.orange,
-                  onPressed: () {
-                    mapController.animateCamera(
-                      CameraUpdate.newLatLng(_initialPosition),
-                    );
-                  },
-                  child: const Icon(Icons.my_location, color: Colors.white),
-                ),
-              ],
-            ),
+            top: 60,
+            left: 20,
+            right: 20,
+            child: _buildGlassHeader(theme),
           ),
 
-          // ⑤ ボトムシート（引き出しメニュー）
-          DraggableScrollableSheet(
-            initialChildSize: 0.18,
-            minChildSize: 0.15,
-            maxChildSize: 0.6,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.black87,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white30,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.all(16),
-                        backgroundColor: Colors.orange,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        context.go(AppRoutes.adventureSetting);
-                      },
-                      child: const Text(
-                        "冒険に出発する",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.map, size: 16, color: Colors.orange),
-                        SizedBox(width: 6),
-                        Text(
-                          "今日の開拓度：12%",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      "【主要メニュー】",
-                      style: TextStyle(color: Colors.orange, fontSize: 13),
-                    ),
-                    const SizedBox(height: 8),
-                    _menuRow(),
-                    const SizedBox(height: 24),
-                    const Text(
-                      "【拡張機能（開発中）】",
-                      style: TextStyle(color: Colors.white30, fontSize: 13),
-                    ),
-                    const SizedBox(height: 8),
-                    _extendedMenuRow(),
-                  ],
-                ),
-              );
-            },
-          ),
+          // ④ 相棒キャラ：アイリス
+          const Positioned(left: 20, bottom: 180, child: PartnerCharacter()),
+
+          // ⑤ マップ操作ボタン
+          Positioned(right: 20, bottom: 180, child: _buildMapControls(theme)),
+
+          // ⑥ メニュー兼、冒険出発ボトムシート
+          _buildDraggableMenu(theme),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade800.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8)],
-      ),
+  Widget _buildGlassHeader(ThemeData theme) {
+    return GlassCard(
+      borderRadius: 20,
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
+          CircleAvatar(
+            backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
+            child: Icon(Icons.person, color: theme.colorScheme.primary),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
-                      "ランク：見習い冒険者",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  children: [
+                    const Text(
+                      "見習い冒険者",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    Text("Lv.5", style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      "Lv. 5",
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                LinearProgressIndicator(
-                  value: 0.65,
-                  backgroundColor: Colors.orange.shade200,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: 0.65,
+                    minHeight: 6,
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      theme.colorScheme.primary,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 4),
-                const Text("650 / 1000 XP", style: TextStyle(fontSize: 11)),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text("設定・プロフ画面へ（今後実装）")));
-            },
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildPartnerCharacter() {
-    final textList = [
-      "今日はいい冒険日和だね！",
-      "次の角を曲がってみない？",
-      "何かおもしろい物語の断片がありそう！",
-      "新しい発見があるかも！",
-    ];
+  Widget _buildMapControls(ThemeData theme) {
+    return Column(
+      children: [
+        _miniMapBtn(
+          Icons.add,
+          () => mapController.animateCamera(CameraUpdate.zoomIn()),
+        ),
+        const SizedBox(height: 12),
+        _miniMapBtn(
+          Icons.remove,
+          () => mapController.animateCamera(CameraUpdate.zoomOut()),
+        ),
+        const SizedBox(height: 12),
+        FloatingActionButton(
+          onPressed: () => mapController.animateCamera(
+            CameraUpdate.newLatLng(_initialPosition),
+          ),
+          backgroundColor: theme.colorScheme.primary,
+          child: const Icon(Icons.my_location, color: Colors.black),
+        ),
+      ],
+    );
+  }
 
-    return GestureDetector(
-      onTap: () {
-        final randomText = (textList..shuffle()).first;
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("🤖 相棒:「$randomText」"),
-            duration: const Duration(seconds: 2),
+  Widget _miniMapBtn(IconData icon, VoidCallback onPressed) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: FloatingActionButton(
+        onPressed: onPressed,
+        mini: true,
+        backgroundColor: Colors.black87,
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
+    );
+  }
+
+  Widget _buildDraggableMenu(ThemeData theme) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.22,
+      minChildSize: 0.15,
+      maxChildSize: 0.7,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.85),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            children: [
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              const AdventureStartButton(),
+
+              const SizedBox(height: 30),
+              const Text(
+                "冒険のログ",
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _menuItem(
+                    theme,
+                    Icons.emoji_events,
+                    "実績",
+                    AppRoutes.achievement,
+                  ),
+                  _menuItem(
+                    theme,
+                    Icons.auto_stories,
+                    "街の断片",
+                    AppRoutes.collection,
+                  ),
+                  _menuItem(theme, Icons.history, "履歴", AppRoutes.history),
+                  _menuItem(theme, Icons.settings, "設定", AppRoutes.settings),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+              const Text(
+                "ギルド拡張（準備中）",
+                style: TextStyle(color: Colors.white24, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _menuItem(theme, Icons.people, "フレンド", null, isLocked: true),
+                  _menuItem(
+                    theme,
+                    Icons.favorite,
+                    "健康管理",
+                    null,
+                    isLocked: true,
+                  ),
+                  _menuItem(theme, Icons.flag, "ミッション", null, isLocked: true),
+                  _menuItem(theme, Icons.group, "パーティ", null, isLocked: true),
+                ],
+              ),
+            ],
           ),
         );
       },
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.black87,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Text(
-              "💬 タップ！",
-              style: TextStyle(fontSize: 10, color: Colors.orange),
-            ),
-          ),
-          const SizedBox(height: 4),
-          const CircleAvatar(
-            radius: 32,
-            backgroundColor: Colors.orange,
-            child: Icon(Icons.android, color: Colors.white, size: 36),
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _menuRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: const [
-        _MenuIcon(icon: Icons.emoji_events, label: "実績", isLocked: false),
-        _MenuIcon(icon: Icons.auto_stories, label: "街の断片", isLocked: false),
-        _MenuIcon(icon: Icons.history, label: "履歴", isLocked: false),
-      ],
-    );
-  }
-
-  Widget _extendedMenuRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: const [
-        _MenuIcon(icon: Icons.people, label: "フレンド", isLocked: true),
-        _MenuIcon(icon: Icons.favorite, label: "健康管理", isLocked: true),
-        _MenuIcon(icon: Icons.flag, label: "ミッション", isLocked: true),
-        _MenuIcon(icon: Icons.group, label: "パーティ", isLocked: true),
-      ],
-    );
-  }
-}
-
-class _MenuIcon extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isLocked;
-
-  const _MenuIcon({
-    required this.icon,
-    required this.label,
-    required this.isLocked,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: isLocked ? 0.3 : 1.0,
-      child: Column(
-        children: [
-          CircleAvatar(
-            backgroundColor: isLocked ? Colors.grey : Colors.orange,
-            child: Icon(icon, color: isLocked ? Colors.black54 : Colors.white),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isLocked ? Colors.white30 : Colors.white,
+  Widget _menuItem(
+    ThemeData theme,
+    IconData icon,
+    String label,
+    String? route, {
+    bool isLocked = false,
+  }) {
+    return InkWell(
+      onTap: isLocked || route == null ? null : () => context.push(route),
+      child: Opacity(
+        opacity: isLocked ? 0.3 : 1.0,
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isLocked
+                    ? Colors.white10
+                    : theme.colorScheme.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isLocked
+                      ? Colors.transparent
+                      : theme.colorScheme.primary.withOpacity(0.3),
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: isLocked ? Colors.white24 : theme.colorScheme.primary,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 11),
+            ),
+          ],
+        ),
       ),
     );
   }
