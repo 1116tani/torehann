@@ -1,3 +1,4 @@
+// lib/pages/collection_page.dart
 import 'package:flutter/material.dart';
 
 class CollectionPage extends StatelessWidget {

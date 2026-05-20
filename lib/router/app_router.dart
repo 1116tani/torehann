@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// 相対パスでインポートすれば安全安心だよ♡
+// 相対パスでインポートすれば安全安心だよ
 import '../pages/home_page.dart';
 import '../pages/adventure_setting_page.dart';
 import '../pages/route_select_page.dart';

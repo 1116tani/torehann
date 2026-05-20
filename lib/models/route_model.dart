@@ -6,15 +6,15 @@ class RouteModel {
   final List<String> spotIds; // 巡るスポット（SpotModel）のIDを順番通りに格納するリスト
   final double totalDistance; // 総移動距離（kmまたはm）
   final int estimatedTime; // 予測所要時間（分）
-  final DateTime? createdAt; // ルートが生成された日時
   final String themeDescription;
   final List<String> tags;
+  final DateTime? createdAt; // ルートが生成された日時
 
   const RouteModel({
     required this.id,
     required this.themeName,
-    this.themeDescription = '',
-    this.tags = const [],
+    required this.themeDescription,
+    required this.tags,
     this.spotIds = const [],
     this.totalDistance = 0.0,
     this.estimatedTime = 0,
@@ -35,9 +35,9 @@ class RouteModel {
       spotIds: List<String>.from(map['spotIds'] ?? []),
       totalDistance: (map['totalDistance'] ?? 0.0).toDouble(),
       estimatedTime: map['estimatedTime'] ?? 0,
-      createdAt: parsedDate,
       themeDescription: map['themeDescription'] ?? '',
       tags: List<String>.from(map['tags'] ?? []),
+      createdAt: parsedDate,
     );
   }
 
@@ -47,10 +47,10 @@ class RouteModel {
       'id': id,
       'themeName': themeName,
       'themeDescription': themeDescription,
+      'tags': tags,
       'spotIds': spotIds,
       'totalDistance': totalDistance,
       'estimatedTime': estimatedTime,
-      'tags': tags,
       'createdAt': createdAt, // Firebaseに保存する時は自動でTimestampに変換されるよ
     };
   }
