@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tale_trace/firebase_options.dart';
 import 'package:tale_trace/pages/home_page.dart';
 import 'package:tale_trace/themes/app_theme.dart';
+import 'package:go_router/go_router.dart';
+import 'router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,16 +23,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Tale Trace',
 
       // ✅ テーマ修正
       theme: AppTheme.darkTheme,
 
       debugShowCheckedModeBanner: false,
-
-      // ✅ 最初の画面
-      home: const HomeScreen(),
+      routerConfig: appRouter,
     );
   }
 }

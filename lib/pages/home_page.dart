@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:tale_trace/router/app_router.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -126,11 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("物語の生成を開始します...（Tier S）"),
-                          ),
-                        );
+                        context.go(AppRoutes.adventureSetting);
                       },
                       child: const Text(
                         "冒険に出発する",
