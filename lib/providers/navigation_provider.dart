@@ -30,7 +30,9 @@ class NavigationState {
     bool? isAdventureStarted,
     double? progress,
     double? distanceToNextSpot,
+    bool clearDistance = false,
     SpotModel? nextSpot,
+    bool clearNextSpot = false, // ← nullリセット用フラグを追加
   }) {
     return NavigationState(
       currentRoute: currentRoute ?? this.currentRoute,
@@ -75,7 +77,7 @@ class NavigationNotifier extends Notifier<NavigationState> {
     double? distanceToNext;
     SpotModel? targetSpot;
 
-    // みぃくんの作った「20m以内なら次々にスキップする」自動判定ループだよ！
+    // 「20m以内なら次々にスキップする」自動判定ループだよ！
     while (reachedNewSpot) {
       reachedNewSpot = false;
       targetSpot = null;
