@@ -9,7 +9,11 @@ class GeminiService {
   final Dio _dio;
 
   // ── APIの設定 ──────────────────────────────
-  static const _apiKey = 'ここにGemini APIキーを貼る';
+  // 💡 安全対策：実行コマンド（flutter run --dart-define=GEMINI_API_KEY=xxx）から読み込むようにしたよ！
+  static const _apiKey = String.fromEnvironment(
+    'GEMINI_API_KEY',
+    defaultValue: 'ここにGemini APIキーを貼る',
+  );
   static const _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
@@ -19,10 +23,10 @@ class GeminiService {
   Future<List<RouteModel>> generateRoutes({
     required double lat,
     required double lng,
-    required String mood, // 気分（のんびり／わくわく／ガッツリ／きまぐれ）
-    required String mode, // モード（お散歩／探索／冒険）
-    required List<String> hobbyTags, // 趣味タグ
-    String destination = '', // 目的地（空の場合はおまかせ）
+    required String mood,
+    required String mode,
+    required List<String> hobbyTags,
+    String destination = '',
   }) async {
     final prompt = _buildPrompt(
       lat: lat,
@@ -46,16 +50,19 @@ class GeminiService {
             },
           ],
           'generationConfig': {
-            'temperature': 0.8, // 創造性を高め
+            'temperature': 0.8,
             'maxOutputTokens': 2048,
-            'responseMimeType': 'application/json', // JSON形式で返す
+            'responseMimeType': 'application/json',
+            // 💡 【新機能】Geminiに絶対にこのJSON構造を守らせるスキーマ設定だよ！
+            'responseSchema': _buildRouteResponseSchema(),
           },
         },
       );
 
-      final text =
+      // Dioが自動でMapにしているか、Stringのままかで処理を分ける安全設計
+      final rawData =
           response.data['candidates'][0]['content']['parts'][0]['text'];
-      return _parseRoutes(text);
+      return _parseRoutes(rawData);
     } on DioException catch (e) {
       throw Exception('ルート生成に失敗しました: ${e.message}');
     }
@@ -121,7 +128,6 @@ class GeminiService {
     required List<String> hobbyTags,
     required String destination,
   }) {
-    // モードごとの距離設定
     final distanceRange = switch (mode) {
       'お散歩' => '1〜3km',
       '探索' => '3〜6km',
@@ -132,9 +138,10 @@ class GeminiService {
     final tagText = hobbyTags.isEmpty ? '指定なし' : hobbyTags.join('、');
     final destText = destination.isEmpty ? 'おまかせ（現在地周辺）' : destination;
 
+    // スキーマを指定しているので、プロンプト内の出力形式の指定をシンプルにできたよ！
     return '''
 あなたは街の冒険を設計するAIナビゲーターです。
-以下の条件で、ユーザーにぴったりの散歩ルートを3つ提案してください。
+以下の条件に合致し、実在する場所を含んだ素敵な散歩ルートを3つ提案してください。
 
 【条件】
 - 現在地：緯度 $lat、経度 $lng
@@ -143,57 +150,116 @@ class GeminiService {
 - 難易度：$mode（距離の目安：$distanceRange）
 - 好みのスポット：$tagText
 
-【出力形式】
-必ず以下のJSON形式のみで返してください。説明文は不要です。
-
-{
-  "routes": [
-    {
-      "id": "route_001",
-      "themeName": "ルートの物語風タイトル（例：古のパン屋を巡る調査員コース）",
-      "themeDescription": "このルートのコンセプト説明（50文字以内）",
-      "totalDistance": 2.3,
-      "estimatedTime": 35,
-      "tags": ["#カフェ", "#レトロ"],
-      "spots": [
-        {
-          "id": "spot_001",
-          "name": "実際のスポット名",
-          "lat": 35.6812,
-          "lng": 139.7671,
-          "category": "カフェ",
-          "aiStoryName": "物語風の場所の名前（例：記憶の香りを持つ小屋）",
-          "aiFlavorText": "その場所の雰囲気を表す一言（30文字以内）"
-        }
-      ]
-    }
-  ]
-}
-
-条件：
-- spotsは2〜4個
-- 現在地から実際に歩いて行ける範囲のスポットを選ぶ
-- タイトルは日本語で詩的・冒険的な表現にする
-- 3つのルートはそれぞれ違うテーマにする
+【冒険の演出ルール】
+- spotsは各ルート2〜4個にしてください。
+- 現在地周辺に実在し、実際に歩いて行ける範囲のスポット（お店、公園、史跡など）を選んでください。
+- themeNameは日本語で、詩的・ゲームのクエスト風・冒険的な表現にしてください。
+- 3つのルートはそれぞれ全く違うテーマ（例：歴史、グルメ、自然など）にしてください。
+- aiStoryNameやaiFlavorTextには、その場所が持つ隠された物語のようなファンタジーな表現を与えてください。
 ''';
   }
 
-  // ── JSONをRouteModelに変換する ──────────────
-  List<RouteModel> _parseRoutes(String jsonText) {
-    try {
-      // JSONの余分な文字を除去
-      final cleaned = jsonText
-          .replaceAll('```json', '')
-          .replaceAll('```', '')
-          .trim();
+  // ── 💡 Gemini用のJSONスキーマ定義 ─────────────────
+  Map<String, dynamic> _buildRouteResponseSchema() {
+    return {
+      'type': 'OBJECT',
+      'properties': {
+        'routes': {
+          'type': 'ARRAY',
+          'description': '提案する3つのルート一覧',
+          'items': {
+            'type': 'OBJECT',
+            'properties': {
+              'id': {'type': 'STRING', 'description': 'route_001 などの一意のID'},
+              'themeName': {'type': 'STRING', 'description': 'ルートの物語風タイトル'},
+              'themeDescription': {
+                'type': 'STRING',
+                'description': 'コンセプト説明（50文字以内）',
+              },
+              'totalDistance': {'type': 'NUMBER', 'description': '総移動距離(km)'},
+              'estimatedTime': {'type': 'INTEGER', 'description': '想定所要時間(分)'},
+              'tags': {
+                'type': 'ARRAY',
+                'items': {'type': 'STRING'},
+                'description': 'ルート属性タグ（例：["#カフェ", "#レトロ"]）',
+              },
+              'spots': {
+                'type': 'ARRAY',
+                'description': '経由するスポットの一覧（2〜4個）',
+                'items': {
+                  'type': 'OBJECT',
+                  'properties': {
+                    'id': {
+                      'type': 'STRING',
+                      'description': 'spot_001 などの一意のID',
+                    },
+                    'name': {'type': 'STRING', 'description': '実際の実在するスポット名'},
+                    'lat': {'type': 'NUMBER', 'description': 'スポットの緯度'},
+                    'lng': {'type': 'NUMBER', 'description': 'スポットの経度'},
+                    'category': {
+                      'type': 'STRING',
+                      'description': 'カテゴリ（例：カフェ、公園、史跡）',
+                    },
+                    'aiStoryName': {
+                      'type': 'STRING',
+                      'description': '物語風の場所の名前',
+                    },
+                    'aiFlavorText': {
+                      'type': 'STRING',
+                      'description': 'その場所の雰囲気を表す一言（30文字以内）',
+                    },
+                  },
+                  'required': [
+                    'id',
+                    'name',
+                    'lat',
+                    'lng',
+                    'category',
+                    'aiStoryName',
+                    'aiFlavorText',
+                  ],
+                },
+              },
+            },
+            'required': [
+              'id',
+              'themeName',
+              'themeDescription',
+              'totalDistance',
+              'estimatedTime',
+              'tags',
+              'spots',
+            ],
+          },
+        },
+      },
+      'required': ['routes'],
+    };
+  }
 
-      final data = jsonDecode(cleaned) as Map<String, dynamic>;
+  // ── JSONをRouteModelに変換する ──────────────
+  List<RouteModel> _parseRoutes(dynamic rawData) {
+    try {
+      Map<String, dynamic> data;
+
+      // 文字列で返ってきた場合と、すでにMapになっている場合の両方に対応！
+      if (rawData is String) {
+        final cleaned = rawData
+            .replaceAll('```json', '')
+            .replaceAll('```', '')
+            .trim();
+        data = jsonDecode(cleaned) as Map<String, dynamic>;
+      } else if (rawData is Map<String, dynamic>) {
+        data = rawData;
+      } else {
+        throw const FormatException('不正なデータ型です');
+      }
+
       final routesJson = data['routes'] as List<dynamic>;
 
       return routesJson.map((routeJson) {
         final spotsJson = routeJson['spots'] as List<dynamic>;
 
-        // スポットをSpotModelに変換
         final spots = spotsJson.map((spotJson) {
           return SpotModel(
             id: spotJson['id'] ?? '',
@@ -214,7 +280,6 @@ class GeminiService {
           totalDistance: (routeJson['totalDistance'] ?? 0.0).toDouble(),
           estimatedTime: routeJson['estimatedTime'] ?? 0,
           tags: List<String>.from(routeJson['tags'] ?? []),
-          // spotsはProviderに渡すために別途保持
           generatedSpots: spots,
         );
       }).toList();
@@ -223,6 +288,3 @@ class GeminiService {
     }
   }
 }
-
-// シングルトンとして使えるようにProviderで管理
-// route_provider.dart から ref.read(geminiServiceProvider) で使う
