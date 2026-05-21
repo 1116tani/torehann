@@ -113,7 +113,7 @@ class AdventureSettingPage extends ConsumerWidget {
             child: IconButton(
               iconSize: 32, // 💡 アイコンを大きく
               icon: const Icon(Icons.close, color: Color(0xFFC8A97A)),
-              onPressed: () => context.pop(),
+              onPressed: () => context.go(AppRoutes.home), // 💡 強制的にホームのURLにジャンプさせる！
             ),
           ),
         ],
