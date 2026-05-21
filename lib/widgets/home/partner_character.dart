@@ -1,6 +1,7 @@
 // lib/widgets/home/partner_character.dart
 import 'package:flutter/material.dart';
 import '../common/glass_card.dart';
+import '../../utils/colors.dart'; // 💡 AppColorsを忘れずにインポート！
 
 class PartnerCharacter extends StatelessWidget {
   final String characterName;
@@ -9,8 +10,8 @@ class PartnerCharacter extends StatelessWidget {
 
   const PartnerCharacter({
     super.key,
-    this.characterName = 'ナビAI・アイリス',
-    this.currentMessage = '今日はどんな冒険に出かける？\n準備はいつでもバッチリだよ！',
+    this.characterName = '案内妖精・アイリス', // 💡 ナビAIから、少しファンタジー寄りに♡
+    this.currentMessage = '今日はどんな物語を紡ぎに行くの？\n準備はいつでもバッチリだよっ！',
     this.imagePath = '',
   });
 
@@ -40,7 +41,7 @@ class PartnerCharacter extends StatelessWidget {
               Text(
                 currentMessage,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary, // 💡 ここをセピアホワイトに！
                   fontSize: 14,
                   height: 1.4,
                 ),
@@ -58,7 +59,6 @@ class PartnerCharacter extends StatelessWidget {
               height: 160,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                // ⚠️ ここにあった glowColor を消して boxShadow だけにしたよ！
                 boxShadow: [
                   BoxShadow(
                     color: theme.colorScheme.primary.withValues(alpha: 0.2),
@@ -70,7 +70,7 @@ class PartnerCharacter extends StatelessWidget {
             ),
             imagePath.isEmpty
                 ? Icon(
-                    Icons.biotech,
+                    Icons.auto_awesome, // 💡 biotech(科学)から、魔法のキラキラに変更したよ！
                     size: 100,
                     color: theme.colorScheme.primary,
                   )
