@@ -137,7 +137,7 @@ class NavigationPage extends ConsumerWidget {
                           width: double.infinity,
                           padding: const EdgeInsets.all(AppSizes.p24),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3D2B1F).withOpacity(0.85),
+                            color: const Color(0xFF3D2B1F).withValues(alpha: 0.85),
                             borderRadius: BorderRadius.circular(
                               AppSizes.radiusL,
                             ),
@@ -209,7 +209,7 @@ class NavigationPage extends ConsumerWidget {
                                   style: TextStyle(
                                     color: const Color(
                                       0xFFF5EDD8,
-                                    ).withOpacity(0.5),
+                                    ).withValues(alpha: 0.5),
                                     fontSize: 11,
                                   ),
                                 ),
@@ -249,7 +249,7 @@ class NavigationPage extends ConsumerWidget {
                         if (!isCompleted)
                           IconButton(
                             icon: const Icon(Icons.photo_camera, size: 36),
-                            color: const Color(0xFFF5EDD8).withOpacity(0.7),
+                            color: const Color(0xFFF5EDD8).withValues(alpha: 0.7),
                             onPressed: () {
                               // ハッカソン用のカメラモック処理
                               ScaffoldMessenger.of(context).showSnackBar(

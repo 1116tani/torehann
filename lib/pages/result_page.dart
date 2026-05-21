@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../router/app_router.dart';
 
 class ResultPage extends StatelessWidget {
   const ResultPage({super.key});

@@ -32,15 +32,16 @@ class NavigationState {
     double? distanceToNextSpot,
     bool clearDistance = false,
     SpotModel? nextSpot,
-    bool clearNextSpot = false, // ← nullリセット用フラグを追加
+    bool clearNextSpot = false,
   }) {
     return NavigationState(
       currentRoute: currentRoute ?? this.currentRoute,
       visitedSpotIds: visitedSpotIds ?? this.visitedSpotIds,
       isAdventureStarted: isAdventureStarted ?? this.isAdventureStarted,
       progress: progress ?? this.progress,
-      distanceToNextSpot: distanceToNextSpot ?? this.distanceToNextSpot,
-      nextSpot: nextSpot ?? this.nextSpot,
+      distanceToNextSpot:
+          clearDistance ? null : (distanceToNextSpot ?? this.distanceToNextSpot),
+      nextSpot: clearNextSpot ? null : (nextSpot ?? this.nextSpot),
     );
   }
 }
@@ -116,7 +117,9 @@ class NavigationNotifier extends Notifier<NavigationState> {
     state = state.copyWith(
       visitedSpotIds: updatedVisitedSpots,
       nextSpot: targetSpot,
+      clearNextSpot: targetSpot == null,
       distanceToNextSpot: distanceToNext,
+      clearDistance: distanceToNext == null,
       progress: progress,
     );
   }
