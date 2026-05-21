@@ -60,6 +60,7 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
         totalDistance: 2.3,
         estimatedTime: 35,
         tags: ['#${settings.mode}', '#おすすめ', '#冒険'],
+        generatedSpots: [],
       ),
       RouteModel(
         id: 'route_002',
@@ -69,6 +70,7 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
         totalDistance: 1.8,
         estimatedTime: 25,
         tags: ['#穴場', '#発見'],
+        generatedSpots: [],
       ),
     ];
 
