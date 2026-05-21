@@ -49,7 +49,7 @@ class HistoryPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'みぃくん、おねえちゃんと一緒に\n新しい冒険の物語を作りに行こう？',
+                    '新しい冒険の物語を作りに行こう？',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: const Color(0xFFC8A97A).withValues(alpha: 0.7),
