@@ -14,6 +14,7 @@ class NavigationState {
   final double progress; // 0.0 to 1.0
   final double? distanceToNextSpot;
   final SpotModel? nextSpot;
+  final DateTime? adventureStartTime;
 
   const NavigationState({
     this.currentRoute,
@@ -22,6 +23,7 @@ class NavigationState {
     this.progress = 0.0,
     this.distanceToNextSpot,
     this.nextSpot,
+    this.adventureStartTime,
   });
 
   NavigationState copyWith({
@@ -33,6 +35,7 @@ class NavigationState {
     bool clearDistance = false,
     SpotModel? nextSpot,
     bool clearNextSpot = false,
+    DateTime? adventureStartTime,
   }) {
     return NavigationState(
       currentRoute: currentRoute ?? this.currentRoute,
@@ -42,6 +45,7 @@ class NavigationState {
       distanceToNextSpot:
           clearDistance ? null : (distanceToNextSpot ?? this.distanceToNextSpot),
       nextSpot: clearNextSpot ? null : (nextSpot ?? this.nextSpot),
+      adventureStartTime: adventureStartTime ?? this.adventureStartTime,
     );
   }
 }
@@ -61,6 +65,7 @@ class NavigationNotifier extends Notifier<NavigationState> {
       visitedSpotIds: const {},
       isAdventureStarted: true,
       progress: 0.0,
+      adventureStartTime: DateTime.now(),
     );
     // 最初の目的地を安全にセット
     _initializeNextSpot();
