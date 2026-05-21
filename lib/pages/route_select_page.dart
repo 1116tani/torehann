@@ -62,7 +62,9 @@ class RouteSelectPage extends ConsumerWidget {
                 onStart: () {
                   notifier.selectRoute(selectedRoute.id);
                   // 冒険を開始する
-                  ref.read(navigationProvider.notifier).startAdventure(selectedRoute);
+                  ref
+                      .read(navigationProvider.notifier)
+                      .startAdventure(selectedRoute);
                   context.go(AppRoutes.navigation);
                 },
               ),
@@ -141,38 +143,38 @@ class _GeneratingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      key: ValueKey('generating-routes'),
-      child: Padding(
-        padding: EdgeInsets.all(AppSizes.p24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 44,
-              height: 44,
-              child: CircularProgressIndicator(
-                color: Color(0xFFB8860B),
-                strokeWidth: 3,
-              ),
+    return Center(
+      key: const ValueKey('generating-routes'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ぐるぐるを少し大きくして目立たせる！
+          const SizedBox(
+            width: 56,
+            height: 56,
+            child: CircularProgressIndicator(color: Color(0xFFC8A97A)),
+          ),
+          const SizedBox(height: 32),
+          const Text(
+            '冒険の地図を編纂中...',
+            style: TextStyle(
+              color: Color(0xFFF5EDD8),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
-            SizedBox(height: AppSizes.p24),
-            Text(
-              '冒険ルートを編纂中...',
-              style: TextStyle(
-                color: Color(0xFFF5EDD8),
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+          ),
+          const SizedBox(height: 12),
+          // ここで「今日はどんな景色に出会えるかな？」みたいな一言が出る仕組みに！
+          const Text(
+            'AIが\n最高の寄り道を探しています...',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFFC8A97A),
+              fontSize: 13,
+              height: 1.5,
             ),
-            SizedBox(height: AppSizes.p8),
-            Text(
-              '今日の気分に合う寄り道を探しています',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFC8A97A), fontSize: 12),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

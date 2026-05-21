@@ -1,65 +1,92 @@
 // lib/providers/adventure_provider.dart
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 
-// 冒険セッティングの状態をまとめたクラス
 class AdventureSettingState {
-  final String destination; // 目的地
-  final bool isRandom; // おまかせモードかどうか
-  final String mood; // 気分（'のんびり', 'わくわく', 'ガッツリ'）
-  final String mode; // モード（'お散歩', '探索', '冒険'）
+  final String destination;
+  final bool isRandom;
+  final String mood;
+  final String mode;
+  final bool isLoading;
 
   const AdventureSettingState({
     this.destination = '',
     this.isRandom = false,
     this.mood = 'のんびり',
     this.mode = 'お散歩',
+    this.isLoading = false,
   });
 
-  // 一部だけ変更した新しいStateを返す
   AdventureSettingState copyWith({
     String? destination,
     bool? isRandom,
     String? mood,
     String? mode,
+    bool? isLoading,
   }) {
     return AdventureSettingState(
       destination: destination ?? this.destination,
       isRandom: isRandom ?? this.isRandom,
       mood: mood ?? this.mood,
       mode: mode ?? this.mode,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
 
-// Notifier本体
 class AdventureSettingNotifier extends Notifier<AdventureSettingState> {
   @override
   AdventureSettingState build() => const AdventureSettingState();
 
-  void setDestination(String value) {
-    state = state.copyWith(destination: value, isRandom: false);
+  void setDestination(String destination) {
+    state = state.copyWith(destination: destination, isRandom: false);
   }
 
   void setRandom() {
     state = state.copyWith(destination: '', isRandom: true);
   }
 
-  void setMood(String value) {
-    state = state.copyWith(mood: value);
+  void setMood(String mood) {
+    state = state.copyWith(mood: mood);
   }
 
-  void setMode(String value) {
-    state = state.copyWith(mode: value);
+  void setMode(String mode) {
+    state = state.copyWith(mode: mode);
   }
 
   void reset() {
     state = const AdventureSettingState();
   }
+
+  Future<bool> generateRoutes() async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      await Future.delayed(const Duration(seconds: 2));
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
 }
 
-// 外から使うためのProvider
 final adventureSettingProvider =
     NotifierProvider<AdventureSettingNotifier, AdventureSettingState>(
       AdventureSettingNotifier.new,
     );
+
+final currentAddressProvider = FutureProvider<String>((ref) async {
+  try {
+    await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+    );
+
+    // TODO: Geocodingで住所に変換する
+    return '愛知県豊田市';
+  } catch (_) {
+    return '現在地を検索中...';
+  }
+});

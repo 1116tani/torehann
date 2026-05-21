@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/adventure_provider.dart';
-import '../providers/route_provider.dart';
 import '../router/app_router.dart';
 import '../constants/app_sizes.dart';
 
@@ -17,57 +16,72 @@ class AdventureSettingPage extends ConsumerWidget {
     final notifier = ref.read(adventureSettingProvider.notifier);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2318), // セピア調ダーク
+      backgroundColor: const Color(0xFF2C2318),
       body: SafeArea(
-        child: Column(
-          children: [
-            // ── ヘッダー ──
-            _buildHeader(context),
-
-            // ── スクロールエリア ──
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSizes.p16),
+        child: state.isLoading
+            ? const Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // 自動入力エリア（日付・天気・現在地）
-                    _buildAutoInfoCard(),
-                    const SizedBox(height: AppSizes.p16),
-
-                    // 目的地入力
-                    _buildDestinationSection(state, notifier),
-                    const SizedBox(height: AppSizes.p24),
-
-                    // 気分選択
-                    _buildMoodSection(state, notifier),
-                    const SizedBox(height: AppSizes.p24),
-
-                    // モード選択
-                    _buildModeSection(state, notifier),
-                    const SizedBox(height: AppSizes.p32),
+                    CircularProgressIndicator(color: Color(0xFFC8A97A)),
+                    SizedBox(height: 16),
+                    Text(
+                      "AIが冒険ルートを編集中...",
+                      style: TextStyle(color: Color(0xFFC8A97A), fontSize: 16),
+                    ),
                   ],
                 ),
-              ),
-            ),
+              )
+            : Column(
+                children: [
+                  _buildHeader(context),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(
+                        AppSizes.p24,
+                      ), // 💡 パディングを大きく
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildAutoInfoCard(ref), // 💡 refを渡す
+                          const SizedBox(height: AppSizes.p24), // 💡 余白を大きく
 
-            // ── 下部：ルート生成ボタン ──
-            _buildGenerateButton(context, ref, state),
-          ],
-        ),
+                          _buildDestinationSection(state, notifier),
+                          const SizedBox(height: AppSizes.p32), // 💡 余白を大きく
+
+                          _buildMoodSection(state, notifier),
+                          const SizedBox(height: AppSizes.p32), // 💡 余白を大きく
+
+                          _buildModeSection(state, notifier),
+                          const SizedBox(height: AppSizes.p40), // 💡 余白を大きく
+                        ],
+                      ),
+                    ),
+                  ),
+                  _buildGenerateButton(
+                    context,
+                    ref,
+                    state,
+                    notifier,
+                  ), // 💡 notifierを渡す
+                ],
+              ),
       ),
     );
   }
 
-  // ── ヘッダー ──────────────────────────────
+  // ── ヘッダー ──
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSizes.p16),
+      padding: const EdgeInsets.symmetric(
+        vertical: 20,
+        horizontal: 16,
+      ), // 💡 大きく
       decoration: const BoxDecoration(
         color: Color(0xFF4A3728),
         border: Border(
-          bottom: BorderSide(color: Color(0xFFC8A97A), width: 0.5),
+          bottom: BorderSide(color: Color(0xFFC8A97A), width: 1.0),
         ),
       ),
       child: Stack(
@@ -78,17 +92,18 @@ class AdventureSettingPage extends ConsumerWidget {
               Text(
                 '冒険セッティング',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 24, // 💡 20 -> 24
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFF5EDD8),
                 ),
               ),
+              SizedBox(height: 4),
               Text(
                 'ADVENTURE SETUP',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12, // 💡 10 -> 12
                   color: Color(0xFFC8A97A),
-                  letterSpacing: 2,
+                  letterSpacing: 2.5,
                 ),
               ),
             ],
@@ -96,6 +111,7 @@ class AdventureSettingPage extends ConsumerWidget {
           Positioned(
             right: 0,
             child: IconButton(
+              iconSize: 32, // 💡 アイコンを大きく
               icon: const Icon(Icons.close, color: Color(0xFFC8A97A)),
               onPressed: () => context.pop(),
             ),
@@ -105,59 +121,82 @@ class AdventureSettingPage extends ConsumerWidget {
     );
   }
 
-  // ── 自動入力カード（日付・天気・現在地） ──
-  Widget _buildAutoInfoCard() {
+  // ── 自動入力カード ──
+  Widget _buildAutoInfoCard(WidgetRef ref) {
     final now = DateTime.now();
     final weekdays = ['月', '火', '水', '木', '金', '土', '日'];
     final weekday = weekdays[now.weekday - 1];
 
+    // 📍 現在地APIの呼び出し
+    final addressAsync = ref.watch(currentAddressProvider);
+
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSizes.p16,
-        vertical: AppSizes.p12,
-      ),
+      padding: const EdgeInsets.all(AppSizes.p16), // 💡 大きく
       decoration: BoxDecoration(
         color: const Color(0xFF3D2B1F),
         borderRadius: BorderRadius.circular(AppSizes.radiusM),
-        border: Border.all(color: const Color(0xFFC8A97A), width: 0.5),
+        border: Border.all(color: const Color(0xFFC8A97A), width: 1.0),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          // 日付
           Row(
             children: [
               const Icon(
                 Icons.calendar_today,
-                size: 14,
+                size: 18,
                 color: Color(0xFFC8A97A),
-              ),
-              const SizedBox(width: 6),
+              ), // 💡 大きく
+              const SizedBox(width: 8),
               Text(
-                '${now.year}年${now.month}月${now.day}日（$weekday）',
-                style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 12),
+                '${now.year}/${now.month}/${now.day}($weekday)',
+                style: const TextStyle(
+                  color: Color(0xFFF5EDD8),
+                  fontSize: 14,
+                ), // 💡 12 -> 14
               ),
             ],
           ),
-          // 天気（APIまで仮表示）
           const Row(
             children: [
-              Icon(Icons.wb_sunny, size: 14, color: Color(0xFFC8A97A)),
-              SizedBox(width: 4),
+              Icon(
+                Icons.wb_sunny,
+                size: 18,
+                color: Color(0xFFC8A97A),
+              ), // 💡 大きく
+              SizedBox(width: 6),
               Text(
                 '晴れ',
-                style: TextStyle(color: Color(0xFFF5EDD8), fontSize: 12),
-              ),
+                style: TextStyle(color: Color(0xFFF5EDD8), fontSize: 14),
+              ), // 💡 12 -> 14
             ],
           ),
-          // 現在地（APIまで仮表示）
-          const Row(
+          Row(
             children: [
-              Icon(Icons.location_on, size: 14, color: Color(0xFFC8A97A)),
-              SizedBox(width: 4),
-              Text(
-                '現在地',
-                style: TextStyle(color: Color(0xFFF5EDD8), fontSize: 12),
+              const Icon(
+                Icons.location_on,
+                size: 18,
+                color: Color(0xFFC8A97A),
+              ), // 💡 大きく
+              const SizedBox(width: 6),
+              // 📍 APIの状態に応じて表示を切り替え
+              addressAsync.when(
+                data: (address) => Text(
+                  address,
+                  style: const TextStyle(
+                    color: Color(0xFFF5EDD8),
+                    fontSize: 14,
+                  ),
+                ),
+                loading: () => const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                error: (error, stackTrace) => const Text(
+                  '取得失敗',
+                  style: TextStyle(color: Colors.red, fontSize: 14),
+                ),
               ),
             ],
           ),
@@ -166,7 +205,7 @@ class AdventureSettingPage extends ConsumerWidget {
     );
   }
 
-  // ── 目的地入力 ──────────────────────────────
+  // ── 目的地入力 ──
   Widget _buildDestinationSection(
     AdventureSettingState state,
     AdventureSettingNotifier notifier,
@@ -175,51 +214,67 @@ class AdventureSettingPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionLabel(icon: Icons.place, label: '目的地'),
-        const SizedBox(height: AppSizes.p8),
+        const SizedBox(height: AppSizes.p12),
         Row(
           children: [
             Expanded(
-              child: TextField(
-                onChanged: notifier.setDestination,
-                style: const TextStyle(color: Color(0xFFF5EDD8)),
-                decoration: InputDecoration(
-                  hintText: '行きたい場所を入力...',
-                  hintStyle: const TextStyle(color: Color(0xFF7A5C3A)),
-                  filled: true,
-                  fillColor: const Color(0xFF3D2B1F),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSizes.radiusM),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFC8A97A),
-                      width: 0.5,
+              child: SizedBox(
+                height: 56, // 💡 テキストフィールドを高く
+                child: TextField(
+                  controller: TextEditingController(text: state.destination)
+                    ..selection = TextSelection.collapsed(
+                      offset: state.destination.length,
                     ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSizes.radiusM),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFC8A97A),
-                      width: 0.5,
+                  onChanged: notifier.setDestination,
+                  style: const TextStyle(
+                    color: Color(0xFFF5EDD8),
+                    fontSize: 16,
+                  ), // 💡 大きく
+                  decoration: InputDecoration(
+                    hintText: '行きたい場所を入力...',
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF7A5C3A),
+                      fontSize: 16,
                     ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSizes.radiusM),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFB8860B),
-                      width: 1.5,
+                    filled: true,
+                    fillColor: const Color(0xFF3D2B1F),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFC8A97A),
+                        width: 1.0,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFC8A97A),
+                        width: 1.0,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFB8860B),
+                        width: 2.0,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 0,
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: AppSizes.p8),
-            // おまかせボタン
+            const SizedBox(width: AppSizes.p12),
             GestureDetector(
               onTap: notifier.setRandom,
               child: Container(
+                height: 56, // 💡 ボタンを高く
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.p12,
-                  vertical: AppSizes.p12,
-                ),
+                  horizontal: AppSizes.p20,
+                ), // 💡 幅も広く
                 decoration: BoxDecoration(
                   color: state.isRandom
                       ? const Color(0xFFB8860B)
@@ -227,16 +282,17 @@ class AdventureSettingPage extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppSizes.radiusM),
                   border: Border.all(
                     color: const Color(0xFFC8A97A),
-                    width: 0.5,
+                    width: 1.0,
                   ),
                 ),
+                alignment: Alignment.center,
                 child: Text(
                   'おまかせ',
                   style: TextStyle(
                     color: state.isRandom
                         ? Colors.white
                         : const Color(0xFFC8A97A),
-                    fontSize: 12,
+                    fontSize: 16, // 💡 12 -> 16
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -248,7 +304,7 @@ class AdventureSettingPage extends ConsumerWidget {
     );
   }
 
-  // ── 気分選択 ──────────────────────────────
+  // ── 気分選択 ──
   Widget _buildMoodSection(
     AdventureSettingState state,
     AdventureSettingNotifier notifier,
@@ -259,24 +315,24 @@ class AdventureSettingPage extends ConsumerWidget {
       ('ガッツリ', '🔥'),
       ('きまぐれ', '🎲'),
     ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionLabel(icon: Icons.mood, label: '今の気分'),
-        const SizedBox(height: AppSizes.p8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+        const SizedBox(height: AppSizes.p12),
+        Wrap(
+          // 💡 RowからWrapに変更して柔軟に配置
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.spaceBetween,
           children: moods.map((mood) {
             final isSelected = state.mood == mood.$1;
             return GestureDetector(
               onTap: () => notifier.setMood(mood.$1),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.p16,
-                  vertical: AppSizes.p12,
-                ),
+                width: 80, // 💡 固定幅でタップしやすく
+                padding: const EdgeInsets.symmetric(vertical: AppSizes.p16),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFFB8860B)
@@ -286,20 +342,33 @@ class AdventureSettingPage extends ConsumerWidget {
                     color: isSelected
                         ? const Color(0xFFB8860B)
                         : const Color(0xFFC8A97A),
-                    width: isSelected ? 1.5 : 0.5,
+                    width: isSelected ? 2.0 : 1.0,
                   ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(
+                              0xFFB8860B,
+                            ).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                          ),
+                        ]
+                      : [],
                 ),
                 child: Column(
                   children: [
-                    Text(mood.$2, style: const TextStyle(fontSize: 20)),
-                    const SizedBox(height: 4),
+                    Text(
+                      mood.$2,
+                      style: const TextStyle(fontSize: 28),
+                    ), // 💡 20 -> 28
+                    const SizedBox(height: 8),
                     Text(
                       mood.$1,
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
                             : const Color(0xFFC8A97A),
-                        fontSize: 11,
+                        fontSize: 14, // 💡 11 -> 14
                         fontWeight: isSelected
                             ? FontWeight.bold
                             : FontWeight.normal,
@@ -315,7 +384,7 @@ class AdventureSettingPage extends ConsumerWidget {
     );
   }
 
-  // ── モード選択 ──────────────────────────────
+  // ── モード選択 ──
   Widget _buildModeSection(
     AdventureSettingState state,
     AdventureSettingNotifier notifier,
@@ -325,12 +394,11 @@ class AdventureSettingPage extends ConsumerWidget {
       ('探索', '3-6km、見どころ多め'),
       ('冒険', '6km以上、がっつり歩く'),
     ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionLabel(icon: Icons.directions_walk, label: '難易度'),
-        const SizedBox(height: AppSizes.p8),
+        const SizedBox(height: AppSizes.p12),
         ...modes.map((mode) {
           final isSelected = state.mode == mode.$1;
           return GestureDetector(
@@ -338,11 +406,11 @@ class AdventureSettingPage extends ConsumerWidget {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: double.infinity,
-              margin: const EdgeInsets.only(bottom: AppSizes.p8),
+              margin: const EdgeInsets.only(bottom: AppSizes.p12), // 💡 8 -> 12
               padding: const EdgeInsets.symmetric(
-                horizontal: AppSizes.p16,
-                vertical: AppSizes.p12,
-              ),
+                horizontal: AppSizes.p20,
+                vertical: AppSizes.p16,
+              ), // 💡 大きく
               decoration: BoxDecoration(
                 color: isSelected
                     ? const Color(0xFFB8860B)
@@ -352,7 +420,7 @@ class AdventureSettingPage extends ConsumerWidget {
                   color: isSelected
                       ? const Color(0xFFB8860B)
                       : const Color(0xFFC8A97A),
-                  width: isSelected ? 1.5 : 0.5,
+                  width: isSelected ? 2.0 : 1.0,
                 ),
               ),
               child: Row(
@@ -365,7 +433,7 @@ class AdventureSettingPage extends ConsumerWidget {
                           ? Colors.white
                           : const Color(0xFFF5EDD8),
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 18, // 💡 15 -> 18
                     ),
                   ),
                   Text(
@@ -374,7 +442,7 @@ class AdventureSettingPage extends ConsumerWidget {
                       color: isSelected
                           ? Colors.white70
                           : const Color(0xFF7A5C3A),
-                      fontSize: 11,
+                      fontSize: 14, // 💡 11 -> 14
                     ),
                   ),
                 ],
@@ -386,44 +454,54 @@ class AdventureSettingPage extends ConsumerWidget {
     );
   }
 
-  // ── ルート生成ボタン ──────────────────────────
+  // ── ルート生成ボタン ──
   Widget _buildGenerateButton(
     BuildContext context,
     WidgetRef ref,
     AdventureSettingState state,
+    AdventureSettingNotifier notifier,
   ) {
     final canGenerate = state.isRandom || state.destination.trim().isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.all(AppSizes.p16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.p24,
+        vertical: AppSizes.p20,
+      ), // 💡 大きく
       decoration: const BoxDecoration(
         color: Color(0xFF2C2318),
-        border: Border(top: BorderSide(color: Color(0xFFC8A97A), width: 0.5)),
+        border: Border(top: BorderSide(color: Color(0xFFC8A97A), width: 1.0)),
       ),
       child: SizedBox(
         width: double.infinity,
+        height: 60, // 💡 ボタンを高く
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: canGenerate
                 ? const Color(0xFFB8860B)
                 : const Color(0xFF7A5C3A),
-            padding: const EdgeInsets.all(AppSizes.p16),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSizes.radiusM),
+              borderRadius: BorderRadius.circular(AppSizes.radiusL),
             ),
+            elevation: canGenerate ? 4 : 0,
           ),
           onPressed: canGenerate
-              ? () {
-                  ref.read(routeSelectProvider.notifier).generateRoutes();
-                  context.go(AppRoutes.routeSelect);
+              ? () async {
+                  // 🚀 APIを叩く！
+                  final success = await notifier.generateRoutes();
+                  if (success && context.mounted) {
+                    // 成功したら次の画面へ
+                    context.go(AppRoutes.routeSelect);
+                  }
                 }
               : null,
           child: Text(
             canGenerate ? 'ルートを生成する ✨' : '目的地を入力するか、おまかせを選択',
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 18, // 💡 16 -> 18
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              letterSpacing: 1.2,
             ),
           ),
         ),
@@ -432,7 +510,7 @@ class AdventureSettingPage extends ConsumerWidget {
   }
 }
 
-// ── 共通：セクションラベル ────────────────────
+// ── 共通：セクションラベル ──
 class _SectionLabel extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -442,14 +520,15 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: AppSizes.iconS, color: const Color(0xFFC8A97A)),
-        const SizedBox(width: 6),
+        Icon(icon, size: 24, color: const Color(0xFFC8A97A)), // 💡 大きく
+        const SizedBox(width: 8),
         Text(
           label,
           style: const TextStyle(
             color: Color(0xFFF5EDD8),
-            fontSize: 14,
+            fontSize: 18, // 💡 14 -> 18
             fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,
           ),
         ),
       ],

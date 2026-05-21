@@ -3,12 +3,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
+import 'adventure_provider.dart'; // 📍 冒険の設定（moodやmode）を読み込むために追加！
 
 // ── ルート選択画面の状態 ──────────────────────
 class RouteSelectState {
-  final List<RouteModel> routes; // AIが提案したルート一覧
-  final String? selectedRouteId; // 選択中のルートID
-  final bool isLoading; // 生成中フラグ
+  final List<RouteModel> routes;
+  final String? selectedRouteId;
+  final bool isLoading;
 
   const RouteSelectState({
     this.routes = const [],
@@ -34,45 +35,40 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
   @override
   RouteSelectState build() => const RouteSelectState();
 
-  // ルートを選択する
   void selectRoute(String routeId) {
     state = state.copyWith(selectedRouteId: routeId);
   }
 
-  // ダミーデータを生成（Gemini API連携まで）
+  // 💡 ここを改良！adventureSettingProviderを読み込んで「条件に合わせた」ルートを生成するよ！
   Future<void> generateRoutes() async {
     state = state.copyWith(isLoading: true);
 
-    // Gemini APIの代わりに少し待ってからダミーデータを返す
+    // 現在の冒険設定を取得
+    final settings = ref.read(adventureSettingProvider);
+
+    // 実際はここでAPIを叩くけど、今はAIが「考えている時間」をシミュレート
     await Future.delayed(const Duration(seconds: 2));
 
+    // みぃくんの設定（moodやmode）に応じて生成ルートを少し変える演出！
     final dummyRoutes = [
       RouteModel(
         id: 'route_001',
-        themeName: '古のパン屋を巡る調査員コース',
-        themeDescription: '路地裏に隠れた名店を追う、美食探偵の一日',
+        themeName: '${settings.mood}・${settings.mode}コース',
+        themeDescription:
+            '今の気分「${settings.mood}」にぴったりな、${settings.mode}を楽しみ尽くすルート。',
         spotIds: ['spot_001', 'spot_002', 'spot_003'],
         totalDistance: 2.3,
         estimatedTime: 35,
-        tags: ['#カフェ', '#レトロ', '#路地裏'],
+        tags: ['#${settings.mode}', '#おすすめ', '#冒険'],
       ),
       RouteModel(
         id: 'route_002',
-        themeName: '緑の隠れ家を求めて',
-        themeDescription: '都会の中に息づく自然を発見する旅人のルート',
+        themeName: '穴場探索ルート',
+        themeDescription: '普段とは違う景色を探す、少し大人な冒険。',
         spotIds: ['spot_004', 'spot_005'],
         totalDistance: 1.8,
         estimatedTime: 25,
-        tags: ['#公園', '#自然', '#のんびり'],
-      ),
-      RouteModel(
-        id: 'route_003',
-        themeName: '夕暮れの商店街冒険記',
-        themeDescription: '昭和の香り漂う街並みで、時間旅行者になれるルート',
-        spotIds: ['spot_006', 'spot_007', 'spot_008'],
-        totalDistance: 3.1,
-        estimatedTime: 45,
-        tags: ['#商店街', '#昭和', '#写真映え'],
+        tags: ['#穴場', '#発見'],
       ),
     ];
 
