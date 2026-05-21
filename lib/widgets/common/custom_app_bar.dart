@@ -1,6 +1,7 @@
 // lib/widgets/common/custom_app_bar.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../utils/colors.dart'; // 💡 AppColorsをインポート
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -23,27 +24,26 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           fontSize: 20,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
-          color: Colors.white,
+          color: AppColors.textPrimary, // 💡 セピアホワイトに変更
         ),
       ),
       centerTitle: true,
-      backgroundColor: Colors.transparent, // 背景を透明にして世界観を壊さないようにする
+      backgroundColor: Colors.transparent,
       elevation: 0,
       leading: showBackButton && context.canPop()
           ? IconButton(
               icon: const Icon(
                 Icons.arrow_back_ios_new,
-                color: Colors.white,
+                color: AppColors.textPrimary, // 💡 アイコンも統一
                 size: 20,
               ),
-              onPressed: () => context.pop(), // GoRouterでの安全な画面戻り
+              onPressed: () => context.pop(),
             )
           : null,
       actions: actions,
     );
   }
 
-  // AppBarの標準的な高さを指定する
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

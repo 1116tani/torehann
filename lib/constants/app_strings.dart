@@ -23,4 +23,15 @@ class AppStrings {
 
   // 汎用メッセージ
   static const String comingSoon = '開発中だよ！お楽しみに！';
+
+  // 設定・プロフィール用
+  static const String menuSettings = '調査員設定';
+  static const String userNameLabel = 'コードネーム';
+  static const String hobbyTagTitle = '登録中の興味関心（属性）';
+
+  // ナビ・リザルト用
+  static const String totalDistance = '総歩行距離';
+  static const String earnedExp = '獲得経験値';
+  static const String clearSpots = '調査完了スポット';
+  static const String finishAdventure = '冒険の記録を報告する';
 }

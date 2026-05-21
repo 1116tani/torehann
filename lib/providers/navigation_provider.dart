@@ -42,8 +42,9 @@ class NavigationState {
       visitedSpotIds: visitedSpotIds ?? this.visitedSpotIds,
       isAdventureStarted: isAdventureStarted ?? this.isAdventureStarted,
       progress: progress ?? this.progress,
-      distanceToNextSpot:
-          clearDistance ? null : (distanceToNextSpot ?? this.distanceToNextSpot),
+      distanceToNextSpot: clearDistance
+          ? null
+          : (distanceToNextSpot ?? this.distanceToNextSpot),
       nextSpot: clearNextSpot ? null : (nextSpot ?? this.nextSpot),
       adventureStartTime: adventureStartTime ?? this.adventureStartTime,
     );

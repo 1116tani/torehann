@@ -2,22 +2,23 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // アプリのメインカラー
-  static const Color primary = Colors.orange;
-  static const Color primaryDark = Color(0xFFE65100); // 濃いオレンジ（影などに）
-  static const Color primaryLight = Color(0xFFFFCC80); // 薄いオレンジ
+  // ── ✨ メインカラー（セピア・ゴールド） ──
+  static const Color primary = Color(0xFFC8A97A); // 高貴なアンティークゴールド（メイン）
+  static const Color primaryDark = Color(0xFFB8860B); // 深みのあるダークゴールド
+  static const Color primaryLight = Color(0xFFF5EDD8); // 羊皮紙のような温かみのある白（ハイライト）
 
-  // 背景色
-  static const Color background = Colors.black87;
-  static const Color surface = Color(0xFF1E1E1E); // ちょっと浮いた要素の黒
-  static const Color glassSurface = Colors.white10; // ガラス風の半透明
+  // ── 🏰 背景色（ダークセピア・ウッド） ──
+  static const Color background = Color(0xFF2C2318); // 探索画面のベースになる濃い木色・闇色
+  static const Color surface = Color(0xFF3D2B1F); // カード等で1段浮き上がらせるセピアブラウン
+  static const Color border = Color(0xFF4A3728); // 枠線や区切り線に使うヴィンテージな茶色
 
-  // 文字色
-  static const Color textPrimary = Colors.white;
-  static const Color textSecondary = Colors.white70;
-  static const Color textDisabled = Colors.white30;
+  // ── 📜 文字色 ──
+  static const Color textPrimary = Color(0xFFF5EDD8); // 読みやすい羊皮紙ホワイト
+  static const Color textSecondary = Color(0xFF9E8465); // 落ち着いたセピアブラウン
+  static const Color textMuted = Color(0xFF7A5C3A); // 補足説明や暗めの装飾テキスト
 
-  // アイコン
-  static const Color iconActive = Colors.white;
-  static const Color iconDisabled = Colors.grey;
+  // ── 🔮 特殊エフェクト用 ──
+  static const Color glassSurface = Color(0x22FFFFFF); // ガラスエフェクト用の半透明白
+  static const Color iconActive = Color(0xFFF5EDD8); // アクティブなアイコン
+  static const Color iconDisabled = Color(0xFF7A5C3A); // 未開放メニュー等のアイコン
 }

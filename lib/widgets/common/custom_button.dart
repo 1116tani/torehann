@@ -1,9 +1,10 @@
 // lib/widgets/common/custom_button.dart
 import 'package:flutter/material.dart';
+import '../../utils/colors.dart'; // 💡 AppColorsをインポート
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed; // 💡 null許容にして無効化できるようにしたよ
   final bool isLoading;
   final IconData? icon;
 
@@ -17,33 +18,36 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isDisabled = onPressed == null || isLoading;
 
     return Container(
-      width: double.infinity, // 横幅いっぱいに広がる使いやすいサイズ
+      width: double.infinity,
       height: 56,
       decoration: BoxDecoration(
-        // テーマのプライマリーカラー（ネオン系）を使ったグラデーション
+        // 💡 無効時は暗い茶色、有効時はアンティークゴールドのグラデーション
         gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.primary.withValues(alpha: 0.8),
-          ],
+          colors: isDisabled
+              ? [AppColors.border, AppColors.border.withValues(alpha: 0.8)]
+              : [AppColors.primary, AppColors.primaryDark],
         ),
-        borderRadius: BorderRadius.circular(28), // 丸みのある可愛い形
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4), // ほんのり光が浮き出るエフェクト
-          ),
-        ],
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: isDisabled
+            ? []
+            : [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
+        onPressed: isDisabled ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
+          disabledBackgroundColor: Colors.transparent,
+          disabledForegroundColor: AppColors.textMuted,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),
@@ -54,22 +58,32 @@ class CustomButton extends StatelessWidget {
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.background,
+                  ), // 💡 くるくるをセピア色に
                 ),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, color: Colors.white),
+                    Icon(
+                      icon,
+                      color: isDisabled
+                          ? AppColors.textMuted
+                          : AppColors.background,
+                    ),
                     const SizedBox(width: 8),
                   ],
                   Text(
                     text,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      // 💡 ボタンの上の文字は、背景と同じ色でくり抜くとかっこいい！
+                      color: isDisabled
+                          ? AppColors.textMuted
+                          : AppColors.background,
                       letterSpacing: 1.2,
                     ),
                   ),

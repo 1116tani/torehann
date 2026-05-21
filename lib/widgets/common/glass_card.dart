@@ -1,6 +1,7 @@
 // lib/widgets/common/glass_card.dart
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../utils/colors.dart'; // 💡 AppColorsをインポート
 
 class GlassCard extends StatelessWidget {
   final Widget child;
@@ -13,7 +14,7 @@ class GlassCard extends StatelessWidget {
     super.key,
     required this.child,
     this.blur = 10.0,
-    this.opacity = 0.1,
+    this.opacity = 0.15, // 💡 少しだけ濃く
     this.borderRadius = 16.0,
     this.padding = const EdgeInsets.all(16.0),
   });
@@ -23,16 +24,15 @@ class GlassCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
-        // これが背景をボカすエフェクト
         filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: opacity), // ほんのり白を混ぜる
+            // 💡 ゴールド（Primary）をうっすら混ぜた魔法のガラス
+            color: AppColors.primary.withValues(alpha: opacity),
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
-              // カードの縁を細く光らせてシャープに見せる
-              color: Colors.white.withValues(alpha: 0.15),
+              color: AppColors.primary.withValues(alpha: 0.2), // 💡 縁もゴールドに光らせる
               width: 1.0,
             ),
           ),
