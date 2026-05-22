@@ -1,7 +1,12 @@
 // lib/router/app_router.dart
-import 'package:go_router/go_router.dart';
 
-// 相対パスでインポートすれば安全安心だよ
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../pages/auth_gate.dart';
+import '../pages/title_page.dart';
 import '../pages/home_page.dart';
 import '../pages/adventure_setting_page.dart';
 import '../pages/route_select_page.dart';
@@ -15,8 +20,11 @@ import '../pages/party_page.dart';
 import '../pages/health_page.dart';
 import '../pages/mission_page.dart';
 
+// ── パス定数 ──────────────────────────────────
 class AppRoutes {
-  static const home = '/';
+  static const auth = '/'; // AuthGate（起点）
+  static const title = '/title'; // タイトル画面
+  static const home = '/home'; // ホーム画面
   static const adventureSetting = '/adventure-setting';
   static const routeSelect = '/route-select';
   static const navigation = '/navigation';
@@ -30,37 +38,65 @@ class AppRoutes {
   static const mission = '/mission';
 }
 
+// ── ルーター本体 ──────────────────────────────
 final appRouter = GoRouter(
-  initialLocation: AppRoutes.home,
+  initialLocation: AppRoutes.auth,
   routes: [
+    // ── 認証ゲート（起点） ──
+    GoRoute(
+      path: AppRoutes.auth,
+      builder: (context, state) => const AuthGate(),
+    ),
+
+    // ── タイトル画面 ──
+    GoRoute(
+      path: AppRoutes.title,
+      builder: (context, state) => const TitlePage(),
+    ),
+
+    // ── ホーム画面 ──
     GoRoute(
       path: AppRoutes.home,
       builder: (context, state) => const HomeScreen(),
     ),
+
+    // ── 冒険セッティング ──
     GoRoute(
       path: AppRoutes.adventureSetting,
       builder: (context, state) => const AdventureSettingPage(),
     ),
+
+    // ── ルート選択 ──
     GoRoute(
       path: AppRoutes.routeSelect,
       builder: (context, state) => const RouteSelectPage(),
     ),
+
+    // ── ナビゲーション ──
     GoRoute(
       path: AppRoutes.navigation,
       builder: (context, state) => const NavigationPage(),
     ),
+
+    // ── リザルト ──
     GoRoute(
       path: AppRoutes.result,
       builder: (context, state) => const ResultPage(),
     ),
+
+    // ── 設定 ──
     GoRoute(
       path: AppRoutes.settings,
       builder: (context, state) => const SettingsPage(),
     ),
+
+    // ── 履歴 ──
     GoRoute(
       path: AppRoutes.history,
       builder: (context, state) => const HistoryPage(),
     ),
+
+    // ── Tier B以降（グレーアウト） ──
     GoRoute(
       path: AppRoutes.achievement,
       builder: (context, state) => const AchievementPage(),
