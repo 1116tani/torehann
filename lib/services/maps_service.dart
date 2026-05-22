@@ -62,7 +62,7 @@ class MapsService {
       // ここでレスポンスの overview_polyline をデコードして座標リストにして返すロジックを書くよ！
       */
     } catch (e) {
-      throw Exception('ルート軌跡の取得に失敗しちゃった: $e');
+      throw Exception('ルート軌跡の取得に失敗しました: $e');
     }
   }
 }

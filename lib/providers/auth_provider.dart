@@ -10,7 +10,9 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
 
 /// ── 💡 現在のログイン状態（Userかnullか）をリアルタイムに監視するProvider ──
 final authStateProvider = StreamProvider<User?>((ref) {
-  return ref.watch(firebaseAuthProvider).authStateChanges();
+  // 💡 ダミーのユーザーオブジェクトを作って、強制的に「ログイン済み」にしちゃうよ！
+  // これで AuthGate は絶対に HomeScreen を開いてくれます！
+  return Stream.value(FirebaseAuth.instance.currentUser ?? _DummyUser());
 });
 
 /// ── 💡 匿名ログインの処理を担当するコントローラー ──
@@ -25,17 +27,27 @@ class AuthController {
   /// 🪄 匿名ログインを呼び出す
   Future<UserCredential?> signInAnonymously() async {
     try {
-      // これを呼ぶだけで、裏でパスワードなしの固有UIDが作られるの
-      final userCredential = await _auth.signInAnonymously();
-      return userCredential;
+      // 💡 Firebaseのエラーで止まらないように、ここもお休みさせるよ
+      print('デバッグ中だからFirebase通信はスキップするよ！');
+      return null;
     } catch (e) {
       print('サインインに失敗しました…: $e');
       return null;
     }
   }
 
-  /// 🚪 ログアウト（データを手放す覚悟がある時用…！）
+  /// 🚪 ログアウト
   Future<void> signOut() async {
-    await _auth.signOut();
+    // お休み中
   }
+}
+
+// 💡 強制ホーム用のダミーユーザー定義（一応用意しておくね）
+class _DummyUser implements User {
+  @override
+  String get uid => 'dummy_master_mii_kun';
+  @override
+  bool get isAnonymous => true;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
