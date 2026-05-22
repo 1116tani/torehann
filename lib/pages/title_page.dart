@@ -17,7 +17,7 @@ class _TitlePageState extends ConsumerState<TitlePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610), // みぃくんの重厚なブラウン
+      backgroundColor: const Color(0xFF1C1610),
       body: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -35,7 +35,7 @@ class _TitlePageState extends ConsumerState<TitlePage> {
 
             // ── アプリのロゴ・タイトル ──
             const Text(
-              '🗂️ 幻想の軌跡', // みぃくんのアプリ名に変えてね！
+              'Tale Treace',
               style: TextStyle(
                 color: Color(0xFFF5EDD8),
                 fontSize: 32,

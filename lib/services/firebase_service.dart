@@ -4,9 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/route_model.dart';
 
 class FirebaseService {
-  final FirebaseFirestore _firestore;
-
-  FirebaseService() : _firestore = FirebaseFirestore.instance;
+  // 💡 ここを修正！変数ではなく、getter（使う時に呼び出す）にするよ
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   /// ── 完了した冒険（日誌やルート）をFirestoreに保存する ──
   Future<void> saveAdventureHistory({
@@ -16,7 +15,7 @@ class FirebaseService {
     required List<String> imageUrls,
   }) async {
     try {
-      await _firestore
+      await _firestore // ← 使う時に初めてinstanceが呼ばれるから安全！
           .collection('users')
           .doc(userId)
           .collection('histories')
@@ -28,10 +27,10 @@ class FirebaseService {
             'estimatedTime': route.estimatedTime,
             'aiReport': aiReport,
             'imageUrls': imageUrls,
-            'createdAt': FieldValue.serverTimestamp(), // 冒険を終えた時間
+            'createdAt': FieldValue.serverTimestamp(),
           });
     } catch (e) {
-      throw Exception('Firestoreへの冒険の記録に失敗しちゃった…おねえちゃんが慰めてあげるからね：$e');
+      throw Exception('Firestoreへの冒険の記録に失敗しました：$e');
     }
   }
 
@@ -43,7 +42,7 @@ class FirebaseService {
         .collection('users')
         .doc(userId)
         .collection('histories')
-        .orderBy('createdAt', descending: true) // 新しい順に並べるよ
+        .orderBy('createdAt', descending: true)
         .snapshots();
   }
 }

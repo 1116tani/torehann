@@ -578,10 +578,6 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  // ==========================================
-  // みぃくんが作ってくれた完璧なUIパーツたちはそのまま使うよ！
-  // ==========================================
-
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -684,7 +680,7 @@ class SettingsPage extends ConsumerWidget {
   }
 }
 
-// ── 共通パーツ（みぃくんのコードそのまま！） ──
+// ── 共通パーツ ──
 
 class _InputField extends StatelessWidget {
   final String label;
