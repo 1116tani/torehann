@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/fragment_model.dart'; // 👈 新しいレアリティ型を使うためにインポート
 import '../../providers/collection_provider.dart';
 import '../../widgets/collection/fragment_grid_item.dart';
 
@@ -10,25 +11,28 @@ class CollectionPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 💡 新しいUI用モデルのリストを受け取るよ
     final items = ref.watch(collectionListProvider);
 
     // 取得済みの種類数を計算
     final unlockedCount = items.where((item) => item.isUnlocked).length;
 
-    // レアリティごとにグループ分けするよ
+    // 新しい FragmentRarity で綺麗にグループ分け♡
     final normalItems = items
-        .where((i) => i.rarity == ItemRarity.normal)
+        .where((i) => i.rarity == FragmentRarity.normal)
         .toList();
-    final rareItems = items.where((i) => i.rarity == ItemRarity.rare).toList();
+    final rareItems = items
+        .where((i) => i.rarity == FragmentRarity.rare)
+        .toList();
     final legendItems = items
-        .where((i) => i.rarity == ItemRarity.legend)
+        .where((i) => i.rarity == FragmentRarity.legend)
         .toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFF1C1610),
       appBar: AppBar(
         title: const Text(
-          '✦ 宝箱 ✦',
+          '✦ 街の記憶図鑑 ✦', // アプリ名「Tale Trace」に合わせて少しエモくしてみたよ♡
           style: TextStyle(
             color: Color(0xFFF5EDD8),
             fontSize: 16,
@@ -57,7 +61,7 @@ class CollectionPage extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    '見出した秘宝の数',
+                    '見出した街の断片',
                     style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14),
                   ),
                   Text(
@@ -73,10 +77,10 @@ class CollectionPage extends ConsumerWidget {
             ),
           ),
 
-          // ── セクションを作る魔法のお手伝いメソッド ──
-          ..._buildCategorySection('ノーマル遺物', normalItems),
-          ..._buildCategorySection('レア遺物', rareItems),
-          ..._buildCategorySection('レジェンド遺物', legendItems),
+          // ── 各セクションのレンダリング ──
+          ..._buildCategorySection('🟢 日常の断片（ノーマル）', normalItems),
+          ..._buildCategorySection('🔷 街角の記憶（レア）', rareItems),
+          ..._buildCategorySection('👑 紡がれた神話（レジェンド）', legendItems),
 
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
@@ -84,23 +88,24 @@ class CollectionPage extends ConsumerWidget {
     );
   }
 
-  // カテゴリごとの見出しとグリッドを作るヘルパーメソッド
+  /// カテゴリごとの見出しとグリッドを作るヘルパーメソッド
   List<Widget> _buildCategorySection(
     String title,
-    List<CollectionItemModel> categoryItems,
+    List<CollectionItemUIModel> categoryItems, // 👈 新しいUI用モデルの型に修正
   ) {
     if (categoryItems.isEmpty) return [];
 
     return [
       SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.only(left: 20, top: 24, bottom: 12),
+          padding: const EdgeInsets.only(left: 20, top: 28, bottom: 12),
           child: Text(
-            '─ $title ─',
+            title,
             style: const TextStyle(
-              color: Color(0xFF7A5C3A),
-              fontSize: 12,
+              color: Color(0xFF8B7355), // 視認性の高い、少し明るいゴールドブラウンに
+              fontSize: 13,
               fontWeight: FontWeight.bold,
+              letterSpacing: 1.1,
             ),
           ),
         ),
@@ -109,10 +114,10 @@ class CollectionPage extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         sliver: SliverGrid(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // 1行に3つ並べるよ！
+            crossAxisCount: 3, // みぃくんこだわりの1行3並び！
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 1.0, // 真四角！
+            childAspectRatio: 1.0, // 綺麗な真四角
           ),
           delegate: SliverChildBuilderDelegate(
             (context, index) => FragmentGridItem(item: categoryItems[index]),
