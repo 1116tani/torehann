@@ -2,15 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // 💡 プロバイダーを使うために追加！
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:tale_trace/router/app_router.dart';
 import 'package:tale_trace/widgets/common/glass_card.dart';
 import 'package:tale_trace/widgets/home/map_overlay.dart';
 import 'package:tale_trace/widgets/home/partner_character.dart';
 import 'package:tale_trace/widgets/home/adventure_start_button.dart';
-import 'package:tale_trace/utils/colors.dart'; // 💡 色を統一するために追加
-import 'package:tale_trace/providers/location_provider.dart'; // 💡 現在地のために追加
+import 'package:tale_trace/utils/colors.dart';
+import 'package:tale_trace/providers/location_provider.dart';
 
 // 📜 Google Mapsの古地図・セピア風スタイルJSON
 const String vintageMapStyle = '''
@@ -42,7 +42,6 @@ const String vintageMapStyle = '''
 ]
 ''';
 
-// 💡 Riverpodを使うために ConsumerStatefulWidget に変更したよ！
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -52,8 +51,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   GoogleMapController? mapController;
-  final LatLng _defaultPosition = const LatLng(35.681236, 139.767125); // 東京駅
-  bool _isFirstLocationFetch = true; // 初回のみカメラを移動させるフラグ
+  final LatLng _defaultPosition = const LatLng(35.681236, 139.767125); // デフォルト位置
+  bool _isFirstLocationFetch = true;
+  double _sheetPosition = 0.22; // 💡 ボトムシートの初期位置を記憶するよ！
 
   @override
   void dispose() {
@@ -64,11 +64,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    // 💡 現在地を監視するよ！
     final locationAsyncValue = ref.watch(locationProvider);
 
-    // 現在地が取得できたら、初回だけカメラをそこに飛ばす魔法
     locationAsyncValue.whenData((position) {
       if (position != null && _isFirstLocationFetch && mapController != null) {
         mapController!.animateCamera(
@@ -81,6 +78,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     });
 
+    // 💡 画面の高さと、動くパーツたちの位置・透明度を計算するよ
+    final screenHeight = MediaQuery.of(context).size.height;
+    final dynamicBottom = screenHeight * _sheetPosition + 20;
+    // シートが画面の40%（0.4）以上引き上げられたらフッと透明にする！
+    final double elementOpacity = _sheetPosition > 0.4 ? 0.0 : 1.0;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -92,9 +95,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               zoom: 16,
               tilt: 45,
             ),
-            style: vintageMapStyle, // 💡 ここに古地図スタイルを適用！！
+            style: vintageMapStyle,
             myLocationEnabled: true,
-            myLocationButtonEnabled: false, // 自前のボタンを使うから標準は消すよ
+            myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
             mapToolbarEnabled: false,
             onMapCreated: (controller) {
@@ -115,18 +118,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: _buildGlassHeader(theme),
           ),
 
-          // ④ 案内妖精：アイリス
-          const Positioned(left: 20, bottom: 180, child: PartnerCharacter()),
-
-          // ⑤ マップ操作ボタン
-          Positioned(
-            right: 20,
-            bottom: 180,
-            child: _buildMapControls(theme, locationAsyncValue),
+          // ④ 案内妖精：アイリス（💡 シートと一緒に動く＆消える魔法！）
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 50), // スルスル動くよ
+            left: 20,
+            bottom: dynamicBottom,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200), // ふわっと消えるよ
+              opacity: elementOpacity,
+              child: const PartnerCharacter(),
+            ),
           ),
 
-          // ⑥ メニュー兼、冒険出発ボトムシート
-          _buildDraggableMenu(theme),
+          // ⑤ マップ操作ボタン（💡 これも一緒に動く＆消える魔法！）
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 50),
+            right: 20,
+            bottom: dynamicBottom,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: elementOpacity,
+              child: _buildMapControls(theme, locationAsyncValue),
+            ),
+          ),
+
+          // ⑥ メニュー兼、冒険出発ボトムシート（💡 シートの動きを監視するよ！）
+          NotificationListener<DraggableScrollableNotification>(
+            onNotification: (notification) {
+              setState(() {
+                _sheetPosition = notification.extent; // リアルタイムに高さを更新！
+              });
+              return true;
+            },
+            child: _buildDraggableMenu(theme),
+          ),
         ],
       ),
     );
@@ -154,7 +179,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const Text(
                       "見習い冒険者",
                       style: TextStyle(
-                        color: AppColors.textPrimary, // 💡 羊皮紙ホワイトに変更
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -187,31 +212,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // 💡 現在地情報を受け取ってボタンの動作を変えるよ
   Widget _buildMapControls(ThemeData theme, AsyncValue<dynamic> locationData) {
     final controller = mapController;
 
     return Column(
       children: [
-        _miniMapBtn(
-          Icons.add,
-          controller == null
-              ? null
-              : () => controller.animateCamera(CameraUpdate.zoomIn()),
-        ),
-        const SizedBox(height: 12),
-        _miniMapBtn(
-          Icons.remove,
-          controller == null
-              ? null
-              : () => controller.animateCamera(CameraUpdate.zoomOut()),
-        ),
-        const SizedBox(height: 12),
+        // 💡 新機能：マップの見た目切り替えボタン（Apple Map風！）
         FloatingActionButton(
+          heroTag: "layer_btn",
+          mini: true,
+          onPressed: () {
+            // TODO: ここに航空写真とかの切り替え処理を後で作るよ！
+          },
+          backgroundColor: AppColors.surface, // セピアブラウン
+          child: const Icon(Icons.layers, color: AppColors.textPrimary, size: 20),
+        ),
+        const SizedBox(height: 12),
+
+        // 💡 既存の現在地ボタン
+        FloatingActionButton(
+          heroTag: "location_btn",
           onPressed: controller == null
               ? null
               : () {
-                  // 💡 ボタンを押したら確実に現在地（または豊田市）に戻るよ！
                   locationData.whenData((pos) {
                     final target = pos != null
                         ? LatLng(pos.latitude, pos.longitude)
@@ -224,23 +247,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           backgroundColor: theme.colorScheme.primary,
           child: const Icon(
             Icons.my_location,
-            color: AppColors.background,
-          ), // 💡 アイコン色をセピアに
+            color: AppColors.background, // セピアに映える色に！
+          ),
         ),
       ],
-    );
-  }
-
-  Widget _miniMapBtn(IconData icon, VoidCallback? onPressed) {
-    return SizedBox(
-      width: 40,
-      height: 40,
-      child: FloatingActionButton(
-        onPressed: onPressed,
-        mini: true,
-        backgroundColor: AppColors.surface, // 💡 セピアブラウンに
-        child: Icon(icon, color: AppColors.textPrimary, size: 20),
-      ),
     );
   }
 
@@ -252,9 +262,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(
-              alpha: 0.9,
-            ), // 💡 メニュー背景もセピアブラウン
+            color: AppColors.surface.withValues(alpha: 0.9), // メニュー背景
             borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
             border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
           ),
@@ -290,18 +298,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _menuItem(
-                    theme,
-                    Icons.emoji_events,
-                    "実績",
-                    AppRoutes.achievement,
-                  ),
-                  _menuItem(
-                    theme,
-                    Icons.auto_stories,
-                    "街の断片",
-                    AppRoutes.collection,
-                  ),
+                  _menuItem(theme, Icons.emoji_events, "実績", AppRoutes.achievement),
+                  _menuItem(theme, Icons.auto_stories, "街の断片", AppRoutes.collection),
                   _menuItem(theme, Icons.history, "履歴", AppRoutes.history),
                   _menuItem(theme, Icons.settings, "設定", AppRoutes.settings),
                 ],
@@ -317,13 +315,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _menuItem(theme, Icons.people, "フレンド", null, isLocked: true),
-                  _menuItem(
-                    theme,
-                    Icons.favorite,
-                    "健康管理",
-                    null,
-                    isLocked: true,
-                  ),
+                  _menuItem(theme, Icons.favorite, "健康管理", null, isLocked: true),
                   _menuItem(theme, Icons.flag, "ミッション", null, isLocked: true),
                   _menuItem(theme, Icons.group, "パーティ", null, isLocked: true),
                 ],
@@ -363,9 +355,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               child: Icon(
                 icon,
-                color: isLocked
-                    ? AppColors.textMuted
-                    : theme.colorScheme.primary,
+                color: isLocked ? AppColors.textMuted : theme.colorScheme.primary,
               ),
             ),
             const SizedBox(height: 8),

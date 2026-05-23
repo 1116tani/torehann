@@ -12,8 +12,7 @@ import '../models/spot_model.dart';
 import '../providers/route_provider.dart';
 import '../providers/navigation_provider.dart';
 import '../router/app_router.dart';
-import '../widgets/route/route_preview_map.dart';
-import '../widgets/route/route_tag.dart';
+import '../widgets/route/route_card.dart'; // 👈 さっき共通化したRouteCardをインポート！
 
 class RouteSelectPage extends ConsumerWidget {
   const RouteSelectPage({super.key});
@@ -148,7 +147,6 @@ class _GeneratingView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ぐるぐるを少し大きくして目立たせる！
           const SizedBox(
             width: 56,
             height: 56,
@@ -164,7 +162,6 @@ class _GeneratingView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          // ここで「今日はどんな景色に出会えるかな？」みたいな一言が出る仕組みに！
           const Text(
             'AIが\n最高の寄り道を探しています...',
             textAlign: TextAlign.center,
@@ -263,7 +260,7 @@ class _RouteChoicesView extends StatelessWidget {
         ),
         const SizedBox(height: AppSizes.p16),
         SizedBox(
-          height: 372,
+          height: 380, // カード内の要素増加に合わせて高さを少しだけ（372→380）広げたよ♡
           child: LayoutBuilder(
             builder: (context, constraints) {
               final cardWidth = math.min(340.0, constraints.maxWidth * 0.84);
@@ -280,7 +277,7 @@ class _RouteChoicesView extends StatelessWidget {
 
                   return SizedBox(
                     width: cardWidth,
-                    child: _RouteChoiceCard(
+                    child: RouteCard( // 👈 共通化したカードをここで綺麗に召喚！
                       route: route,
                       spots: _spotsForRoute(route, spots),
                       isSelected: isSelected,
@@ -336,83 +333,7 @@ class _RouteIntroPanel extends StatelessWidget {
   }
 }
 
-class _RouteChoiceCard extends StatelessWidget {
-  final RouteModel route;
-  final Map<String, SpotModel> spots;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _RouteChoiceCard({
-    required this.route,
-    required this.spots,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(AppSizes.p12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2C2318),
-          borderRadius: BorderRadius.circular(AppSizes.radiusM),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFFB8860B)
-                : const Color(0xFF7A5C3A),
-            width: isSelected ? 2 : 0.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? const Color(0xFFB8860B).withValues(alpha: 0.24)
-                  : Colors.black.withValues(alpha: 0.32),
-              blurRadius: isSelected ? 16 : 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            RoutePreviewMap(route: route, spots: spots, isSelected: isSelected),
-            const SizedBox(height: AppSizes.p12),
-            Text(
-              route.themeName,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFFF5EDD8),
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: AppSizes.p8),
-            Text(
-              route.themeDescription,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isSelected ? Colors.white70 : const Color(0xFFC8A97A),
-                fontSize: 12,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: AppSizes.p12),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: route.tags.map((tag) => RouteTag(label: tag)).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// ⚠️ 元々あった重複用の `_RouteChoiceCard` クラスは綺麗に削除したよ！
 
 class _SelectedRouteDetail extends StatelessWidget {
   final RouteModel route;

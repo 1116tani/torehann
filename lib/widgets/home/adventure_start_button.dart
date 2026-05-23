@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../router/app_router.dart';
-import '../common/custom_button.dart';
+// import '../common/custom_button.dart'; // 💡 今回はこの特大ボタン専用のスタイルにするから使わないよ
 import '../../utils/colors.dart';
 
 class AdventureStartButton extends StatelessWidget {
@@ -13,7 +13,7 @@ class AdventureStartButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // 💡 ボタンの周りにうっすらと光のオーラをまとわせる
+      // 💡 みぃくんが作ってくれた、うっすらと光のオーラをまとわせる魔法はそのまま！
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
@@ -25,13 +25,37 @@ class AdventureStartButton extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: CustomButton(
-          text: '冒険を出発する',
-          icon: Icons.auto_awesome, // 💡 exploreより少し魔法っぽくしてみたよ
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFFB300), // ゴールド・オレンジ系
+            foregroundColor: const Color(0xFF1C1610), // 文字色（ダークブラウン）
+            // 💡 ここがポイント！横幅いっぱい＆縦幅を56pxに太くする！
+            minimumSize: const Size(double.infinity, 56),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            // 💡 光のオーラがあるから、ボタン自体の影（elevation）は0にすると綺麗だよ！
+            elevation: 0, 
+          ),
           onPressed: () {
-            // 💡 画面遷移の前に「読み込み中」のような演出を入れるとエモいよ
+            // 💡 みぃくんの書いた画面遷移コードをそのまま活かすよ！
             context.push(AppRoutes.adventureSetting);
           },
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.auto_awesome, size: 22), // 💡 魔法っぽいアイコン！
+              SizedBox(width: 8),
+              Text(
+                '冒険を出発する',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2, // 文字の間隔を少し開けておしゃれに♡
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
