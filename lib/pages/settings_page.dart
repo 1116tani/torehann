@@ -15,7 +15,7 @@ class SettingsPage extends ConsumerWidget {
     final notifier = ref.read(userProvider.notifier);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610), // 背景を少し暗くしてメリハリを出したよ！
+      backgroundColor: const Color(0xFF1C1610),
       body: SafeArea(
         child: Column(
           children: [
@@ -34,8 +34,9 @@ class SettingsPage extends ConsumerWidget {
                     _buildMenuTile(
                       icon: Icons.badge_outlined,
                       title: '冒険者プロファイル',
-                      subtitle:
-                          '${state.name.isEmpty ? "未設定" : state.name} / ${state.age}歳 / ${state.occupation}',
+                      subtitle: state.name.isEmpty
+                          ? '未設定'
+                          : '${state.name} / ${state.age.isEmpty ? '年齢未設定' : '${state.age}歳'} / ${state.partnerName.isEmpty ? '相棒未設定' : state.partnerName}',
                       onTap: () => _showUserInfoModal(context),
                     ),
                     const SizedBox(height: AppSizes.p16),
@@ -56,7 +57,7 @@ class SettingsPage extends ConsumerWidget {
                       icon: Icons.flag_outlined,
                       title: '目標設定',
                       subtitle:
-                          '${state.dailyStepGoal}歩 / ${state.dailyDistanceGoal.toStringAsFixed(1)}km',
+                          '${state.dailyGoal}歩 / 空き時間 ${state.defaultFreeTimeMinutes}分',
                       onTap: () => _showGoalsModal(context),
                     ),
                     const SizedBox(height: AppSizes.p16),
@@ -155,123 +156,144 @@ class SettingsPage extends ConsumerWidget {
   }
 
   // ==========================================
-  // 🪄 ここから下はすべて「ボトムシート（モーダル）」だよ！
+  // 🪄 ボトムシート（モーダル）たち！
   // ==========================================
 
   // 👤 1. 冒険者プロファイル用モーダル
   void _showUserInfoModal(BuildContext context) {
+    String newArea = '';
+
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // 💡 キーボードが出た時に画面を上に押し上げる魔法！
+      isScrollControlled: true,
       backgroundColor: const Color(0xFF2C2318),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => Consumer(
-        // 💡 モーダルの中でもRiverpodの更新を受け取るよ！
         builder: (context, ref, _) {
           final state = ref.watch(userProvider);
           final notifier = ref.read(userProvider.notifier);
 
-          return Padding(
-            // キーボードの高さ分だけ下の余白を空けるよ
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-              left: AppSizes.p24,
-              right: AppSizes.p24,
-              top: AppSizes.p24,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '👤 冒険者プロファイル',
-                    style: TextStyle(
-                      color: Color(0xFFF5EDD8),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSizes.p16),
-                  _InputField(
-                    label: 'ユーザー名',
-                    hint: '冒険者の名前',
-                    value: state.name,
-                    onChanged: notifier.setName,
-                  ),
-                  const SizedBox(height: AppSizes.p12),
-                  _InputField(
-                    label: '年齢',
-                    hint: '例：21',
-                    value: state.age,
-                    keyboardType: TextInputType.number,
-                    onChanged: notifier.setAge,
-                  ),
-                  const SizedBox(height: AppSizes.p12),
-
-                  // 職業セレクト（みぃくんのコードそのまま！）
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSizes.p16,
-                      vertical: AppSizes.p4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3D2B1F),
-                      borderRadius: BorderRadius.circular(AppSizes.radiusM),
-                      border: Border.all(
-                        color: const Color(0xFFC8A97A),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Text(
-                          '職業',
-                          style: TextStyle(
-                            color: Color(0xFF7A5C3A),
-                            fontSize: 12,
-                          ),
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: AppSizes.p24,
+                  right: AppSizes.p24,
+                  top: AppSizes.p24,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '👤 冒険者プロファイル',
+                        style: TextStyle(
+                          color: Color(0xFFF5EDD8),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(width: AppSizes.p12),
-                        Expanded(
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: state.occupation,
-                              dropdownColor: const Color(0xFF3D2B1F),
-                              style: const TextStyle(
-                                color: Color(0xFFF5EDD8),
-                                fontSize: 14,
+                      ),
+                      const SizedBox(height: AppSizes.p16),
+                      _InputField(
+                        label: 'ユーザー名',
+                        hint: '冒険者の名前',
+                        value: state.name,
+                        onChanged: notifier.setName,
+                      ),
+                      const SizedBox(height: AppSizes.p12),
+                      _InputField(
+                        label: '年齢',
+                        hint: '例：21',
+                        value: state.age,
+                        keyboardType: TextInputType.number,
+                        onChanged: notifier.setAge,
+                      ),
+                      const SizedBox(height: AppSizes.p12),
+                      _InputField(
+                        label: '相棒の名前',
+                        hint: '仲間の名前',
+                        value: state.partnerName,
+                        onChanged: notifier.setPartnerName,
+                      ),
+                      const SizedBox(height: AppSizes.p12),
+                      const Text(
+                        'よく歩くエリア',
+                        style: TextStyle(
+                          color: Color(0xFFC8A97A),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: AppSizes.p8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: state.walkAreas
+                            .map(
+                              (area) => Chip(
+                                label: Text(area),
+                                backgroundColor: const Color(0xFF3D2B1F),
+                                labelStyle: const TextStyle(
+                                  color: Color(0xFFF5EDD8),
+                                ),
+                                deleteIcon: const Icon(
+                                  Icons.close,
+                                  size: 18,
+                                  color: Color(0xFFC8A97A),
+                                ),
+                                onDeleted: () => notifier.removeWalkArea(area),
                               ),
-                              items: ['学生', '社会人', 'フリーランス', 'その他']
-                                  .map(
-                                    (e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(e),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (v) {
-                                if (v != null) notifier.setOccupation(v);
-                              },
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: AppSizes.p12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _InputField(
+                              label: 'エリアを追加',
+                              hint: '例：栄、名古屋城',
+                              value: newArea,
+                              onChanged: (value) => setState(() {
+                                newArea = value;
+                              }),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: AppSizes.p12),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFB8860B),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.radiusM,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSizes.p16,
+                                vertical: AppSizes.p12,
+                              ),
+                            ),
+                            onPressed: newArea.trim().isEmpty
+                                ? null
+                                : () {
+                                    notifier.addWalkArea(newArea.trim());
+                                    setState(() {
+                                      newArea = '';
+                                    });
+                                  },
+                            child: const Text('追加'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSizes.p32),
+                    ],
                   ),
-                  const SizedBox(height: AppSizes.p12),
-                  _InputField(
-                    label: '自宅・活動エリア',
-                    hint: '例：名古屋市中区',
-                    value: state.homeLocation,
-                    onChanged: notifier.setHomeLocation,
-                  ),
-                  const SizedBox(height: AppSizes.p32),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
@@ -360,7 +382,7 @@ class SettingsPage extends ConsumerWidget {
                       style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14),
                     ),
                     Text(
-                      '${state.dailyStepGoal}歩',
+                      '${state.dailyGoal}歩',
                       style: const TextStyle(
                         color: Color(0xFFB8860B),
                         fontSize: 16,
@@ -370,24 +392,24 @@ class SettingsPage extends ConsumerWidget {
                   ],
                 ),
                 Slider(
-                  value: state.dailyStepGoal.toDouble(),
+                  value: state.dailyGoal.toDouble(),
                   min: 1000,
                   max: 20000,
                   divisions: 19,
                   activeColor: const Color(0xFFB8860B),
                   inactiveColor: const Color(0xFF4A3728),
-                  onChanged: (v) => notifier.setDailyStepGoal(v.toInt()),
+                  onChanged: (v) => notifier.setDailyGoal(v.toInt()),
                 ),
                 const SizedBox(height: AppSizes.p16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      '🗺️ 1日の距離目標',
+                      '⏱️ 空き時間（分）',
                       style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14),
                     ),
                     Text(
-                      '${state.dailyDistanceGoal.toStringAsFixed(1)}km',
+                      '${state.defaultFreeTimeMinutes}分',
                       style: const TextStyle(
                         color: Color(0xFFB8860B),
                         fontSize: 16,
@@ -397,13 +419,13 @@ class SettingsPage extends ConsumerWidget {
                   ],
                 ),
                 Slider(
-                  value: state.dailyDistanceGoal,
-                  min: 0.5,
-                  max: 15.0,
-                  divisions: 29,
+                  value: state.defaultFreeTimeMinutes.toDouble(),
+                  min: 10,
+                  max: 180,
+                  divisions: 17,
                   activeColor: const Color(0xFFB8860B),
                   inactiveColor: const Color(0xFF4A3728),
-                  onChanged: notifier.setDailyDistanceGoal,
+                  onChanged: (v) => notifier.setDefaultFreeTime(v.toInt()),
                 ),
                 const SizedBox(height: AppSizes.p32),
               ],
@@ -428,9 +450,14 @@ class SettingsPage extends ConsumerWidget {
           final notifier = ref.read(userProvider.notifier);
 
           final styles = [
-            ('game', '🗺️', 'ゲーム風'),
-            ('white', '☀️', 'ホワイト'),
-            ('black', '🌙', 'ブラック'),
+            {'key': 'game', 'icon': '🗺️', 'label': 'ゲーム風'},
+            {'key': 'white', 'icon': '☀️', 'label': 'ホワイト'},
+            {'key': 'black', 'icon': '🌙', 'label': 'ブラック'},
+          ];
+          final fontSizes = [
+            {'key': 'small', 'label': '小'},
+            {'key': 'medium', 'label': '中'},
+            {'key': 'large', 'label': '大'},
           ];
 
           return Padding(
@@ -456,9 +483,32 @@ class SettingsPage extends ConsumerWidget {
                       style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14),
                     ),
                     Switch(
-                      value: state.notificationEnabled,
-                      activeColor: const Color(0xFFB8860B),
-                      onChanged: notifier.setNotification,
+                      value: state.reminderEnabled,
+                      activeThumbColor: const Color(0xFFB8860B),
+                      onChanged: notifier.setReminderEnabled,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSizes.p16),
+                _InputField(
+                  label: 'リマインド時刻',
+                  hint: '18:00',
+                  value: state.reminderTime,
+                  keyboardType: TextInputType.datetime,
+                  onChanged: notifier.setReminderTime,
+                ),
+                const SizedBox(height: AppSizes.p24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '🔔 バックグラウンド通知',
+                      style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14),
+                    ),
+                    Switch(
+                      value: state.bgNotification,
+                      activeThumbColor: const Color(0xFFB8860B),
+                      onChanged: notifier.setBgNotification,
                     ),
                   ],
                 ),
@@ -470,10 +520,11 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: AppSizes.p12),
                 Row(
                   children: styles.map((style) {
-                    final isSelected = state.mapStyle == style.$1;
+                    final key = style['key'] as String;
+                    final isSelected = state.mapStyle == key;
                     return Expanded(
                       child: GestureDetector(
-                        onTap: () => notifier.setMapStyle(style.$1),
+                        onTap: () => notifier.setMapStyle(key),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
                           margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -497,12 +548,12 @@ class SettingsPage extends ConsumerWidget {
                           child: Column(
                             children: [
                               Text(
-                                style.$2,
+                                style['icon'] as String,
                                 style: const TextStyle(fontSize: 20),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                style.$3,
+                                style['label'] as String,
                                 style: TextStyle(
                                   color: isSelected
                                       ? Colors.white
@@ -514,6 +565,56 @@ class SettingsPage extends ConsumerWidget {
                                 ),
                               ),
                             ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: AppSizes.p24),
+                const Text(
+                  '🔤 フォントサイズ',
+                  style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14),
+                ),
+                const SizedBox(height: AppSizes.p12),
+                Row(
+                  children: fontSizes.map((size) {
+                    final key = size['key'] as String;
+                    final isSelected = state.fontSize == key;
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () => notifier.setFontSize(key),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSizes.p12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFFB8860B)
+                                : const Color(0xFF3D2B1F),
+                            borderRadius: BorderRadius.circular(
+                              AppSizes.radiusM,
+                            ),
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFFB8860B)
+                                  : const Color(0xFFC8A97A),
+                              width: isSelected ? 1.5 : 0.5,
+                            ),
+                          ),
+                          child: Text(
+                            size['label'] as String,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFFC8A97A),
+                              fontSize: 14,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
                           ),
                         ),
                       ),
@@ -682,7 +783,8 @@ class SettingsPage extends ConsumerWidget {
 
 // ── 共通パーツ ──
 
-class _InputField extends StatelessWidget {
+// 💡 カーソルが飛ばない StatefulWidget の入力欄
+class _InputField extends StatefulWidget {
   final String label;
   final String hint;
   final String value;
@@ -698,15 +800,44 @@ class _InputField extends StatelessWidget {
   });
 
   @override
+  State<_InputField> createState() => _InputFieldState();
+}
+
+class _InputFieldState extends State<_InputField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // 最初にコントローラーを準備
+    _controller = TextEditingController(text: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(covariant _InputField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // もし外部から値が変わったら、カーソルが飛ばないように更新する
+    if (widget.value != oldWidget.value && widget.value != _controller.text) {
+      _controller.text = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: TextEditingController(text: value),
-      onChanged: onChanged,
-      keyboardType: keyboardType,
+      controller: _controller,
+      onChanged: widget.onChanged,
+      keyboardType: widget.keyboardType,
       style: const TextStyle(color: Color(0xFFF5EDD8)),
       decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
+        labelText: widget.label,
+        hintText: widget.hint,
         labelStyle: const TextStyle(color: Color(0xFF7A5C3A), fontSize: 12),
         hintStyle: const TextStyle(color: Color(0xFF4A3728)),
         filled: true,

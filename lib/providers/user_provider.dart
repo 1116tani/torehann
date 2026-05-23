@@ -3,52 +3,90 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class UserState {
-  final String name;
-  final String age;
-  final String occupation; // 職業（学生／社会人など）
-  final String homeLocation; // 自宅エリア
-  final List<String> hobbyTags; // 趣味タグ（AIプロンプトに使う）
-  final int dailyStepGoal; // 1日の歩数目標
-  final double dailyDistanceGoal; // 1日の距離目標（km）
-  final bool notificationEnabled; // 通知オン／オフ
-  final String mapStyle; // マップスタイル（'game'/'white'/'black'）
-  final bool isSaving; // 保存中フラグ
+  // ── 冒険者プロフィール ──
+  final String name; // 冒険者名
+  final String age; // 年齢
+  final List<String> walkAreas; // よく歩くエリア（複数可）
+  final String partnerName; // 相棒の名前
+
+  // ── 趣味・好みタグ ──
+  final List<String> hobbyTags; // 好きな場所タグ
+  final String defaultMood; // デフォルトの気分
+
+  // ── 冒険のデフォルト設定 ──
+  final int defaultFreeTimeMinutes; // デフォルトの空き時間（分）
+  final int dailyGoal; // 1日の目標（歩数）
+
+  // ── アプリの見た目・マップ ──
+  final String mapStyle; // 'game' / 'white' / 'black'
+  final String fontSize; // 'small' / 'medium' / 'large'
+
+  // ── 通知 ──
+  final bool reminderEnabled; // 毎日のリマインド
+  final String reminderTime; // リマインド時刻（例：'18:00'）
+  final bool bgNotification; // バックグラウンド通知
+
+  // ── プライバシー ──
+  final bool removeGpsOnShare; // シェア時GPS座標を除去
+  final String locationPermission; // 'always' / 'whenInUse' / 'denied'
+
+  // ── 内部フラグ ──
+  final bool isSaving;
 
   const UserState({
     this.name = '',
     this.age = '',
-    this.occupation = '学生',
-    this.homeLocation = '',
+    this.walkAreas = const [],
+    this.partnerName = '',
     this.hobbyTags = const [],
-    this.dailyStepGoal = 6000,
-    this.dailyDistanceGoal = 3.0,
-    this.notificationEnabled = true,
+    this.defaultMood = 'のんびり',
+    this.defaultFreeTimeMinutes = 60,
+    this.dailyGoal = 8000,
     this.mapStyle = 'game',
+    this.fontSize = 'medium',
+    this.reminderEnabled = true,
+    this.reminderTime = '18:00',
+    this.bgNotification = true,
+    this.removeGpsOnShare = true,
+    this.locationPermission = 'always',
     this.isSaving = false,
   });
 
   UserState copyWith({
     String? name,
     String? age,
-    String? occupation,
-    String? homeLocation,
+    List<String>? walkAreas,
+    String? partnerName,
     List<String>? hobbyTags,
-    int? dailyStepGoal,
-    double? dailyDistanceGoal,
-    bool? notificationEnabled,
+    String? defaultMood,
+    int? defaultFreeTimeMinutes,
+    int? dailyGoal,
     String? mapStyle,
+    String? fontSize,
+    bool? reminderEnabled,
+    String? reminderTime,
+    bool? bgNotification,
+    bool? removeGpsOnShare,
+    String? locationPermission,
     bool? isSaving,
   }) {
     return UserState(
       name: name ?? this.name,
       age: age ?? this.age,
-      occupation: occupation ?? this.occupation,
-      homeLocation: homeLocation ?? this.homeLocation,
+      walkAreas: walkAreas ?? this.walkAreas,
+      partnerName: partnerName ?? this.partnerName,
       hobbyTags: hobbyTags ?? this.hobbyTags,
-      dailyStepGoal: dailyStepGoal ?? this.dailyStepGoal,
-      dailyDistanceGoal: dailyDistanceGoal ?? this.dailyDistanceGoal,
-      notificationEnabled: notificationEnabled ?? this.notificationEnabled,
+      defaultMood: defaultMood ?? this.defaultMood,
+      defaultFreeTimeMinutes:
+          defaultFreeTimeMinutes ?? this.defaultFreeTimeMinutes,
+      dailyGoal: dailyGoal ?? this.dailyGoal,
       mapStyle: mapStyle ?? this.mapStyle,
+      fontSize: fontSize ?? this.fontSize,
+      reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      reminderTime: reminderTime ?? this.reminderTime,
+      bgNotification: bgNotification ?? this.bgNotification,
+      removeGpsOnShare: removeGpsOnShare ?? this.removeGpsOnShare,
+      locationPermission: locationPermission ?? this.locationPermission,
       isSaving: isSaving ?? this.isSaving,
     );
   }
@@ -58,35 +96,66 @@ class UserNotifier extends Notifier<UserState> {
   @override
   UserState build() => const UserState();
 
-  void setName(String value) => state = state.copyWith(name: value);
-  void setAge(String value) => state = state.copyWith(age: value);
-  void setOccupation(String value) => state = state.copyWith(occupation: value);
-  void setHomeLocation(String value) =>
-      state = state.copyWith(homeLocation: value);
-  void setNotification(bool value) =>
-      state = state.copyWith(notificationEnabled: value);
-  void setMapStyle(String value) => state = state.copyWith(mapStyle: value);
-  void setDailyStepGoal(int value) =>
-      state = state.copyWith(dailyStepGoal: value);
-  void setDailyDistanceGoal(double value) =>
-      state = state.copyWith(dailyDistanceGoal: value);
+  // ── プロフィール ──
+  void setName(String v) => state = state.copyWith(name: v);
+  void setAge(String v) => state = state.copyWith(age: v);
+  void setPartnerName(String v) => state = state.copyWith(partnerName: v);
 
-  // 趣味タグはトグル（押したら追加・もう一度押したら削除）
+  // よく歩くエリアの追加・削除
+  void addWalkArea(String area) {
+    if (area.trim().isEmpty) return;
+    if (state.walkAreas.contains(area)) return;
+    state = state.copyWith(walkAreas: [...state.walkAreas, area.trim()]);
+  }
+
+  void removeWalkArea(String area) {
+    state = state.copyWith(
+      walkAreas: state.walkAreas.where((a) => a != area).toList(),
+    );
+  }
+
+  void setWalkAreas(List<String> areas) => state = state.copyWith(walkAreas: areas);
+
+  // ── 趣味タグ ──
   void toggleHobbyTag(String tag) {
     final current = List<String>.from(state.hobbyTags);
-    if (current.contains(tag)) {
-      current.remove(tag);
-    } else {
-      current.add(tag);
-    }
+    current.contains(tag) ? current.remove(tag) : current.add(tag);
     state = state.copyWith(hobbyTags: current);
   }
 
-  // 保存処理（Firestore連携まではダミー）
+  void setDefaultMood(String v) => state = state.copyWith(defaultMood: v);
+
+  // ── 冒険デフォルト設定 ──
+  void setDefaultFreeTime(int minutes) =>
+      state = state.copyWith(defaultFreeTimeMinutes: minutes);
+  void setDailyGoal(int v) => state = state.copyWith(dailyGoal: v);
+
+  // ── 見た目・マップ ──
+  void setMapStyle(String v) => state = state.copyWith(mapStyle: v);
+  void setFontSize(String v) => state = state.copyWith(fontSize: v);
+
+  // ── 通知 ──
+  void setReminderEnabled(bool v) => state = state.copyWith(reminderEnabled: v);
+  void setReminderTime(String v) => state = state.copyWith(reminderTime: v);
+  void setBgNotification(bool v) => state = state.copyWith(bgNotification: v);
+
+  // ── プライバシー ──
+  void setRemoveGpsOnShare(bool v) =>
+      state = state.copyWith(removeGpsOnShare: v);
+  void setLocationPermission(String v) =>
+      state = state.copyWith(locationPermission: v);
+
+  // ── 保存処理 ──
   Future<void> saveSettings() async {
     state = state.copyWith(isSaving: true);
     await Future.delayed(const Duration(seconds: 1)); // TODO: Firestore保存
     state = state.copyWith(isSaving: false);
+  }
+
+  // ── アカウント削除（データ全消去） ──
+  Future<void> deleteAccount() async {
+    state = const UserState(); // ローカルをリセット
+    // TODO: Firebase AuthのdeleteUser() + Firestoreのデータ削除
   }
 }
 
