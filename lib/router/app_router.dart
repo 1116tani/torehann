@@ -1,9 +1,6 @@
 // lib/router/app_router.dart
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../pages/auth_gate.dart';
 import '../pages/title_page.dart';
@@ -16,7 +13,9 @@ import '../pages/settings_page.dart';
 import '../pages/history_page.dart';
 import '../pages/achievement_page.dart';
 import '../pages/collection_page.dart';
-import '../pages/party_page.dart';
+import '../pages/party/party_host_page.dart';
+import '../pages/party/party_join_page.dart';
+import '../pages/party/party_mode_page.dart';
 import '../pages/health_page.dart';
 import '../pages/mission_page.dart';
 
@@ -34,6 +33,9 @@ class AppRoutes {
   static const achievement = '/achievement';
   static const collection = '/collection';
   static const party = '/party';
+  static const partyHost = '/party/host';
+  static const partyJoin = '/party/join';
+  static const friends = '/friends';
   static const health = '/health';
   static const mission = '/mission';
 }
@@ -107,7 +109,15 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.party,
-      builder: (context, state) => const PartyPage(),
+      builder: (context, state) => const PartyModePage(),
+    ),
+    GoRoute(
+      path: AppRoutes.partyHost,
+      builder: (context, state) => const PartyHostPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.partyJoin,
+      builder: (context, state) => const PartyJoinPage(),
     ),
     GoRoute(
       path: AppRoutes.health,

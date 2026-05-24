@@ -304,7 +304,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   _menuItem(theme, Icons.settings, "設定", AppRoutes.settings),
                 ],
               ),
-
               const SizedBox(height: 30),
               const Text(
                 "ギルド拡張（準備中）",
@@ -314,10 +313,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _menuItem(theme, Icons.people, "フレンド", null, isLocked: true),
-                  _menuItem(theme, Icons.favorite, "健康管理", null, isLocked: true),
-                  _menuItem(theme, Icons.flag, "ミッション", null, isLocked: true),
-                  _menuItem(theme, Icons.group, "パーティ", null, isLocked: true),
+                  _menuItem(theme, Icons.people, "フレンド", AppRoutes.friends, ),
+                  _menuItem(theme, Icons.favorite, "健康管理", AppRoutes.health, isLocked: true),
+                  _menuItem(theme, Icons.flag, "ミッション", AppRoutes.mission, isLocked: true),
+                  _menuItem(theme, Icons.group, "パーティ", AppRoutes.party),
                 ],
               ),
             ],
