@@ -11,6 +11,12 @@ class UserState {
   final int dailyStepGoal; // 1日の歩数目標
   final double dailyDistanceGoal; // 1日の距離目標（km）
   final bool notificationEnabled; // 通知オン／オフ
+  final bool reminderEnabled; // 毎日のリマインド
+  final String reminderTime; // リマインド時刻
+  final bool bgNotification; // バックグラウンド通知
+  final bool removeGpsOnShare; // 写真シェア時のGPS除去
+  final String locationPermission; // 位置情報許可設定
+  final String fontSize; // 文字サイズ
   final String mapStyle; // マップスタイル（'game'/'white'/'black'）
   final bool isSaving; // 保存中フラグ
 
@@ -23,6 +29,12 @@ class UserState {
     this.dailyStepGoal = 6000,
     this.dailyDistanceGoal = 3.0,
     this.notificationEnabled = true,
+    this.reminderEnabled = true,
+    this.reminderTime = '18:00',
+    this.bgNotification = true,
+    this.removeGpsOnShare = true,
+    this.locationPermission = 'always',
+    this.fontSize = 'medium',
     this.mapStyle = 'game',
     this.isSaving = false,
   });
@@ -36,6 +48,12 @@ class UserState {
     int? dailyStepGoal,
     double? dailyDistanceGoal,
     bool? notificationEnabled,
+    bool? reminderEnabled,
+    String? reminderTime,
+    bool? bgNotification,
+    bool? removeGpsOnShare,
+    String? locationPermission,
+    String? fontSize,
     String? mapStyle,
     bool? isSaving,
   }) {
@@ -48,6 +66,12 @@ class UserState {
       dailyStepGoal: dailyStepGoal ?? this.dailyStepGoal,
       dailyDistanceGoal: dailyDistanceGoal ?? this.dailyDistanceGoal,
       notificationEnabled: notificationEnabled ?? this.notificationEnabled,
+      reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      reminderTime: reminderTime ?? this.reminderTime,
+      bgNotification: bgNotification ?? this.bgNotification,
+      removeGpsOnShare: removeGpsOnShare ?? this.removeGpsOnShare,
+      locationPermission: locationPermission ?? this.locationPermission,
+      fontSize: fontSize ?? this.fontSize,
       mapStyle: mapStyle ?? this.mapStyle,
       isSaving: isSaving ?? this.isSaving,
     );
@@ -65,6 +89,17 @@ class UserNotifier extends Notifier<UserState> {
       state = state.copyWith(homeLocation: value);
   void setNotification(bool value) =>
       state = state.copyWith(notificationEnabled: value);
+  void setReminderEnabled(bool value) =>
+      state = state.copyWith(reminderEnabled: value);
+  void setReminderTime(String value) =>
+      state = state.copyWith(reminderTime: value);
+  void setBgNotification(bool value) =>
+      state = state.copyWith(bgNotification: value);
+  void setRemoveGpsOnShare(bool value) =>
+      state = state.copyWith(removeGpsOnShare: value);
+  void setLocationPermission(String value) =>
+      state = state.copyWith(locationPermission: value);
+  void setFontSize(String value) => state = state.copyWith(fontSize: value);
   void setMapStyle(String value) => state = state.copyWith(mapStyle: value);
   void setDailyStepGoal(int value) =>
       state = state.copyWith(dailyStepGoal: value);
@@ -87,6 +122,12 @@ class UserNotifier extends Notifier<UserState> {
     state = state.copyWith(isSaving: true);
     await Future.delayed(const Duration(seconds: 1)); // TODO: Firestore保存
     state = state.copyWith(isSaving: false);
+  }
+
+  Future<void> deleteAccount() async {
+    state = state.copyWith(isSaving: true);
+    await Future.delayed(const Duration(seconds: 1)); // TODO: Firebase Auth / Firestoreで削除処理
+    state = const UserState();
   }
 }
 
