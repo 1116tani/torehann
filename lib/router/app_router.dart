@@ -16,6 +16,7 @@ import '../pages/collection_page.dart';
 import '../pages/party/party_host_page.dart';
 import '../pages/party/party_join_page.dart';
 import '../pages/party/party_mode_page.dart';
+import '../pages/friend_page.dart';
 import '../pages/health_page.dart';
 import '../pages/mission_page.dart';
 
@@ -118,6 +119,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.partyJoin,
       builder: (context, state) => const PartyJoinPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.friends,
+      builder: (context, state) => const FriendPage(),
     ),
     GoRoute(
       path: AppRoutes.health,
