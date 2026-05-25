@@ -1,3 +1,4 @@
+//lib/widgets/common/loading_overlay.dart
 import 'package:flutter/material.dart';
 
 class LoadingOverlay extends StatelessWidget {
