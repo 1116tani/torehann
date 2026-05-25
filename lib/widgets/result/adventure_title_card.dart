@@ -1,61 +1,56 @@
 // lib/widgets/result/adventure_title_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../models/result_model.dart';
 
 class AdventureTitleCard extends StatelessWidget {
-  final String title; // AIが生成した冒険タイトル
-  final String themeName; // ルートのテーマ名
-  final DateTime? adventureDate; // 冒険した日付
+  final AdventureResult result;
 
   const AdventureTitleCard({
     super.key,
-    required this.title,
-    required this.themeName,
-    this.adventureDate,
+    required this.result,
   });
 
   @override
   Widget build(BuildContext context) {
+    final dateText = DateFormat(
+      'yyyy.MM.dd',
+    ).format(result.completedAt);
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF3D2B1F),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFB8860B), width: 1),
+        color: const Color(0xFF2C2318),
+        border: Border.all(
+          color: const Color(0xFF5C4033),
+          width: 0.5,
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFB8860B).withValues(alpha: 0.2),
-            blurRadius: 16,
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
+
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ── 上部装飾 ──
-          const _GoldDivider(),
-          const SizedBox(height: 16),
+          // ── 世界観アイコン ─────────────────
+          Text(
+            result.themeIcon,
+            style: const TextStyle(fontSize: 30),
+          ),
 
-          // ── 日付 ──
-          if (adventureDate != null)
-            Text(
-              _formatDate(adventureDate!),
-              style: const TextStyle(
-                color: Color(0xFF7A5C3A),
-                fontSize: 11,
-                letterSpacing: 2,
-              ),
-            ),
-          const SizedBox(height: 8),
-
-          // ── 巻物アイコン ──
-          const Text('📜', style: TextStyle(fontSize: 28)),
           const SizedBox(height: 12),
 
-          // ── AIが生成したタイトル（メイン） ──
+          // ── タイトル ─────────────────────
           Text(
-            title,
+            result.title,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Color(0xFFF5EDD8),
@@ -64,62 +59,114 @@ class AdventureTitleCard extends StatelessWidget {
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 12),
 
-          // ── テーマ名（サブ） ──
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C2318),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFC8A97A), width: 0.5),
-            ),
-            child: Text(
-              themeName,
-              style: const TextStyle(
-                color: Color(0xFFC8A97A),
-                fontSize: 12,
-                letterSpacing: 0.5,
-              ),
+          const SizedBox(height: 8),
+
+          // ── サブタイトル ─────────────────
+          Text(
+            result.subTitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFFC8A97A),
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+              height: 1.6,
             ),
           ),
 
-          const SizedBox(height: 16),
-          const _GoldDivider(),
+          const SizedBox(height: 18),
+
+          // ── 日付・天候 ───────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.calendar_month,
+                size: 14,
+                color: Color(0xFF7A5C3A),
+              ),
+
+              const SizedBox(width: 6),
+
+              Text(
+                dateText,
+                style: const TextStyle(
+                  color: Color(0xFF7A5C3A),
+                  fontSize: 11,
+                ),
+              ),
+
+              const SizedBox(width: 14),
+
+              Text(
+                result.weather,
+                style: const TextStyle(
+                  color: Color(0xFFC8A97A),
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+
+          // ── フレンド ─────────────────────
+          if (result.friends.isNotEmpty) ...[
+            const SizedBox(height: 18),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: result.friends.map((friend) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3D2B1F),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF5C4033),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 10,
+                        backgroundColor: const Color(0xFFB8860B),
+
+                        backgroundImage: friend.avatarUrl != null
+                            ? NetworkImage(friend.avatarUrl!)
+                            : null,
+
+                        child: friend.avatarUrl == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 12,
+                                color: Colors.white,
+                              )
+                            : null,
+                      ),
+
+                      const SizedBox(width: 6),
+
+                      Text(
+                        friend.name,
+                        style: const TextStyle(
+                          color: Color(0xFFF5EDD8),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final weekdays = ['月', '火', '水', '木', '金', '土', '日'];
-    final weekday = weekdays[date.weekday - 1];
-    return '${date.year}年${date.month}月${date.day}日（$weekday）';
-  }
-}
-
-// ── 金色の装飾ライン ──────────────────────────
-class _GoldDivider extends StatelessWidget {
-  const _GoldDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _line(),
-        const SizedBox(width: 8),
-        const Text(
-          '✦',
-          style: TextStyle(color: Color(0xFFB8860B), fontSize: 12),
-        ),
-        const SizedBox(width: 8),
-        _line(),
-      ],
-    );
-  }
-
-  Widget _line() {
-    return Container(width: 60, height: 0.5, color: const Color(0xFFB8860B));
   }
 }
