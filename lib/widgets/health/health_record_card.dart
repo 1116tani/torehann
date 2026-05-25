@@ -1,54 +1,43 @@
-// lib/widgets/health/health_energy_banner.dart
-
 import 'package:flutter/material.dart';
 
-class HealthEnergyBanner extends StatelessWidget {
-  final int energy;
-  final String message;
+class HealthRecordCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final String subtitle;
+  final IconData icon;
 
-  const HealthEnergyBanner({
+  const HealthRecordCard({
     super.key,
-    required this.energy,
-    required this.message,
+    required this.title,
+    required this.value,
+    required this.subtitle,
+    required this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-
       padding: const EdgeInsets.all(16),
-
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF3D2B1F),
-            Color(0xFF2C2318),
-          ],
-        ),
-
+        color: const Color(0xFF2C2318),
         borderRadius: BorderRadius.circular(18),
-
         border: Border.all(
-          color: const Color(0xFFB8860B),
-          width: 0.7,
+          color: const Color(0xFF5C4033),
+          width: 0.5,
         ),
       ),
-
       child: Row(
         children: [
           Container(
             width: 52,
             height: 52,
-
             decoration: BoxDecoration(
-              color: const Color(0xFFB8860B).withValues(alpha: 0.15),
-              shape: BoxShape.circle,
+              color: const Color(0xFF3D2B1F),
+              borderRadius: BorderRadius.circular(14),
             ),
-
-            child: const Icon(
-              Icons.auto_awesome,
-              color: Color(0xFFFFD700),
+            child: Icon(
+              icon,
+              color: const Color(0xFFB8860B),
             ),
           ),
 
@@ -59,22 +48,31 @@ class HealthEnergyBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '冒険エネルギー $energy%',
+                  title,
                   style: const TextStyle(
-                    color: Color(0xFFF5EDD8),
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF7A5C3A),
+                    fontSize: 11,
                   ),
                 ),
 
                 const SizedBox(height: 4),
 
                 Text(
-                  message,
+                  value,
+                  style: const TextStyle(
+                    color: Color(0xFFF5EDD8),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  subtitle,
                   style: const TextStyle(
                     color: Color(0xFFC8A97A),
-                    fontSize: 12,
-                    height: 1.5,
+                    fontSize: 11,
                   ),
                 ),
               ],

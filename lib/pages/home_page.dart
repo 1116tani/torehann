@@ -1,14 +1,9 @@
 // lib/pages/home_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:tale_trace/router/app_router.dart';
-import 'package:tale_trace/widgets/common/glass_card.dart';
-import 'package:tale_trace/widgets/home/map_overlay.dart';
-import 'package:tale_trace/widgets/home/partner_character.dart';
-import 'package:tale_trace/widgets/home/adventure_start_button.dart';
+import 'package:tale_trace/widgets/home/home_widgets.dart';
 import 'package:tale_trace/utils/colors.dart';
 import 'package:tale_trace/providers/location_provider.dart';
 
@@ -63,7 +58,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final locationAsyncValue = ref.watch(locationProvider);
 
     locationAsyncValue.whenData((position) {
@@ -111,26 +105,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const MapOverlay(),
 
           // ③ 上部ヘッダー（ステータス画面）
-          Positioned(
+          const Positioned(
             top: 60,
             left: 20,
             right: 20,
-            child: _buildGlassHeader(theme),
+            child: HomeGlassHeader(),
           ),
 
-          // ④ 案内妖精：アイリス（💡 シートと一緒に動く＆消える魔法！）
+          // ④ 案内妖精：アイリス
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 50), // スルスル動くよ
+            duration: const Duration(milliseconds: 50),
             left: 20,
             bottom: dynamicBottom,
             child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 200), // ふわっと消えるよ
+              duration: const Duration(milliseconds: 200),
               opacity: elementOpacity,
               child: const PartnerCharacter(),
             ),
           ),
 
-          // ⑤ マップ操作ボタン（💡 これも一緒に動く＆消える魔法！）
+          // ⑤ マップ操作ボタン
           AnimatedPositioned(
             duration: const Duration(milliseconds: 50),
             right: 20,
@@ -138,235 +132,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: AnimatedOpacity(
               duration: const Duration(milliseconds: 200),
               opacity: elementOpacity,
-              child: _buildMapControls(theme, locationAsyncValue),
+              child: HomeMapControls(
+                onLocationPressed: mapController == null
+                    ? null
+                    : () {
+                        locationAsyncValue.whenData((pos) {
+                          final target = pos != null
+                              ? LatLng(pos.latitude, pos.longitude)
+                              : _defaultPosition;
+                          mapController?.animateCamera(
+                            CameraUpdate.newLatLngZoom(target, 16.0),
+                          );
+                        });
+                      },
+                onLayersPressed: () {
+                  // TODO: ここに航空写真とかの切り替え処理を後で作るよ！
+                },
+              ),
             ),
           ),
 
-          // ⑥ メニュー兼、冒険出発ボトムシート（💡 シートの動きを監視するよ！）
+          // ⑥ メニュー兼、冒険出発ボトムシート
           NotificationListener<DraggableScrollableNotification>(
             onNotification: (notification) {
               setState(() {
-                _sheetPosition = notification.extent; // リアルタイムに高さを更新！
+                _sheetPosition = notification.extent;
               });
               return true;
             },
-            child: _buildDraggableMenu(theme),
+            child: const HomeDraggableMenu(),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildGlassHeader(ThemeData theme) {
-    return GlassCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-            child: Icon(Icons.person, color: theme.colorScheme.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "見習い冒険者",
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "Lv. 5",
-                      style: TextStyle(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: 0.65,
-                    minHeight: 6,
-                    backgroundColor: AppColors.textMuted.withValues(alpha: 0.3),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMapControls(ThemeData theme, AsyncValue<dynamic> locationData) {
-    final controller = mapController;
-
-    return Column(
-      children: [
-        // 💡 新機能：マップの見た目切り替えボタン（Apple Map風！）
-        FloatingActionButton(
-          heroTag: "layer_btn",
-          mini: true,
-          onPressed: () {
-            // TODO: ここに航空写真とかの切り替え処理を後で作るよ！
-          },
-          backgroundColor: AppColors.surface, // セピアブラウン
-          child: const Icon(Icons.layers, color: AppColors.textPrimary, size: 20),
-        ),
-        const SizedBox(height: 12),
-
-        // 💡 既存の現在地ボタン
-        FloatingActionButton(
-          heroTag: "location_btn",
-          onPressed: controller == null
-              ? null
-              : () {
-                  locationData.whenData((pos) {
-                    final target = pos != null
-                        ? LatLng(pos.latitude, pos.longitude)
-                        : _defaultPosition;
-                    controller.animateCamera(
-                      CameraUpdate.newLatLngZoom(target, 16.0),
-                    );
-                  });
-                },
-          backgroundColor: theme.colorScheme.primary,
-          child: const Icon(
-            Icons.my_location,
-            color: AppColors.background, // セピアに映える色に！
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDraggableMenu(ThemeData theme) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.22,
-      minChildSize: 0.15,
-      maxChildSize: 0.7,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.9), // メニュー背景
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-          ),
-          child: ListView(
-            controller: scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            children: [
-              Center(
-                child: Container(
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppColors.textMuted,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              const AdventureStartButton(),
-
-              const SizedBox(height: 30),
-              const Text(
-                "冒険のログ",
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _menuItem(theme, Icons.emoji_events, "実績", AppRoutes.achievement),
-                  _menuItem(theme, Icons.auto_stories, "街の断片", AppRoutes.collection),
-                  _menuItem(theme, Icons.history, "履歴", AppRoutes.history),
-                  _menuItem(theme, Icons.settings, "設定", AppRoutes.settings),
-                ],
-              ),
-              const SizedBox(height: 30),
-              const Text(
-                "ギルド拡張（準備中）",
-                style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _menuItem(theme, Icons.people, "フレンド", AppRoutes.friends, ),
-                  _menuItem(theme, Icons.favorite, "健康管理", AppRoutes.health, isLocked: true),
-                  _menuItem(theme, Icons.flag, "ミッション", AppRoutes.mission, isLocked: true),
-                  _menuItem(theme, Icons.group, "パーティ", AppRoutes.party),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _menuItem(
-    ThemeData theme,
-    IconData icon,
-    String label,
-    String? route, {
-    bool isLocked = false,
-  }) {
-    return InkWell(
-      onTap: isLocked || route == null ? null : () => context.push(route),
-      child: Opacity(
-        opacity: isLocked ? 0.3 : 1.0,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isLocked
-                    ? AppColors.border.withValues(alpha: 0.5)
-                    : theme.colorScheme.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isLocked
-                      ? Colors.transparent
-                      : theme.colorScheme.primary.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Icon(
-                icon,
-                color: isLocked ? AppColors.textMuted : theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 11,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
