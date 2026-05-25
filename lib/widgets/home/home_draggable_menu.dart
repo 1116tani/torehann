@@ -1,7 +1,7 @@
 // lib/widgets/home/home_draggable_menu.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../router/app_router.dart';
+import '../../router/route_names.dart';
 import '../../utils/colors.dart';
 import 'adventure_start_button.dart';
 

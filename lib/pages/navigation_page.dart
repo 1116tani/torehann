@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/location_provider.dart'; // 💡 GPS監視のために追加
-import '../router/app_router.dart';
+import '../router/route_names.dart';
 import '../constants/app_sizes.dart';
 
 class NavigationPage extends ConsumerWidget {

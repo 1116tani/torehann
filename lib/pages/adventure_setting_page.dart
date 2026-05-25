@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/adventure_provider.dart';
-import '../router/app_router.dart';
+import '../router/route_names.dart';
 import '../constants/app_sizes.dart';
 
 class AdventureSettingPage extends ConsumerWidget {

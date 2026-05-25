@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../router/app_router.dart';
+import '../../router/route_names.dart';
 // import '../common/custom_button.dart'; // 💡 今回はこの特大ボタン専用のスタイルにするから使わないよ
 import '../../utils/colors.dart';
 

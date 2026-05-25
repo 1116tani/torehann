@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../router/app_router.dart';
+import '../../router/route_names.dart';
 import '../../widgets/party/party_action_button.dart';
 
 class PartyModePage extends StatelessWidget {

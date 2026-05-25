@@ -11,7 +11,7 @@ import '../models/route_model.dart';
 import '../models/spot_model.dart';
 import '../providers/route_provider.dart';
 import '../providers/navigation_provider.dart';
-import '../router/app_router.dart';
+import '../router/route_names.dart';
 import '../widgets/route/route_card.dart'; // 👈 さっき共通化したRouteCardをインポート！
 
 class RouteSelectPage extends ConsumerWidget {

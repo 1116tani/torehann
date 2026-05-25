@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/history_provider.dart';
-import '../router/app_router.dart';
+import '../router/route_names.dart';
 
 import '../widgets/history/history_card.dart';
 import '../widgets/history/history_filter_bar.dart';
