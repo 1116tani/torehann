@@ -72,7 +72,7 @@ class HomeDraggableMenu extends StatelessWidget {
                 children: [
                   _buildMenuItem(context, theme, Icons.people, "フレンド", AppRoutes.friends),
                   _buildMenuItem(context, theme, Icons.favorite, "健康管理", AppRoutes.health),
-                  _buildMenuItem(context, theme, Icons.flag, "ミッション", AppRoutes.mission, isLocked: true),
+                  _buildMenuItem(context, theme, Icons.flag, "ミッション", AppRoutes.mission),
                   _buildMenuItem(context, theme, Icons.group, "パーティ", AppRoutes.party),
                 ],
               ),
