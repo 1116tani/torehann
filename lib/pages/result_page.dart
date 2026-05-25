@@ -1,189 +1,113 @@
 // lib/pages/result_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../models/result_model.dart';
+import '../providers/result_provider.dart';
 
 import '../widgets/result/adventure_title_card.dart';
+import '../widgets/result/ai_story_scroll.dart';
+import '../widgets/result/friend_party_strip.dart';
 import '../widgets/result/photo_timeline.dart';
-import '../widgets/result/share_button.dart';
-import '../widgets/result/stat_panel.dart';
+import '../widgets/result/result_footer_actions.dart';
+import '../widgets/result/result_map_preview.dart';
 import '../widgets/result/reward_popup.dart';
+import '../widgets/result/stat_panel.dart';
 
-class ResultPage extends StatefulWidget {
+class ResultPage extends ConsumerStatefulWidget {
   const ResultPage({super.key});
 
   @override
-  State<ResultPage> createState() => _ResultPageState();
+  ConsumerState<ResultPage> createState() => _ResultPageState();
 }
 
-class _ResultPageState extends State<ResultPage> {
-  bool _showReward = true;
-
-  // ── ダミーデータ ─────────────────────
-  final AdventureResult result = AdventureResult(
-    title: '雨路地に眠る古書の記憶',
-    date: DateTime.now(),
-
-    friendNames: [
-      'ルナ',
-      'ノア',
-    ],
-
-    story:
-        '''
-薄暗い裏路地を抜けた先、
-君たちは小さな古書店へ辿り着いた。
-
-濡れた石畳を踏む音と、
-遠くで鳴る踏切の音。
-
-積み重なった本の隙間には、
-誰かの忘れた記憶みたいな匂いが残っていた。
-
-今日の冒険は、
-少しだけ世界の奥行きを知る旅だった。
-''',
-
-    distanceKm: 4.8,
-    steps: 6840,
-    calories: 243,
-    fragments: 6,
-    earnedExp: 180,
-
-    routeImageUrl:
-        'https://images.unsplash.com/photo-1524661135-423995f22d0b',
-
-    photos: [
-      ResultPhoto(
-        imageUrl:
-            'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee',
-        caption: '静かな裏路地に、小さな灯りが揺れていた。',
-      ),
-
-      ResultPhoto(
-        imageUrl:
-            'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
-        caption: '雨音を聞きながら、古びた珈琲を飲んだ。',
-      ),
-
-      ResultPhoto(
-        imageUrl:
-            'https://images.unsplash.com/photo-1516979187457-637abb4f9353',
-        caption: '本棚の奥に、誰かの記憶が眠っていた気がした。',
-      ),
-    ],
-  );
+class _ResultPageState extends ConsumerState<ResultPage> {
+  bool _showRewardPopup = true;
 
   @override
   Widget build(BuildContext context) {
+    final resultState = ref.watch(resultProvider);
+    final result = resultState.result;
+
+    if (resultState.isLoading || result == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF1C1610),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFB8860B),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF1C1610),
-
       body: Stack(
         children: [
           SafeArea(
             child: Column(
               children: [
-                // ── AppBar ─────────────────
+                // ── ヘッダー ─────────────────
                 _buildHeader(context),
 
-                // ── Main Scroll ───────────
+                // ── スクロール ─────────────
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-
-                    padding: const EdgeInsets.fromLTRB(
-                      18,
-                      12,
-                      18,
-                      120,
-                    ),
-
+                    padding: const EdgeInsets.fromLTRB(18, 10, 18, 120),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── タイトル ─────────
-                        AdventureTitleCard(
-                          title: result.title,
-                          date: result.date,
-                          friendNames: result.friendNames,
-                        ),
+                        // ── タイトルカード ─────
+                        AdventureTitleCard(result: result),
 
-                        const SizedBox(height: 22),
+                        const SizedBox(height: 26),
 
-                        // ── ルートマップ ─────
-                        _RouteMap(
-                          imageUrl: result.routeImageUrl,
-                        ),
-
-                        const SizedBox(height: 28),
-
-                        // ── AIレポート ──────
-                        _StorySection(
-                          story: result.story,
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // ── 写真タイムライン ─
-                        PhotoTimeline(
-                          photos: result.photos,
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // ── 統計 ───────────
-                        StatPanel(
+                        // ── マップ ───────────
+                        ResultMapPreview(
+                          imageUrl: result.routeMapImageUrl,
                           distanceKm: result.distanceKm,
-                          steps: result.steps,
-                          calories: result.calories,
-                          fragments: result.fragments,
+                          durationMinutes: result.durationMinutes,
                         ),
 
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 30),
 
-                        // ── ボタン群 ───────
-                        ShareButton(
-                          onTap: () {
-                            // TODO: SNS共有
+                        // ── AIレポート ───────
+                        AIStoryScroll(story: result.aiStory),
+
+                        const SizedBox(height: 30),
+
+                        // ── フレンド ─────────
+                        FriendPartyStrip(
+                          friendNames: result.friends.map((f) => f.name).toList(),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        // ── 写真タイムライン ──
+                        PhotoTimeline(photos: result.photos),
+
+                        const SizedBox(height: 30),
+
+                        // ── 統計 ────────────
+                        StatPanel(result: result),
+
+                        const SizedBox(height: 32),
+
+                        // ── フッターアクション ─
+                        ResultFooterActions(
+                          onSave: () {
+                            ref.read(resultProvider.notifier).saveMemory();
+                            _showSnackBar('冒険の記録を保存しました');
                           },
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        SizedBox(
-                          width: double.infinity,
-
-                          child: OutlinedButton(
-                            onPressed: () {
-                              context.pop();
-                            },
-
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
-                                color: Color(0xFF5C4033),
-                              ),
-
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                              ),
-
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(18),
-                              ),
-                            ),
-
-                            child: const Text(
-                              'ホームへ戻る',
-                              style: TextStyle(
-                                color: Color(0xFFC8A97A),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                          onShare: () {
+                            ref.read(resultProvider.notifier).shareResult();
+                            _showSnackBar('シェア機能は準備中です');
+                          },
+                          onBackHome: () {
+                            context.pop();
+                          },
                         ),
                       ],
                     ),
@@ -193,15 +117,15 @@ class _ResultPageState extends State<ResultPage> {
             ),
           ),
 
-          // ── 報酬Popup ─────────────────
-          if (_showReward)
+          // ── 報酬ポップアップ ───────────
+          if (_showRewardPopup)
             RewardPopup(
-              exp: result.earnedExp,
-              fragments: result.fragments,
-
+              exp: result.expGained,
+              fragments: result.fragmentCount,
               onFinished: () {
+                ref.read(resultProvider.notifier).claimReward();
                 setState(() {
-                  _showReward = false;
+                  _showRewardPopup = false;
                 });
               },
             ),
@@ -211,7 +135,7 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   // ─────────────────────────────────────
-  // ヘッダー
+  // Header
   // ─────────────────────────────────────
 
   Widget _buildHeader(BuildContext context) {
@@ -220,195 +144,60 @@ class _ResultPageState extends State<ResultPage> {
         horizontal: 8,
         vertical: 8,
       ),
-
       child: Row(
         children: [
           IconButton(
             onPressed: () => context.pop(),
-
             icon: const Icon(
-              Icons.arrow_back_ios_new,
+              Icons.arrow_back_ios_new_rounded,
               color: Color(0xFFC8A97A),
             ),
           ),
-
           const Spacer(),
-
-          const Text(
-            'ADVENTURE RESULT',
-            style: TextStyle(
-              color: Color(0xFFB8860B),
-              letterSpacing: 2,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
+          Column(
+            children: [
+              const Text(
+                'RESULT',
+                style: TextStyle(
+                  color: Color(0xFFB8860B),
+                  fontSize: 11,
+                  letterSpacing: 3,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                width: 52,
+                height: 1,
+                color: const Color(0xFF5C4033),
+              ),
+            ],
           ),
-
           const Spacer(),
-
           const SizedBox(width: 48),
         ],
       ),
     );
   }
-}
 
-// ─────────────────────────────────────
-// 🗺 ルートマップ
-// ─────────────────────────────────────
+  // ─────────────────────────────────────
+  // SnackBar
+  // ─────────────────────────────────────
 
-class _RouteMap extends StatelessWidget {
-  final String imageUrl;
-
-  const _RouteMap({
-    required this.imageUrl,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 240,
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-
-        border: Border.all(
-          color: const Color(0xFF5C4033),
-          width: 0.8,
+  void _showSnackBar(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF2C2318),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
         ),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+        content: Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFFF5EDD8),
           ),
-        ],
-      ),
-
-      clipBehavior: Clip.antiAlias,
-
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-          ),
-
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-
-                colors: [
-                  Colors.transparent,
-                  Colors.black.withValues(alpha: 0.5),
-                ],
-              ),
-            ),
-          ),
-
-          const Positioned(
-            left: 18,
-            bottom: 18,
-
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '冒険の軌跡',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
-                ),
-
-                SizedBox(height: 4),
-
-                Text(
-                  'ROUTE MAP',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────
-// 📜 AIレポート
-// ─────────────────────────────────────
-
-class _StorySection extends StatelessWidget {
-  final String story;
-
-  const _StorySection({
-    required this.story,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-
-      padding: const EdgeInsets.all(22),
-
-      decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
-
-        borderRadius: BorderRadius.circular(24),
-
-        border: Border.all(
-          color: const Color(0xFF5C4033),
-          width: 0.6,
         ),
-      ),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(
-                Icons.menu_book_rounded,
-                color: Color(0xFFB8860B),
-                size: 18,
-              ),
-
-              SizedBox(width: 8),
-
-              Text(
-                'AI冒険譚',
-                style: TextStyle(
-                  color: Color(0xFFF5EDD8),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 18),
-
-          Text(
-            story,
-            style: const TextStyle(
-              color: Color(0xFFC8A97A),
-              fontSize: 14,
-              height: 2,
-            ),
-          ),
-        ],
       ),
     );
   }

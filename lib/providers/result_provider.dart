@@ -55,17 +55,20 @@ class ResultState {
 // ─────────────────────────────────────
 
 final resultProvider =
-    StateNotifierProvider<ResultNotifier, ResultState>(
-      (ref) => ResultNotifier(),
+    NotifierProvider<ResultNotifier, ResultState>(
+      ResultNotifier.new,
     );
 
 // ─────────────────────────────────────
 // 🎮 Notifier
 // ─────────────────────────────────────
 
-class ResultNotifier extends StateNotifier<ResultState> {
-  ResultNotifier() : super(ResultState.initial()) {
-    loadResult();
+class ResultNotifier extends Notifier<ResultState> {
+  @override
+  ResultState build() {
+    // 💡 初期化時にリザルトを読み込む
+    Future.microtask(() => loadResult());
+    return ResultState.initial();
   }
 
   // ── リザルト読み込み ─────────────────
