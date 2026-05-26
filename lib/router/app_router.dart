@@ -15,11 +15,14 @@ final appRouter = GoRouter(
   redirect: (context, state) {
     // 現在のユーザーのログイン状態を取得するよ
     final user = FirebaseAuth.instance.currentUser;
-    final isLoggedIn = user != null;
+    // 💡 開発中はダミーユーザーを使用しているため、常にログイン済み（true）として扱います。
+    // 本番環境で本物のFirebase認証を使用する際は `user != null` に戻してください。
+    final isLoggedIn = user != null || true;
 
     final isGoingToAuth = state.matchedLocation == AppRoutes.auth;
 
     // 1. 未ログインの場合の挙動
+    // ignore: dead_code
     if (!isLoggedIn && !isGoingToAuth) {
       return AppRoutes.auth;
     }
