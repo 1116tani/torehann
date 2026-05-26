@@ -41,7 +41,7 @@ class PartnerCharacter extends StatelessWidget {
               Text(
                 currentMessage,
                 style: const TextStyle(
-                  color: AppColors.textPrimary, // 💡 ここをセピアホワイトに！
+                  color: Color.fromARGB(255, 37, 35, 31), // 💡 ここをセピアホワイトに！
                   fontSize: 14,
                   height: 1.4,
                 ),

@@ -18,7 +18,7 @@ class HomeMapControls extends StatelessWidget {
 
     return Column(
       children: [
-        // 💡 新機能：マップの見た目切り替えボタン
+        // マップの見た目切り替えボタン
         FloatingActionButton(
           heroTag: "layer_btn",
           mini: true,
@@ -28,7 +28,7 @@ class HomeMapControls extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // 💡 既存の現在地ボタン
+        // 既存の現在地ボタン
         FloatingActionButton(
           heroTag: "location_btn",
           onPressed: onLocationPressed,

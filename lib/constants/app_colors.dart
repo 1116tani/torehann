@@ -36,68 +36,121 @@ class AppColors {
   /// サブで使う落ち着いたセピアゴールド
   static const Color secondary = Color(0xFFC8A97A);
 
-  // ─────────────────────────────────
-  // 📜 文字色（羊皮紙ホワイト＆ブラウン）
-  // ─────────────────────────────────
+  /// オトモ吹き出し
+static const Color speechBubble = Color(0xFFF1DFC2);
 
-  /// 読みやすい温かみのある白（羊皮紙ホワイト）
-  static const Color textPrimary = Color(0xFFF5EDD8);
+/// 吹き出しタイトル
+static const Color speechAccent = Color(0xFFD6B06A);
 
-  /// 落ち着いたセピア調のサブテキスト
-  static const Color textSecondary = Color(0xFFE0C79A);
-
-  /// 補足説明や暗めの装飾用テキスト
-  static const Color textMuted = Color(0xFFA68B6B);
-
-  /// 明るい背景（ゴールドや羊皮紙の上）に載せるための暗い文字色
-  static const Color textDark = Color(0xFF2B1D14);
+/// BottomSheet背景
+static const Color sheetBackground = Color(0xE62A1F18);
 
   // ─────────────────────────────────
-  // 🔮 特殊エフェクト・UIカラー
+  // 📜 Text Colors
+  // 可読性最優先
   // ─────────────────────────────────
 
-  /// 🌟 これがデモ画面の鍵！美しすぎるガラスエフェクト用の半透明白
-  static const Color glass = Color(0x66FFFFFF);
-  static const Color glassSurface = Color(0x22FFFFFF);
+  /// メイン文字
+  static const Color textPrimary = Color(0xFFF8F5EE);
 
-  /// 地図を夜っぽく・暗転させるためのマスク
-  static const Color overlayDark = Color(0x99000000);
-  static const Color overlayHeavy = Color(0xCC000000);
+  /// サブ文字
+  static const Color textSecondary = Color(0xFFD2CCC2);
 
-  /// 羊皮紙そのものの温かいスキン色
-  static const Color parchment = Color(0xFFF3E7C9);
+  /// 補助文字
+  static const Color textMuted = Color(0xFF9E9689);
+
+  /// 明るい背景上の文字
+  static const Color textDark = Color(0xFF1A1A1A);
 
   // ─────────────────────────────────
-  // 🏅 冒険者ランク・ステータス
+  // 🌍 Map / Adventure Accent
+  // 地図・冒険感用
   // ─────────────────────────────────
 
-  /// フレンド画面でも使われている「冒険中」や「成功」のルミナスグリーン
-  static const Color success = Color(0xFF57D6C9);
+  /// 水・魔力・ルート
+  static const Color accentBlue = Color(0xFF6BA8FF);
 
-  /// 注意・警告
-  static const Color warning = Color(0xFFFFB347);
+  /// 成功・アクティブ
+  static const Color accentGreen = Color(0xFF57D6C9);
 
-  /// エラー（危険地帯・マナ不足など）
-  static const Color error = Color(0xFFE57373);
+  /// 発見・特殊地点
+  static const Color accentPurple = Color(0xFF9D7CFF);
 
-  /// 実績・バッジ用の三種の神器カラー
+  // ─────────────────────────────────
+  // ⚠ Status
+  // ─────────────────────────────────
+
+  static const Color success = Color(0xFF62E6B8);
+
+  static const Color warning = Color(0xFFFFC857);
+
+  static const Color error = Color(0xFFFF7B7B);
+
+  // ─────────────────────────────────
+  // 🏅 Rank Colors
+  // ─────────────────────────────────
+
   static const Color bronze = Color(0xFFCD7F32);
+
   static const Color silver = Color(0xFFC0C0C0);
+
   static const Color gold = Color(0xFFFFD700);
 
   // ─────────────────────────────────
-  // 💎 魔法のグラデーション
+  // 🌫 Overlay / Glass
   // ─────────────────────────────────
 
-  /// レアお宝やリザルト画面で大活躍するゴールドグラデーション
+  /// マップ暗転
+  static const Color overlayDark = Color(0xAA000000);
+
+  /// 強め暗転
+  static const Color overlayHeavy = Color(0xDD000000);
+
+  /// ガラスUI
+  static const Color glass = Color(0x18FFFFFF);
+
+  /// ガラス境界線
+  static const Color glassBorder = Color(0x33FFFFFF);
+
+  /// 薄い白サーフェス
+  static const Color glassSurface = Color(0x10FFFFFF);
+
+  // ─────────────────────────────────
+  // 📜 Parchment
+  // 絵巻物・Result用
+  // ─────────────────────────────────
+
+  /// 羊皮紙
+  static const Color parchment = Color(0xFFF3E7C9);
+
+  /// 古い紙
+  static const Color parchmentDark = Color(0xFFE0D0AA);
+
+  // ─────────────────────────────────
+  // 🌅 Gradients
+  // ─────────────────────────────────
+
+  /// ゴールドUI
   static const List<Color> goldGradient = [
-    Color(0xFFF6D28F),
+    Color(0xFFFFE0A3),
     Color(0xFFD6B06A),
   ];
 
-  /// ダークUIに奥行きを出すためのウッドグラデーション
+  /// ダークカード
   static const List<Color> darkGradient = [
-    Color(0xFF463426),
-    Color(0xFF2B1D14),
+    Color(0xFF2A2A2A),
+    Color(0xFF171717),
+  ];
+
+  /// 魔力・探索
+  static const List<Color> adventureGradient = [
+    Color(0xFF6BA8FF),
+    Color(0xFF57D6C9),
+  ];
+
+  /// 危険地帯
+  static const List<Color> dangerGradient = [
+    Color(0xFFFF7B7B),
+    Color(0xFF9E2A2B),
   ];
 }
