@@ -2,4 +2,4 @@
 ## Copy this file to android/local.properties and fill in your local values.
 ## Never commit android/local.properties.
 
-MAPS_API_KEY=AIzaSyD2_CzfbYZi-TRZiATCUMCqeSqo-jYm4n4
+MAPS_API_KEY=your_android_maps_key_here
