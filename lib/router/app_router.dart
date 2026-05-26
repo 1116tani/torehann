@@ -1,7 +1,7 @@
 //lib/router/app_router.dart
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'auth_routes.dart';
 import 'home_routes.dart';
@@ -13,21 +13,24 @@ final appRouter = GoRouter(
   initialLocation: AppRoutes.auth,
 
   redirect: (context, state) {
-  const isLoggedIn = true;
+    // 現在のユーザーのログイン状態を取得するよ
+    final user = FirebaseAuth.instance.currentUser;
+    final isLoggedIn = user != null;
 
-  final isGoingToAuth =
-      state.fullPath == AppRoutes.auth;
+    final isGoingToAuth = state.matchedLocation == AppRoutes.auth;
 
-  if (!isLoggedIn && !isGoingToAuth) {
-    return AppRoutes.auth;
-  }
+    // 1. 未ログインの場合の挙動
+    if (!isLoggedIn && !isGoingToAuth) {
+      return AppRoutes.auth;
+    }
 
-  if (isLoggedIn && isGoingToAuth) {
-    return AppRoutes.home;
-  }
+    // 2. ログイン済みの場合の挙動
+    if (isLoggedIn && isGoingToAuth) {
+      return AppRoutes.home;
+    }
 
-  return null;
-},
+    return null;
+  },
 
   routes: [
     ...authRoutes,

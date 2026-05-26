@@ -1,15 +1,14 @@
 // lib/services/maps_service.dart
 
-import 'package:dio/dio.dart';
 import '../models/spot_model.dart';
 
 class MapsService {
-  final Dio _dio;
+  // final Dio _dio;
 
   // もしGoogle Directions APIを使う場合はここにキーを入れるよ
-  static const _googleMapsApiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
+  // static const _googleMapsApiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
 
-  MapsService() : _dio = Dio();
+  MapsService(); // : _dio = Dio();
 
   /// ── スポット一覧から、地図に描画するための「ルート座標列（ポリライン）」を生成する ──
   Future<List<Map<String, double>>> getRoutePoints(

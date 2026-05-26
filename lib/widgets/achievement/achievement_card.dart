@@ -138,7 +138,7 @@ class AchievementCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3), // 💡 影を少し強めて立体感アップ！
+              color: Colors.black.withValues(alpha: 0.3), // 💡 影を少し強めて立体感アップ！
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -150,7 +150,7 @@ class AchievementCard extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () => _showAchievementDetail(context, isUnearned), // 👈 タップで詳細を呼ぶ！
-            splashColor: medalColor.withOpacity(0.1), // ランクに応じた色の光が広がるよ♡
+            splashColor: medalColor.withValues(alpha: 0.1), // ランクに応じた色の光が広がるよ♡
             highlightColor: Colors.black12,
             child: Padding(
               padding: const EdgeInsets.all(18), // 💡 パディングを大幅アップ！（14 -> 18）これでカードが大きくなるよ！
@@ -162,7 +162,7 @@ class AchievementCard extends StatelessWidget {
                     width: 52, // 💡 メダルを一回り大きくしたよ！（46 -> 52）
                     height: 52,
                     decoration: BoxDecoration(
-                      color: medalColor.withOpacity(0.15),
+                      color: medalColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: medalColor,
@@ -171,7 +171,7 @@ class AchievementCard extends StatelessWidget {
                       boxShadow: rank != AchievementRank.none
                           ? [
                               BoxShadow(
-                                color: medalColor.withOpacity(0.25),
+                                color: medalColor.withValues(alpha: 0.25),
                                 blurRadius: 8,
                               ),
                             ]

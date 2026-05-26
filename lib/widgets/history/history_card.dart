@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/history_model.dart';
+import '../../models/adventure_history_model.dart';
 import '../../constants/app_sizes.dart';
 
 class HistoryCard extends StatelessWidget {
-  final AdventureHistory history;
+  final AdventureHistoryModel history;
   final VoidCallback onTap;
 
   const HistoryCard({
@@ -48,7 +48,7 @@ class HistoryCard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: Colors.black
-                  .withOpacity(0.28),
+                  .withValues(alpha: 0.28),
 
               blurRadius: 10,
 
@@ -119,7 +119,7 @@ class HistoryCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       _formatDate(
-                        history.startedAt,
+                        history.createdAt,
                       ),
 
                       style:
@@ -294,11 +294,11 @@ class HistoryCard extends StatelessWidget {
             // ─────────────────────
 
             if (history
-                .photoUrls
+                .imageUrls
                 .isNotEmpty)
               _PhotoThumbnails(
                 photoUrls:
-                    history.photoUrls,
+                    history.imageUrls,
               )
             else
               const _MapPlaceholder(),
@@ -432,10 +432,10 @@ class _StatusBadge extends StatelessWidget {
         color: isCompleted
             ? const Color(
                 0xFF1E4A43,
-              ).withOpacity(0.35)
+              ).withValues(alpha: 0.35)
             : const Color(
                 0xFF5A3A2D,
-              ).withOpacity(0.35),
+              ).withValues(alpha: 0.35),
 
         borderRadius:
             BorderRadius.circular(20),
@@ -586,7 +586,7 @@ class _PhotoThumbnails
                   : photoUrls.length,
 
           separatorBuilder:
-              (_, __) =>
+              (_, _) =>
                   const SizedBox(
             width: 8,
           ),
@@ -608,7 +608,7 @@ class _PhotoThumbnails
                 fit: BoxFit.cover,
 
                 errorBuilder:
-                    (_, __, ___) {
+                    (_, _, _) {
                   return Container(
                     width: 96,
                     height: 74,
