@@ -4,103 +4,98 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // ─────────────────────────────────
-  // 背景
+  // 🏰 背景・基盤（ダークセピア・ウッド）
   // ─────────────────────────────────
 
-  /// アプリ全体の背景
-  static const background = Color(0xFF15110D);
+  /// アプリ全体のベースとなる濃い闇・木色（漆黒の夜）
+  static const Color background = Color(0xFF15110D);
 
-  /// カード・ボトムシート
-  static const surface = Color(0xFF33271D);
+  /// 羊皮紙カードやダイアログ等のベースになるセピアブラウン
+  static const Color surface = Color(0xFF33271D);
 
-  /// 少し浮かせたいUI
-  static const surfaceLight = Color(0xFF463426);
+  /// 少し浮かせたいUIや、明るめのウッドパーツ
+  static const Color surfaceLight = Color(0xFF463426);
 
-  /// ガラス風
-  static const glass = Color(0x66FFFFFF);
-
-  // ─────────────────────────────────
-  // メインカラー
-  // ─────────────────────────────────
-
-  /// メインの金色
-  static const primary = Color(0xFFD6B06A);
-
-  /// 明るめの金
-  static const primaryLight = Color(0xFFF6D28F);
-
-  /// サブカラー
-  static const secondary = Color(0xFFC8A97A);
+  /// 枠線や区切り線に使うヴィンテージな茶色
+  static const Color border = Color(0xFF5C4033);
+  static const Color divider = Color(0xFF4A3728);
 
   // ─────────────────────────────────
-  // テキスト
+  // ✨ メインカラー（アンティークゴールド）
   // ─────────────────────────────────
 
-  /// メイン文字
-  static const textPrimary = Color(0xFFF5EDD8);
+  /// 高貴なメインの金色（ロゴや重要ボタン用）
+  static const Color primary = Color(0xFFD6B06A);
 
-  /// サブ文字
-  static const textSecondary = Color(0xFFE0C79A);
+  /// ハイライトや光るエフェクトに使う明るめの金
+  static const Color primaryLight = Color(0xFFF6D28F);
 
-  /// 補助文字
-  static const textMuted = Color(0xFFA68B6B);
+  /// 深みのあるダークゴールド（グラデーションの影用）
+  static const Color primaryDark = Color(0xFFB8860B);
 
-  /// 暗背景用
-  static const textDark = Color(0xFF2B1D14);
-
-  // ─────────────────────────────────
-  // ボーダー
-  // ─────────────────────────────────
-
-  static const border = Color(0xFF5C4033);
-
-  static const divider = Color(0xFF4A3728);
+  /// サブで使う落ち着いたセピアゴールド
+  static const Color secondary = Color(0xFFC8A97A);
 
   // ─────────────────────────────────
-  // 状態カラー
+  // 📜 文字色（羊皮紙ホワイト＆ブラウン）
   // ─────────────────────────────────
 
-  /// 成功・探索
-  static const success = Color(0xFF57D6C9);
+  /// 読みやすい温かみのある白（羊皮紙ホワイト）
+  static const Color textPrimary = Color(0xFFF5EDD8);
 
-  /// 注意
-  static const warning = Color(0xFFFFB347);
+  /// 落ち着いたセピア調のサブテキスト
+  static const Color textSecondary = Color(0xFFE0C79A);
 
-  /// エラー
-  static const error = Color(0xFFE57373);
+  /// 補足説明や暗めの装飾用テキスト
+  static const Color textMuted = Color(0xFFA68B6B);
 
-  // ─────────────────────────────────
-  // ランクカラー
-  // ─────────────────────────────────
-
-  static const bronze = Color(0xFFCD7F32);
-
-  static const silver = Color(0xFFC0C0C0);
-
-  static const gold = Color(0xFFFFD700);
+  /// 明るい背景（ゴールドや羊皮紙の上）に載せるための暗い文字色
+  static const Color textDark = Color(0xFF2B1D14);
 
   // ─────────────────────────────────
-  // 特殊カラー
+  // 🔮 特殊エフェクト・UIカラー
   // ─────────────────────────────────
 
-  /// 羊皮紙っぽい色
-  static const parchment = Color(0xFFF3E7C9);
+  /// 🌟 これがデモ画面の鍵！美しすぎるガラスエフェクト用の半透明白
+  static const Color glass = Color(0x66FFFFFF);
+  static const Color glassSurface = Color(0x22FFFFFF);
 
-  /// 地図暗転用
-  static const overlayDark = Color(0x99000000);
+  /// 地図を夜っぽく・暗転させるためのマスク
+  static const Color overlayDark = Color(0x99000000);
+  static const Color overlayHeavy = Color(0xCC000000);
 
-  /// 強め暗転
-  static const overlayHeavy = Color(0xCC000000);
+  /// 羊皮紙そのものの温かいスキン色
+  static const Color parchment = Color(0xFFF3E7C9);
 
   // ─────────────────────────────────
-  // グラデーション
+  // 🏅 冒険者ランク・ステータス
   // ─────────────────────────────────
 
+  /// フレンド画面でも使われている「冒険中」や「成功」のルミナスグリーン
+  static const Color success = Color(0xFF57D6C9);
+
+  /// 注意・警告
+  static const Color warning = Color(0xFFFFB347);
+
+  /// エラー（危険地帯・マナ不足など）
+  static const Color error = Color(0xFFE57373);
+
+  /// 実績・バッジ用の三種の神器カラー
+  static const Color bronze = Color(0xFFCD7F32);
+  static const Color silver = Color(0xFFC0C0C0);
+  static const Color gold = Color(0xFFFFD700);
+
+  // ─────────────────────────────────
+  // 💎 魔法のグラデーション
+  // ─────────────────────────────────
+
+  /// レアお宝やリザルト画面で大活躍するゴールドグラデーション
   static const List<Color> goldGradient = [
     Color(0xFFF6D28F),
     Color(0xFFD6B06A),
   ];
 
+  /// ダークUIに奥行きを出すためのウッドグラデーション
   static const List<Color> darkGradient = [
     Color(0xFF463426),
     Color(0xFF2B1D14),

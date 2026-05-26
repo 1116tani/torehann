@@ -1,6 +1,7 @@
+//lib/router/route_names.dart
 class AppRoutes {
   // Auth
-  static const auth = '/';
+  static const auth = '/auth';
   static const title = '/title';
 
   // Home

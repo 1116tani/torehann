@@ -1,4 +1,4 @@
-//lib/widgets/mission/mission_list_item.dart// lib/widgets/mission/mission_list_item.dart
+// lib/widgets/mission/mission_list_item.dart
 
 import 'package:flutter/material.dart';
 
