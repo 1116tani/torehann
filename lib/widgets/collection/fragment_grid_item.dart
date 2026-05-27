@@ -28,7 +28,7 @@ class FragmentGridItem extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: '閉じる',
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       transitionDuration: const Duration(milliseconds: 250),
       pageBuilder: (context, animation, secondaryAnimation) {
         return Center(
@@ -44,7 +44,7 @@ class FragmentGridItem extends StatelessWidget {
                 boxShadow: item.isUnlocked
                     ? [
                         BoxShadow(
-                          color: _getRarityColor().withOpacity(0.3),
+                          color: _getRarityColor().withValues(alpha: 0.3),
                           blurRadius: 15,
                         ),
                       ]
@@ -200,7 +200,7 @@ class FragmentGridItem extends StatelessWidget {
           boxShadow: item.isUnlocked
               ? [
                   BoxShadow(
-                    color: _getRarityColor().withOpacity(0.15),
+                    color: _getRarityColor().withValues(alpha: 0.15),
                     blurRadius: 6,
                     spreadRadius: 1,
                   ),
@@ -213,7 +213,7 @@ class FragmentGridItem extends StatelessWidget {
             Center(
               child: Icon(
                 item.isUnlocked ? Icons.diamond_outlined : Icons.question_mark_rounded,
-                color: _getRarityColor().withOpacity(item.isUnlocked ? 1.0 : 0.2),
+                color: _getRarityColor().withValues(alpha: item.isUnlocked ? 1.0 : 0.2),
                 size: 36,
               ),
             ),

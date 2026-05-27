@@ -4,105 +4,153 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // ─────────────────────────────────
-  // 背景
+  // 🏰 背景・基盤（ダークセピア・ウッド）
   // ─────────────────────────────────
 
-  /// アプリ全体の背景
-  static const background = Color(0xFF15110D);
+  /// アプリ全体のベースとなる濃い闇・木色（漆黒の夜）
+  static const Color background = Color(0xFF15110D);
 
-  /// カード・ボトムシート
-  static const surface = Color(0xFF33271D);
+  /// 羊皮紙カードやダイアログ等のベースになるセピアブラウン
+  static const Color surface = Color(0xFF33271D);
 
-  /// 少し浮かせたいUI
-  static const surfaceLight = Color(0xFF463426);
+  /// 少し浮かせたいUIや、明るめのウッドパーツ
+  static const Color surfaceLight = Color(0xFF463426);
 
-  /// ガラス風
-  static const glass = Color(0x66FFFFFF);
-
-  // ─────────────────────────────────
-  // メインカラー
-  // ─────────────────────────────────
-
-  /// メインの金色
-  static const primary = Color(0xFFD6B06A);
-
-  /// 明るめの金
-  static const primaryLight = Color(0xFFF6D28F);
-
-  /// サブカラー
-  static const secondary = Color(0xFFC8A97A);
+  /// 枠線や区切り線に使うヴィンテージな茶色
+  static const Color border = Color(0xFF5C4033);
+  static const Color divider = Color(0xFF4A3728);
 
   // ─────────────────────────────────
-  // テキスト
+  // ✨ メインカラー（アンティークゴールド）
+  // ─────────────────────────────────
+
+  /// 高貴なメインの金色（ロゴや重要ボタン用）
+  static const Color primary = Color(0xFFD6B06A);
+
+  /// ハイライトや光るエフェクトに使う明るめの金
+  static const Color primaryLight = Color(0xFFF6D28F);
+
+  /// 深みのあるダークゴールド（グラデーションの影用）
+  static const Color primaryDark = Color(0xFFB8860B);
+
+  /// サブで使う落ち着いたセピアゴールド
+  static const Color secondary = Color(0xFFC8A97A);
+
+  /// オトモ吹き出し
+static const Color speechBubble = Color(0xFFF1DFC2);
+
+/// 吹き出しタイトル
+static const Color speechAccent = Color(0xFFD6B06A);
+
+/// BottomSheet背景
+static const Color sheetBackground = Color(0xE62A1F18);
+
+  // ─────────────────────────────────
+  // 📜 Text Colors
+  // 可読性最優先
   // ─────────────────────────────────
 
   /// メイン文字
-  static const textPrimary = Color(0xFFF5EDD8);
+  static const Color textPrimary = Color(0xFFF8F5EE);
 
   /// サブ文字
-  static const textSecondary = Color(0xFFE0C79A);
+  static const Color textSecondary = Color(0xFFD2CCC2);
 
   /// 補助文字
-  static const textMuted = Color(0xFFA68B6B);
+  static const Color textMuted = Color(0xFF9E9689);
 
-  /// 暗背景用
-  static const textDark = Color(0xFF2B1D14);
-
-  // ─────────────────────────────────
-  // ボーダー
-  // ─────────────────────────────────
-
-  static const border = Color(0xFF5C4033);
-
-  static const divider = Color(0xFF4A3728);
+  /// 明るい背景上の文字
+  static const Color textDark = Color(0xFF1A1A1A);
 
   // ─────────────────────────────────
-  // 状態カラー
+  // 🌍 Map / Adventure Accent
+  // 地図・冒険感用
   // ─────────────────────────────────
 
-  /// 成功・探索
-  static const success = Color(0xFF57D6C9);
+  /// 水・魔力・ルート
+  static const Color accentBlue = Color(0xFF6BA8FF);
 
-  /// 注意
-  static const warning = Color(0xFFFFB347);
+  /// 成功・アクティブ
+  static const Color accentGreen = Color(0xFF57D6C9);
 
-  /// エラー
-  static const error = Color(0xFFE57373);
-
-  // ─────────────────────────────────
-  // ランクカラー
-  // ─────────────────────────────────
-
-  static const bronze = Color(0xFFCD7F32);
-
-  static const silver = Color(0xFFC0C0C0);
-
-  static const gold = Color(0xFFFFD700);
+  /// 発見・特殊地点
+  static const Color accentPurple = Color(0xFF9D7CFF);
 
   // ─────────────────────────────────
-  // 特殊カラー
+  // ⚠ Status
   // ─────────────────────────────────
 
-  /// 羊皮紙っぽい色
-  static const parchment = Color(0xFFF3E7C9);
+  static const Color success = Color(0xFF62E6B8);
 
-  /// 地図暗転用
-  static const overlayDark = Color(0x99000000);
+  static const Color warning = Color(0xFFFFC857);
+
+  static const Color error = Color(0xFFFF7B7B);
+
+  // ─────────────────────────────────
+  // 🏅 Rank Colors
+  // ─────────────────────────────────
+
+  static const Color bronze = Color(0xFFCD7F32);
+
+  static const Color silver = Color(0xFFC0C0C0);
+
+  static const Color gold = Color(0xFFFFD700);
+
+  // ─────────────────────────────────
+  // 🌫 Overlay / Glass
+  // ─────────────────────────────────
+
+  /// マップ暗転
+  static const Color overlayDark = Color(0xAA000000);
 
   /// 強め暗転
-  static const overlayHeavy = Color(0xCC000000);
+  static const Color overlayHeavy = Color(0xDD000000);
+
+  /// ガラスUI
+  static const Color glass = Color(0x18FFFFFF);
+
+  /// ガラス境界線
+  static const Color glassBorder = Color(0x33FFFFFF);
+
+  /// 薄い白サーフェス
+  static const Color glassSurface = Color(0x10FFFFFF);
 
   // ─────────────────────────────────
-  // グラデーション
+  // 📜 Parchment
+  // 絵巻物・Result用
   // ─────────────────────────────────
 
+  /// 羊皮紙
+  static const Color parchment = Color(0xFFF3E7C9);
+
+  /// 古い紙
+  static const Color parchmentDark = Color(0xFFE0D0AA);
+
+  // ─────────────────────────────────
+  // 🌅 Gradients
+  // ─────────────────────────────────
+
+  /// ゴールドUI
   static const List<Color> goldGradient = [
-    Color(0xFFF6D28F),
+    Color(0xFFFFE0A3),
     Color(0xFFD6B06A),
   ];
 
+  /// ダークカード
   static const List<Color> darkGradient = [
-    Color(0xFF463426),
-    Color(0xFF2B1D14),
+    Color(0xFF2A2A2A),
+    Color(0xFF171717),
+  ];
+
+  /// 魔力・探索
+  static const List<Color> adventureGradient = [
+    Color(0xFF6BA8FF),
+    Color(0xFF57D6C9),
+  ];
+
+  /// 危険地帯
+  static const List<Color> dangerGradient = [
+    Color(0xFFFF7B7B),
+    Color(0xFF9E2A2B),
   ];
 }

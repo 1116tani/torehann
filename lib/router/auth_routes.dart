@@ -1,3 +1,4 @@
+//lib/router/auth_routes.dart
 import 'package:go_router/go_router.dart';
 
 import '../pages/auth_gate.dart';

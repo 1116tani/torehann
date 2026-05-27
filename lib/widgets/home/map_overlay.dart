@@ -1,96 +1,163 @@
 // lib/widgets/home/map_overlay.dart
+
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'dart:math' as math; // 💡 羅針盤を描くために数学の魔法を使うよ！
+
+import '../../constants/app_colors.dart';
 
 class MapOverlay extends StatelessWidget {
   const MapOverlay({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Positioned.fill(
-      // 💡 IgnorePointerを入れることで、この層をすり抜けて下のマップを操作できるよ！
       child: IgnorePointer(
-        child: Container(
-          // 📜 画面のフチを少し暗くして、古いレンズや羊皮紙を覗き込んでいる風にする魔法
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.0,
-              colors: [
-                Colors.transparent,
-                theme.scaffoldBackgroundColor.withValues(
-                  alpha: 0.8,
-                ), // フチを背景色（闇色）で締める
-              ],
-              stops: const [0.4, 1.0],
+        child: Stack(
+          children: [
+            // ─────────────────────────────
+            // 🌌 全体セピア
+            // ─────────────────────────────
+            Container(color: const Color(0x1F2B2118)),
+
+            // ─────────────────────────────
+            // ✨ 上下グラデーション
+            // 暗くしすぎない
+            // ─────────────────────────────
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+
+                  colors: [
+                    AppColors.background.withValues(alpha: 0.18),
+
+                    Colors.transparent,
+
+                    Colors.transparent,
+
+                    AppColors.background.withValues(alpha: 0.14),
+                  ],
+
+                  stops: const [0.0, 0.18, 0.82, 1.0],
+                ),
+              ),
             ),
-          ),
-          child: Opacity(
-            opacity: 0.35, // 💡 うっすらと魔法陣を浮かび上がらせるよ
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: _AntiqueCompassPainter(color: theme.colorScheme.primary),
+
+            // ─────────────────────────────
+            // 🧭 羅針盤
+            // ─────────────────────────────
+            Center(
+              child: Opacity(
+                opacity: 0.12,
+
+                child: CustomPaint(
+                  size: const Size(260, 260),
+
+                  painter: _CompassPainter(color: AppColors.primary),
+                ),
+              ),
             ),
-          ),
+
+            // ─────────────────────────────
+            // 🗺 海図グリッド
+            // ─────────────────────────────
+            Opacity(
+              opacity: 0.04,
+
+              child: CustomPaint(
+                size: Size.infinite,
+
+                painter: _GridPainter(color: AppColors.primary),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// 🧭 羅針盤と古い地図のグリッドを描く特製ペインター
-class _AntiqueCompassPainter extends CustomPainter {
+// ─────────────────────────────────
+// 🧭 Compass
+// ─────────────────────────────────
+
+class _CompassPainter extends CustomPainter {
   final Color color;
-  _AntiqueCompassPainter({required this.color});
+
+  _CompassPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+
+    final radius = size.width * 0.42;
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    canvas.drawCircle(center, radius, paint);
+
+    canvas.drawCircle(center, radius - 12, paint..strokeWidth = 0.7);
+
+    for (int i = 0; i < 8; i++) {
+      final angle = i * (math.pi / 4);
+
+      final inner = i.isEven ? radius * 0.72 : radius * 0.84;
+
+      final p1 = Offset(
+        center.dx + math.cos(angle) * inner,
+
+        center.dy + math.sin(angle) * inner,
+      );
+
+      final p2 = Offset(
+        center.dx + math.cos(angle) * radius,
+
+        center.dy + math.sin(angle) * radius,
+      );
+
+      canvas.drawLine(p1, p2, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+// ─────────────────────────────────
+// 🗺 Grid
+// ─────────────────────────────────
+
+class _GridPainter extends CustomPainter {
+  final Color color;
+
+  _GridPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.4;
-
-    // 1️⃣ 外側の魔法円を描く
-    canvas.drawCircle(center, radius, paint);
-    canvas.drawCircle(center, radius - 10, paint..strokeWidth = 0.5);
-
-    // 2️⃣ 羅針盤のトゲトゲ（8方位）を描く
-    for (int i = 0; i < 8; i++) {
-      final angle = i * (math.pi / 4);
-      // 斜め方向は少し線を短くするオシャレ
-      final innerRadius = i % 2 == 0 ? radius * 0.8 : radius * 0.9;
-
-      final p1 = Offset(
-        center.dx + math.cos(angle) * innerRadius,
-        center.dy + math.sin(angle) * innerRadius,
-      );
-      final p2 = Offset(
-        center.dx + math.cos(angle) * radius,
-        center.dy + math.sin(angle) * radius,
-      );
-      canvas.drawLine(p1, p2, paint);
-    }
-
-    // 3️⃣ 背景にうっすらとした緯度・経度の海図グリッドを引く
-    final gridPaint = Paint()
-      ..color = color.withValues(alpha: 0.1)
       ..strokeWidth = 0.5;
 
-    const double step = 60.0; // ちょっと広めのマス目にしてアンティーク感アップ
+    const step = 82.0;
 
     for (double x = 0; x < size.width; x += step) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
+
     for (double y = 0; y < size.height; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
 }

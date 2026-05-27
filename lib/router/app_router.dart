@@ -1,6 +1,7 @@
+//lib/router/app_router.dart
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'auth_routes.dart';
 import 'home_routes.dart';
@@ -14,26 +15,23 @@ final appRouter = GoRouter(
   redirect: (context, state) {
     // 現在のユーザーのログイン状態を取得するよ
     final user = FirebaseAuth.instance.currentUser;
+    // 💡 開発中はダミーユーザーを使用しているため、常にログイン済み（true）として扱います。
+    // 本番環境で本物のFirebase認証を使用する際は `user != null` に戻してください。
+    final isLoggedIn = user != null || true;
 
-    // 匿名ログインも含めて、ユーザーがログインしているかどうかの判定
-    final isLoggedIn = user != null;
-    
-    // 現在向かおうとしている先が「認証画面（ログイン画面）」かどうかを判定する形に変えたよ
     final isGoingToAuth = state.matchedLocation == AppRoutes.auth;
 
     // 1. 未ログインの場合の挙動
-    // ログインしていなくて、かつ、まだ認証画面に向かっていないなら、強制的に認証画面へ行かせる
+    // ignore: dead_code
     if (!isLoggedIn && !isGoingToAuth) {
       return AppRoutes.auth;
     }
 
     // 2. ログイン済みの場合の挙動
-    // もうログインしているのに、また認証画面（ログイン画面）を開こうとしたら、ホーム画面へ
     if (isLoggedIn && isGoingToAuth) {
       return AppRoutes.home;
     }
 
-    // どちらの条件にも当てはまらないなら、そのまま進んでよし！
     return null;
   },
 

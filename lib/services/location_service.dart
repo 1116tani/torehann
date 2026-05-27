@@ -29,7 +29,9 @@ class LocationService {
 
     // 現在地を取得（ハッカソン用には高精度すぎると時間がかかるので、accuracyはhighかmediumがおすすめ）
     return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
     );
   }
 

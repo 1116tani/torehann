@@ -75,6 +75,7 @@ class _TitlePageState extends ConsumerState<TitlePage> {
 
                         // 💡 ここで成功すると、AuthGateがそれを検知して自動的に画面を切り替えてくれるの！
                         if (result == null) {
+                          if (!context.mounted) return;
                           setState(() => _isLoading = false);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
