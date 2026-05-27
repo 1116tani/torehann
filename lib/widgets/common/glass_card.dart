@@ -18,6 +18,8 @@ class GlassCard extends StatelessWidget {
 
   final double borderRadius;
 
+  final double? opacity;
+
   final bool useBorder;
 
   final bool useShadow;
@@ -28,6 +30,7 @@ class GlassCard extends StatelessWidget {
     this.blur = AppSizes.blurM,
     this.padding = const EdgeInsets.all(AppSizes.p16),
     this.borderRadius = AppRadius.card,
+    this.opacity,
     this.useBorder = true,
     this.useShadow = true,
   });
@@ -45,7 +48,9 @@ class GlassCard extends StatelessWidget {
 
           decoration: BoxDecoration(
             // 🌌 半透明のダークブラウン
-            color: AppColors.sheetBackground,
+            color: opacity != null
+                ? AppColors.sheetBackground.withValues(alpha: opacity!)
+                : AppColors.sheetBackground,
 
             borderRadius: BorderRadius.circular(borderRadius),
 

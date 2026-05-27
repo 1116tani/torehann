@@ -1,6 +1,6 @@
 // lib/widgets/home/map_overlay.dart
+
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
@@ -16,40 +16,60 @@ class MapOverlay extends StatelessWidget {
         child: Stack(
           children: [
             // ─────────────────────────────
-            // 🌌 周囲だけを少し暗くする
-            // 真っ黒じゃなく暖色の影
+            // 🌌 全体セピア
+            // ─────────────────────────────
+            Container(color: const Color(0x1F2B2118)),
+
+            // ─────────────────────────────
+            // ✨ 上下グラデーション
+            // 暗くしすぎない
             // ─────────────────────────────
             Container(
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.center,
-                  radius: 1.15,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+
                   colors: [
+                    AppColors.background.withValues(alpha: 0.18),
+
                     Colors.transparent,
-                    Color(0x662B2118),
+
+                    Colors.transparent,
+
+                    AppColors.background.withValues(alpha: 0.14),
                   ],
-                  stops: [0.72, 1.0],
+
+                  stops: const [0.0, 0.18, 0.82, 1.0],
                 ),
               ),
             ),
 
             // ─────────────────────────────
-            // 🗺 地図全体をほんの少しセピア化
+            // 🧭 羅針盤
             // ─────────────────────────────
-            Container(
-              color: const Color(0x222B2118),
+            Center(
+              child: Opacity(
+                opacity: 0.12,
+
+                child: CustomPaint(
+                  size: const Size(260, 260),
+
+                  painter: _CompassPainter(color: AppColors.primary),
+                ),
+              ),
             ),
 
             // ─────────────────────────────
-            // ✨ 羅針盤・魔法陣
+            // 🗺 海図グリッド
             // ─────────────────────────────
             Opacity(
-              opacity: 0.18,
+              opacity: 0.04,
+
               child: CustomPaint(
                 size: Size.infinite,
-                painter: _AntiqueCompassPainter(
-                  color: AppColors.primary,
-                ),
+
+                painter: _GridPainter(color: AppColors.primary),
               ),
             ),
           ],
@@ -60,96 +80,79 @@ class MapOverlay extends StatelessWidget {
 }
 
 // ─────────────────────────────────
-// 🧭 羅針盤Painter
+// 🧭 Compass
 // ─────────────────────────────────
 
-class _AntiqueCompassPainter extends CustomPainter {
+class _CompassPainter extends CustomPainter {
   final Color color;
 
-  _AntiqueCompassPainter({
-    required this.color,
-  });
+  _CompassPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(
-      size.width / 2,
-      size.height / 2,
-    );
+    final center = Offset(size.width / 2, size.height / 2);
 
-    final radius = size.width * 0.38;
+    final radius = size.width * 0.42;
 
-    // ─────────────────────────────
-    // 外円
-    // ─────────────────────────────
-
-    final outerPaint = Paint()
-      ..color = color.withOpacity(0.18)
+    final paint = Paint()
+      ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-
-    canvas.drawCircle(center, radius, outerPaint);
-
-    final innerPaint = Paint()
-      ..color = color.withOpacity(0.12)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-
-    canvas.drawCircle(center, radius - 14, innerPaint);
-
-    // ─────────────────────────────
-    // 方位線
-    // ─────────────────────────────
-
-    final linePaint = Paint()
-      ..color = color.withOpacity(0.14)
       ..strokeWidth = 1;
+
+    canvas.drawCircle(center, radius, paint);
+
+    canvas.drawCircle(center, radius - 12, paint..strokeWidth = 0.7);
 
     for (int i = 0; i < 8; i++) {
       final angle = i * (math.pi / 4);
 
-      final innerRadius =
-          i.isEven
-              ? radius * 0.78
-              : radius * 0.88;
+      final inner = i.isEven ? radius * 0.72 : radius * 0.84;
 
-      final start = Offset(
-        center.dx + math.cos(angle) * innerRadius,
-        center.dy + math.sin(angle) * innerRadius,
+      final p1 = Offset(
+        center.dx + math.cos(angle) * inner,
+
+        center.dy + math.sin(angle) * inner,
       );
 
-      final end = Offset(
+      final p2 = Offset(
         center.dx + math.cos(angle) * radius,
+
         center.dy + math.sin(angle) * radius,
       );
 
-      canvas.drawLine(start, end, linePaint);
+      canvas.drawLine(p1, p2, paint);
     }
+  }
 
-    // ─────────────────────────────
-    // 海図グリッド
-    // ─────────────────────────────
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
 
-    final gridPaint = Paint()
-      ..color = color.withOpacity(0.035)
-      ..strokeWidth = 0.6;
+// ─────────────────────────────────
+// 🗺 Grid
+// ─────────────────────────────────
 
-    const step = 72.0;
+class _GridPainter extends CustomPainter {
+  final Color color;
+
+  _GridPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 0.5;
+
+    const step = 82.0;
 
     for (double x = 0; x < size.width; x += step) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        gridPaint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 
     for (double y = 0; y < size.height; y += step) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        gridPaint,
-      );
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 

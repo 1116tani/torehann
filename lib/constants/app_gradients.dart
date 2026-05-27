@@ -84,4 +84,17 @@ class AppGradients {
       Color(0xFFB8860B),
     ],
   );
+
+  // ─────────────────────────────────
+  // 🔘 Button
+  // ─────────────────────────────────
+
+  static const LinearGradient primaryButton = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [
+      Color(0xFFF6D28F),
+      Color(0xFFD6B06A),
+    ],
+  );
 }

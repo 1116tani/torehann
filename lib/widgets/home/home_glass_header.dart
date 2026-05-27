@@ -1,63 +1,157 @@
 // lib/widgets/home/home_glass_header.dart
+
 import 'package:flutter/material.dart';
+
+import '../../constants/app_colors.dart';
+import '../../constants/app_radius.dart';
+import '../../constants/app_sizes.dart';
+import '../../constants/app_text_styles.dart';
+
 import '../common/glass_card.dart';
-import '../../utils/colors.dart';
 
 class HomeGlassHeader extends StatelessWidget {
   const HomeGlassHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return GlassCard(
-      borderRadius: 20,
-      padding: const EdgeInsets.all(16),
-      child: Row(
+      borderRadius: AppRadius.xl,
+      opacity: 0.08,
+
+      padding: const EdgeInsets.all(AppSizes.p16),
+
+      child: Column(
         children: [
-          CircleAvatar(
-            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-            child: Icon(Icons.person, color: theme.colorScheme.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // ─────────────────────
+          // 👤 上段
+          // ─────────────────────
+          Row(
+            children: [
+              // Avatar
+              Container(
+                width: 54,
+                height: 54,
+
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryDark],
+                  ),
+
+                  border: Border.all(
+                    color: AppColors.primaryLight.withValues(alpha: 0.4),
+                  ),
+                ),
+
+                child: const Icon(
+                  Icons.auto_stories_rounded,
+                  color: AppColors.textDark,
+                  size: 28,
+                ),
+              ),
+
+              const SizedBox(width: AppSizes.p16),
+
+              // Name & Rank
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
                   children: [
-                    const Text(
-                      "見習い冒険者",
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    Text('ユーザー', style: AppTextStyles.titleSmall),
+
+                    const SizedBox(height: 4),
+
                     Text(
-                      "Lv. 5",
-                      style: TextStyle(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
+                      '街律の翻訳官',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primaryLight,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: 0.65,
-                    minHeight: 6,
-                    backgroundColor: AppColors.textMuted.withValues(alpha: 0.3),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      theme.colorScheme.primary,
-                    ),
+              ),
+
+              // Level
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSizes.p12,
+                  vertical: AppSizes.p8,
+                ),
+
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.24),
                   ),
                 ),
-              ],
-            ),
+
+                child: Column(
+                  children: [
+                    Text(
+                      'Lv',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+
+                    Text('24', style: AppTextStyles.statMedium),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppSizes.p20),
+
+          // ─────────────────────
+          // ✨ EXP BAR
+          // ─────────────────────
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                children: [
+                  Text('次の階級まで', style: AppTextStyles.caption),
+
+                  Text('2,450 / 3,000 EXP', style: AppTextStyles.caption),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+
+                child: Stack(
+                  children: [
+                    Container(height: 10, color: AppColors.surfaceLight),
+
+                    FractionallySizedBox(
+                      widthFactor: 0.81,
+
+                      child: Container(
+                        height: 10,
+
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppColors.primaryLight, AppColors.primary],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

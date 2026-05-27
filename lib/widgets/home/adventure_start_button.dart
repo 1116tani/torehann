@@ -3,55 +3,85 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../constants/app_colors.dart';
+import '../../constants/app_gradients.dart';
+import '../../constants/app_radius.dart';
+import '../../constants/app_sizes.dart';
+import '../../constants/app_text_styles.dart';
+
 import '../../router/route_names.dart';
-// import '../common/custom_button.dart'; // 💡 今回はこの特大ボタン専用のスタイルにするから使わないよ
-import '../../utils/colors.dart';
 
 class AdventureStartButton extends StatelessWidget {
   const AdventureStartButton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // 💡 うっすらと光のオーラをまとわせる
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.2),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFFB300), // ゴールド・オレンジ系
-            foregroundColor: const Color(0xFF1C1610), // 文字色（ダークブラウン）
-            // 💡 ここがポイント！横幅いっぱい＆縦幅を56pxに太くする！
-            minimumSize: const Size(double.infinity, 56),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSizes.p20),
+
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
+
+          gradient: AppGradients.primaryButton,
+
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.18),
+
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
-            // 💡 光のオーラがあるから、ボタン自体の影（elevation）は0にすると綺麗だよ！
-            elevation: 0,
-          ),
+          ],
+        ),
+
+        child: ElevatedButton(
           onPressed: () {
-            // 💡 みぃくんの書いた画面遷移コードをそのまま活かすよ！
             context.push(AppRoutes.adventureSetting);
           },
-          child: const Row(
+
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 64),
+
+            backgroundColor: Colors.transparent,
+
+            shadowColor: Colors.transparent,
+
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xxl),
+            ),
+          ),
+
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
+
             children: [
-              Icon(Icons.auto_awesome, size: 22), // 💡 魔法っぽいアイコン！
-              SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+
+                  color: AppColors.textPrimary.withValues(alpha: 0.12),
+                ),
+
+                child: const Icon(
+                  Icons.explore_rounded,
+
+                  color: AppColors.textDark,
+
+                  size: 22,
+                ),
+              ),
+
+              const SizedBox(width: AppSizes.p12),
+
               Text(
-                '冒険を出発する',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2, // 文字の間隔を少し開けておしゃれに♡
+                '冒険へ出発する',
+
+                style: AppTextStyles.button.copyWith(
+                  fontSize: 17,
+                  letterSpacing: 0.8,
                 ),
               ),
             ],
