@@ -4,11 +4,9 @@ import 'package:flutter/foundation.dart'; // 💡 kDebugMode用
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../constants/app_sizes.dart';
 import '../models/spot_model.dart';
 
 import '../providers/location_provider.dart';
@@ -21,8 +19,10 @@ import '../widgets/navigation/camera_button.dart';
 import '../widgets/navigation/destination_marker.dart';
 import '../widgets/navigation/fog_effect_overlay.dart';
 
+import '../widgets/navigation/navigation_bottom_button.dart';
+import '../widgets/navigation/navigation_complete_card.dart';
 import '../widgets/navigation/navigation_map_layer.dart';
-import '../widgets/navigation/route_progress_bar.dart';
+import '../widgets/navigation/navigation_top_bar.dart';
 
 class NavigationPage extends ConsumerStatefulWidget {
   const NavigationPage({super.key});
@@ -32,9 +32,13 @@ class NavigationPage extends ConsumerStatefulWidget {
 }
 
 class _NavigationPageState extends ConsumerState<NavigationPage> {
+<<<<<<< HEAD
+  bool _useGoogleMap = false;
+
+=======
   final bool _useGoogleMap = true; // 💡 最初からマップ（Google Maps）を開いた状態に変更
+>>>>>>> f6fb035acfcd648a4312dd36a29e4bb810041937
   GoogleMapController? _mapController;
-  ProviderSubscription<AsyncValue<Position>>? _locationSubscription;
 
   String? _darkMapStyle;
 
@@ -43,24 +47,6 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     super.initState();
 
     _loadMapStyle();
-    _locationSubscription = ref.listenManual(locationProvider, (
-      previous,
-      next,
-    ) {
-      final position = next.value;
-
-      if (position == null) return;
-
-      ref.read(navigationProvider.notifier).updateLocation(position);
-
-      if (_useGoogleMap && _mapController != null) {
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLng(
-            LatLng(position.latitude, position.longitude),
-          ),
-        );
-      }
-    });
   }
 
   Future<void> _loadMapStyle() async {
@@ -68,8 +54,6 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
       final style = await rootBundle.loadString(
         'assets/map_styles/dark_fantasy_map.json',
       );
-
-      if (!mounted) return;
 
       setState(() {
         _darkMapStyle = style;
@@ -79,7 +63,6 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
   @override
   void dispose() {
-    _locationSubscription?.close();
     _mapController?.dispose();
 
     super.dispose();
@@ -94,6 +77,26 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     final locationAsync = ref.watch(locationProvider);
 
     final currentPosition = locationAsync.value;
+
+    // ─────────────────────────────
+    // 🛰️ GPS更新監視
+    // ─────────────────────────────
+
+    ref.listen(locationProvider, (previous, next) {
+      final position = next.value;
+
+      if (position != null) {
+        ref.read(navigationProvider.notifier).updateLocation(position);
+
+        if (_useGoogleMap && _mapController != null) {
+          _mapController!.animateCamera(
+            CameraUpdate.newLatLng(
+              LatLng(position.latitude, position.longitude),
+            ),
+          );
+        }
+      }
+    });
 
     // ─────────────────────────────
     // 🚫 冒険未開始
@@ -129,7 +132,12 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     final isCompleted = navState.nextSpot == null;
 
     return Scaffold(
+<<<<<<< HEAD
+      backgroundColor: const Color(0xFF2C2318),
+
+=======
       backgroundColor: const Color(0xFF2C2318), // ダークセピア
+>>>>>>> f6fb035acfcd648a4312dd36a29e4bb810041937
       body: Stack(
         children: [
           // ─────────────────────────────
@@ -144,7 +152,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
             currentPosition: currentPosition,
 
-            spots: routeSpots,
+            routeSpots: routeSpots,
 
             visitedSpotIds: navState.visitedSpotIds,
 
@@ -155,6 +163,110 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
             },
           ),
 
+<<<<<<< HEAD
+          // ─────────────────────────────
+          // 🌫️ 霧
+          // ─────────────────────────────
+          const FogEffectOverlay(),
+
+          // ─────────────────────────────
+          // 🧭 UI
+          // ─────────────────────────────
+          SafeArea(
+            child: Column(
+              children: [
+                // ───── 上部バー ─────
+                NavigationTopBar(
+                  title: navState.currentRoute?.themeName ?? '未知の探索路',
+
+                  useGoogleMap: _useGoogleMap,
+
+                  onClose: () {
+                    navNotifier.finishAdventure();
+
+                    context.go(AppRoutes.home);
+                  },
+
+                  onToggleMap: () {
+                    setState(() {
+                      _useGoogleMap = !_useGoogleMap;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                // ───── コンパス ─────
+                CompassWidget(
+                  currentPosition: currentPosition,
+
+                  targetSpot: navState.nextSpot,
+                ),
+
+                const Spacer(),
+
+                // ───── 到達カード ─────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: isCompleted
+                      ? const NavigationCompleteCard()
+                      : DestinationMarker(
+                          spot: navState.nextSpot!,
+
+                          distanceToSpot: navState.distanceToNextSpot,
+
+                          isNearby: (navState.distanceToNextSpot ?? 999) < 20,
+                        ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ───── 完了ボタン ─────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: NavigationBottomButton(
+                    isCompleted: isCompleted,
+
+                    onPressed: () {
+                      context.go(AppRoutes.result);
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+
+          // ─────────────────────────────
+          // 📸 カメラボタン
+          // ─────────────────────────────
+          if (!isCompleted)
+            Positioned(
+              right: 20,
+              bottom: 110,
+              child: CameraButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('📷 街の断片を記録した')));
+                },
+              ),
+            ),
+
+          // ─────────────────────────────
+          // 📍 現在地ボタン
+          // ─────────────────────────────
+          if (currentPosition != null)
+            Positioned(
+              right: 20,
+              top: 110,
+              child: FloatingActionButton(
+                mini: true,
+
+                backgroundColor: const Color(0xFF3D2B1F),
+
+=======
           // 2️⃣ 謎の霧エフェクト（雰囲気を醸し出す）
           const FogEffectOverlay(density: 0.5),
 
@@ -250,6 +362,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               child: FloatingActionButton(
                 mini: true,
                 backgroundColor: const Color(0xFF3D2B1F).withValues(alpha: 0.85),
+>>>>>>> f6fb035acfcd648a4312dd36a29e4bb810041937
                 foregroundColor: const Color(0xFFC8A97A),
 
                 onPressed: () {
