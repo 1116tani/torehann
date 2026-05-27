@@ -17,7 +17,7 @@ final appRouter = GoRouter(
     final user = FirebaseAuth.instance.currentUser;
     // 💡 開発中はダミーユーザーを使用しているため、常にログイン済み（true）として扱います。
     // 本番環境で本物のFirebase認証を使用する際は `user != null` に戻してください。
-    final isLoggedIn = user != null || true;
+    final isLoggedIn = user != null ;
 
     final isGoingToAuth = state.matchedLocation == AppRoutes.auth;
 

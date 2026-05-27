@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD-FNH6WfZ3GLNDhigDKjULcDRZUhmaTs8',
+    apiKey: 'AIzaSyD3-spsKjF5mjlxLyO6qq9B9stAGTA-sgA',
     appId: '1:650008545794:android:9fd195f2265148f067751b',
     messagingSenderId: '650008545794',
     projectId: 'tale-trace-app',
