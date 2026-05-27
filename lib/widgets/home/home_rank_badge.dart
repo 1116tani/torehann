@@ -6,6 +6,7 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_radius.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_text_styles.dart';
+import '../../constants/app_ranks.dart';
 
 class HomeRankBadge extends StatelessWidget {
   final int level;
@@ -14,7 +15,7 @@ class HomeRankBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rankData = _getRankData(level);
+    final rankData = RankData.getRankData(level);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -100,74 +101,4 @@ class HomeRankBadge extends StatelessWidget {
       ),
     );
   }
-
-  // ─────────────────────────────
-  // RANK DATA
-  // ─────────────────────────────
-
-  _RankData _getRankData(int level) {
-    if (level >= 50) {
-      return _RankData(
-        title: '神話の著者',
-        color: AppColors.gold,
-        icon: Icons.auto_awesome_rounded,
-      );
-    }
-
-    if (level >= 40) {
-      return _RankData(
-        title: '編纂賢者',
-        color: const Color(0xFFD7DDE8),
-        icon: Icons.menu_book_rounded,
-      );
-    }
-
-    if (level >= 30) {
-      return _RankData(
-        title: '叙事詩の紡ぎ手',
-        color: const Color(0xFF7FA8D1),
-        icon: Icons.history_edu_rounded,
-      );
-    }
-
-    if (level >= 20) {
-      return _RankData(
-        title: '街律の翻訳官',
-        color: const Color(0xFF7BC6B8),
-        icon: Icons.travel_explore_rounded,
-      );
-    }
-
-    if (level >= 10) {
-      return _RankData(
-        title: '街影の追跡者',
-        color: AppColors.secondary,
-        icon: Icons.explore_rounded,
-      );
-    }
-
-    return _RankData(
-      title: '白紙の記録手',
-      color: const Color(0xFFB58A5A),
-      icon: Icons.edit_note_rounded,
-    );
-  }
-}
-
-// ─────────────────────────────
-// MODEL
-// ─────────────────────────────
-
-class _RankData {
-  final String title;
-
-  final Color color;
-
-  final IconData icon;
-
-  const _RankData({
-    required this.title,
-    required this.color,
-    required this.icon,
-  });
 }

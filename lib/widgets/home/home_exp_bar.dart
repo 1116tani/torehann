@@ -6,6 +6,7 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_radius.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_text_styles.dart';
+import '../../constants/app_ranks.dart';
 
 class HomeExpBar extends StatelessWidget {
   final int currentExp;
@@ -22,6 +23,7 @@ class HomeExpBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = currentExp / nextLevelExp;
+    final rankData = RankData.getRankData(level);
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.p16),
@@ -51,15 +53,11 @@ class HomeExpBar extends StatelessWidget {
           // ─────────────────────
           Row(
             children: [
-              Icon(
-                Icons.auto_awesome_rounded,
-                color: AppColors.primary,
-                size: AppSizes.iconM,
-              ),
+              Icon(rankData.icon, color: rankData.color, size: AppSizes.iconM),
 
               const SizedBox(width: AppSizes.p8),
 
-              Text('冒険者ランク', style: AppTextStyles.titleSmall),
+              Text('調査員階級', style: AppTextStyles.titleSmall),
 
               const Spacer(),
 
@@ -70,15 +68,18 @@ class HomeExpBar extends StatelessWidget {
                 ),
 
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: rankData.color.withValues(alpha: 0.12),
 
                   borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(
+                    color: rankData.color.withValues(alpha: 0.2),
+                  ),
                 ),
 
                 child: Text(
                   'Lv.$level',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.primaryLight,
+                    color: rankData.color,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -91,11 +92,19 @@ class HomeExpBar extends StatelessWidget {
           // ─────────────────────
           // RANK NAME
           // ─────────────────────
-          Text(_getRankName(level), style: AppTextStyles.titleMedium),
+          Text(
+            rankData.title,
+            style: AppTextStyles.titleMedium.copyWith(color: rankData.color),
+          ),
 
           const SizedBox(height: 6),
 
-          Text(_getRankDescription(level), style: AppTextStyles.subtitle),
+          Text(
+            rankData.description,
+            style: AppTextStyles.subtitle.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
 
           const SizedBox(height: AppSizes.p20),
 
@@ -106,11 +115,19 @@ class HomeExpBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
             children: [
-              Text('次の階級まで', style: AppTextStyles.caption),
+              Text(
+                '次の階級への断片',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
 
               Text(
                 '$currentExp / $nextLevelExp EXP',
-                style: AppTextStyles.caption,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -139,7 +156,10 @@ class HomeExpBar extends StatelessWidget {
 
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.primaryLight, AppColors.primary],
+                        colors: [
+                          rankData.color.withValues(alpha: 0.6),
+                          rankData.color,
+                        ],
                       ),
                     ),
                   ),
@@ -150,61 +170,5 @@ class HomeExpBar extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  // ─────────────────────────────
-  // ランク名
-  // ─────────────────────────────
-
-  String _getRankName(int level) {
-    if (level >= 50) {
-      return '終焉なき神話の著者';
-    }
-
-    if (level >= 40) {
-      return '万象の編纂賢者';
-    }
-
-    if (level >= 30) {
-      return '叙事詩の紡ぎ手';
-    }
-
-    if (level >= 20) {
-      return '街律の翻訳官';
-    }
-
-    if (level >= 10) {
-      return '街影の追跡者';
-    }
-
-    return '白紙の記録手';
-  }
-
-  // ─────────────────────────────
-  // ランク説明
-  // ─────────────────────────────
-
-  String _getRankDescription(int level) {
-    if (level >= 50) {
-      return '歩みそのものが世界の神話となる存在';
-    }
-
-    if (level >= 40) {
-      return '世界の断片を編纂する賢者';
-    }
-
-    if (level >= 30) {
-      return '歩みを物語へ変える語り部';
-    }
-
-    if (level >= 20) {
-      return '街に眠る物語を読み解く者';
-    }
-
-    if (level >= 10) {
-      return '失われた痕跡を追う探索者';
-    }
-
-    return 'まだ何も記されていない旅人';
   }
 }
