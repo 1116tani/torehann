@@ -1,8 +1,15 @@
-//lib/widgets/common/custom_scaffold.dart
+// lib/widgets/common/custom_scaffold.dart
+
 import 'package:flutter/material.dart';
+
+import '../../constants/app_colors.dart';
+import '../../constants/app_radius.dart';
+import '../../constants/app_sizes.dart';
+import '../../constants/app_text_styles.dart';
 
 class CustomScaffold extends StatelessWidget {
   final Widget child;
+
   final String? title;
 
   final List<Widget>? actions;
@@ -11,6 +18,12 @@ class CustomScaffold extends StatelessWidget {
 
   final bool showBackButton;
 
+  final EdgeInsetsGeometry? padding;
+
+  final bool useSafeArea;
+
+  final Widget? bottomNavigationBar;
+
   const CustomScaffold({
     super.key,
     required this.child,
@@ -18,38 +31,40 @@ class CustomScaffold extends StatelessWidget {
     this.actions,
     this.floatingActionButton,
     this.showBackButton = true,
+    this.padding,
+    this.useSafeArea = true,
+    this.bottomNavigationBar,
   });
 
   @override
   Widget build(BuildContext context) {
+    final body = Padding(
+      padding: padding ?? const EdgeInsets.all(AppSizes.p16),
+      child: child,
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610),
+      backgroundColor: AppColors.background,
+
+      extendBody: true,
 
       appBar: title != null
           ? AppBar(
-              backgroundColor: const Color(0xFF2C2318),
-              elevation: 0,
-              centerTitle: true,
+              automaticallyImplyLeading: false,
 
               leading: showBackButton
-                  ? IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Color(0xFFC8A97A),
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: AppSizes.p8),
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
                     )
                   : null,
 
-              title: Text(
-                title!,
-                style: const TextStyle(
-                  color: Color(0xFFF5EDD8),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              title: Text(title!, style: AppTextStyles.titleMedium),
 
               actions: actions,
             )
@@ -57,9 +72,9 @@ class CustomScaffold extends StatelessWidget {
 
       floatingActionButton: floatingActionButton,
 
-      body: SafeArea(
-        child: child,
-      ),
+      bottomNavigationBar: bottomNavigationBar,
+
+      body: useSafeArea ? SafeArea(child: body) : body,
     );
   }
 }

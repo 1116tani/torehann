@@ -1,89 +1,238 @@
 // lib/themes/app_theme.dart
+
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
+
+import '../constants/app_colors.dart';
+import '../constants/app_gradients.dart';
+import '../constants/app_radius.dart';
+import '../constants/app_shadows.dart';
+import '../constants/app_sizes.dart';
+import '../constants/app_text_styles.dart';
 
 class AppTheme {
-  // ダークテーマの定義
   static ThemeData get darkTheme {
-    // 💡 修正ポイント：ThemeData.dark() ではなく、ここを最新の書き方に直したよ！
-    final baseTheme = ThemeData(brightness: Brightness.dark);
+    final base = ThemeData.dark();
 
-    return baseTheme.copyWith(
-      primaryColor: AppColors.primary,
+    return base.copyWith(
+      useMaterial3: true,
+
+      brightness: Brightness.dark,
+
       scaffoldBackgroundColor: AppColors.background,
 
-      // 🏰 カラーパレットのベース全体を世界観に合わせるよ！
+      primaryColor: AppColors.primary,
+
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+
+      // ─────────────────────────────────
+      // 🎨 Color Scheme
+      // ─────────────────────────────────
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
         primaryContainer: AppColors.primaryDark,
-        secondary: AppColors.primaryLight,
+
+        secondary: AppColors.secondary,
+
         surface: AppColors.surface,
-        onPrimary: AppColors.background, // ゴールドの上の文字は暗い色にして読みやすく
+
+        onPrimary: AppColors.textDark,
+        onSecondary: AppColors.textDark,
+
         onSurface: AppColors.textPrimary,
+
+        error: AppColors.error,
       ),
 
-      // 📜 テキストテーマ（標準の文字色を羊皮紙ホワイトにする魔法）
-      textTheme: baseTheme.textTheme.copyWith(
-        bodyLarge: const TextStyle(color: AppColors.textPrimary),
-        bodyMedium: const TextStyle(color: AppColors.textSecondary),
-        titleLarge: const TextStyle(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.bold,
-        ),
+      // ─────────────────────────────────
+      // 📝 Typography
+      // ─────────────────────────────────
+      textTheme: const TextTheme(
+        titleLarge: AppTextStyles.titleLarge,
+        titleMedium: AppTextStyles.titleMedium,
+        titleSmall: AppTextStyles.titleSmall,
+
+        bodyLarge: AppTextStyles.bodyLarge,
+        bodyMedium: AppTextStyles.bodyMedium,
+        bodySmall: AppTextStyles.bodySmall,
+
+        labelLarge: AppTextStyles.button,
       ),
 
-      // 🏛️ アプリバーの共通デザイン
+      // ─────────────────────────────────
+      // 🏛 AppBar
+      // ─────────────────────────────────
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surface,
-        elevation: 4,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+
         centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
-        titleTextStyle: TextStyle(
+
+        backgroundColor: Colors.transparent,
+
+        foregroundColor: AppColors.textPrimary,
+
+        iconTheme: IconThemeData(
           color: AppColors.textPrimary,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
+          size: AppSizes.iconM,
         ),
+
+        titleTextStyle: AppTextStyles.titleMedium,
       ),
 
-      // ⚔️ ボタンの共通デザイン（有効時と無効時で自動で色が切り替わるよ）
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.background, // 文字はセピア背景色でクッキリ
-          disabledBackgroundColor: AppColors.border, // 無効時は暗い茶色に
-          disabledForegroundColor: AppColors.textMuted,
-          elevation: 2,
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // 角丸
-            side: const BorderSide(
-              color: AppColors.border,
-              width: 1,
-            ), // うっすらアンティークな枠線
-          ),
-          textStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            letterSpacing: 1.1,
-          ),
-        ),
-      ),
-
-      // 🔮 丸いボタン（FloatingActionButton）の共通デザイン
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.background,
-        elevation: 6,
-      ),
-
-      // 🎴 カードの共通デザイン
+      // ─────────────────────────────────
+      // 🎴 Card
+      // ─────────────────────────────────
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: 3,
+
+        elevation: 0,
+
+        shadowColor: Colors.transparent,
+
+        margin: const EdgeInsets.all(AppSizes.p8),
+
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+
           side: const BorderSide(color: AppColors.border, width: 1),
+        ),
+      ),
+
+      // ─────────────────────────────────
+      // 🔘 Elevated Button
+      // ─────────────────────────────────
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+
+          backgroundColor: AppColors.primary,
+
+          foregroundColor: AppColors.textDark,
+
+          disabledBackgroundColor: AppColors.surfaceLight,
+
+          disabledForegroundColor: AppColors.textMuted,
+
+          minimumSize: const Size(double.infinity, AppSizes.buttonHeight),
+
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.p24,
+            vertical: AppSizes.p16,
+          ),
+
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.button),
+
+            side: const BorderSide(color: AppColors.border, width: 1),
+          ),
+
+          textStyle: AppTextStyles.button,
+        ),
+      ),
+
+      // ─────────────────────────────────
+      // 🔲 Outlined Button
+      // ─────────────────────────────────
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.textPrimary,
+
+          minimumSize: const Size(double.infinity, AppSizes.buttonHeight),
+
+          side: const BorderSide(color: AppColors.border),
+
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.button),
+          ),
+
+          textStyle: AppTextStyles.button,
+        ),
+      ),
+
+      // ─────────────────────────────────
+      // 🧭 Bottom Sheet
+      // ─────────────────────────────────
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.transparent,
+
+        surfaceTintColor: Colors.transparent,
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.bottomSheet),
+          ),
+        ),
+      ),
+
+      // ─────────────────────────────────
+      // 💬 Dialog
+      // ─────────────────────────────────
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surface,
+
+        elevation: 0,
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.dialog),
+
+          side: const BorderSide(color: AppColors.border),
+        ),
+      ),
+
+      // ─────────────────────────────────
+      // ✨ Floating Action Button
+      // ─────────────────────────────────
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+
+        foregroundColor: AppColors.textDark,
+
+        elevation: 0,
+      ),
+
+      // ─────────────────────────────────
+      // 📍 Divider
+      // ─────────────────────────────────
+      dividerTheme: const DividerThemeData(
+        color: AppColors.divider,
+        thickness: 1,
+        space: 1,
+      ),
+
+      // ─────────────────────────────────
+      // 📥 Input
+      // ─────────────────────────────────
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+
+        fillColor: AppColors.surfaceLight,
+
+        hintStyle: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.textMuted,
+        ),
+
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSizes.p16,
+          vertical: AppSizes.p16,
+        ),
+
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
         ),
       ),
     );

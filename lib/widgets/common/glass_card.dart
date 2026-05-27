@@ -1,41 +1,61 @@
 // lib/widgets/common/glass_card.dart
+
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import '../../utils/colors.dart'; // 💡 AppColorsをインポート
+
+import '../../constants/app_colors.dart';
+import '../../constants/app_radius.dart';
+import '../../constants/app_shadows.dart';
+import '../../constants/app_sizes.dart';
 
 class GlassCard extends StatelessWidget {
   final Widget child;
+
   final double blur;
-  final double opacity;
-  final double borderRadius;
+
   final EdgeInsetsGeometry padding;
+
+  final double borderRadius;
+
+  final bool useBorder;
+
+  final bool useShadow;
 
   const GlassCard({
     super.key,
     required this.child,
-    this.blur = 10.0,
-    this.opacity = 0.15, // 💡 少しだけ濃く
-    this.borderRadius = 16.0,
-    this.padding = const EdgeInsets.all(16.0),
+    this.blur = AppSizes.blurM,
+    this.padding = const EdgeInsets.all(AppSizes.p16),
+    this.borderRadius = AppRadius.card,
+    this.useBorder = true,
+    this.useShadow = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
+
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+
         child: Container(
           padding: padding,
+
           decoration: BoxDecoration(
-            // 💡 ゴールド（Primary）をうっすら混ぜた魔法のガラス
-            color: AppColors.primary.withValues(alpha: opacity),
+            // 🌌 半透明のダークブラウン
+            color: AppColors.sheetBackground,
+
             borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.2), // 💡 縁もゴールドに光らせる
-              width: 1.0,
-            ),
+
+            border: useBorder
+                ? Border.all(color: AppColors.glassBorder, width: 1)
+                : null,
+
+            boxShadow: useShadow ? AppShadows.glass : null,
           ),
+
           child: child,
         ),
       ),
