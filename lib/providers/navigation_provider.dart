@@ -144,6 +144,38 @@ class NavigationNotifier extends Notifier<NavigationState> {
     }
   }
 
+  // 🧪 デバッグ・ハッカソン用：現在の目的地に強制チェックインする
+  void forceCheckInNextSpot() {
+    if (!state.isAdventureStarted || state.currentRoute == null || state.nextSpot == null) return;
+
+    final route = state.currentRoute!;
+    final spots = ref.read(dummySpotsProvider);
+    final updatedVisitedSpots = Set<String>.from(state.visitedSpotIds)..add(state.nextSpot!.id);
+
+    // 次のスポットを探す
+    SpotModel? targetSpot;
+    for (final spotId in route.spotIds) {
+      if (!updatedVisitedSpots.contains(spotId)) {
+        targetSpot = spots[spotId];
+        break;
+      }
+    }
+
+    final totalSpots = route.spotIds.length;
+    final progress = totalSpots > 0
+        ? (updatedVisitedSpots.length / totalSpots).clamp(0.0, 1.0)
+        : 1.0;
+
+    state = state.copyWith(
+      visitedSpotIds: updatedVisitedSpots,
+      nextSpot: targetSpot,
+      clearNextSpot: targetSpot == null,
+      distanceToNextSpot: null,
+      clearDistance: true,
+      progress: progress,
+    );
+  }
+
   // 🏁 冒険を終了する
   void finishAdventure() {
     state = const NavigationState();
