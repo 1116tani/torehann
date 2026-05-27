@@ -27,7 +27,7 @@ class NavigationPage extends ConsumerStatefulWidget {
 }
 
 class _NavigationPageState extends ConsumerState<NavigationPage> {
-  bool _useGoogleMap = true; // 💡 最初からマップ（Google Maps）を開いた状態に変更
+  final bool _useGoogleMap = true; // 💡 最初からマップ（Google Maps）を開いた状態に変更
   GoogleMapController? _mapController;
   String? _darkMapStyle;
 
@@ -223,19 +223,8 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                               ),
                             ),
                           ),
-                          // マップ切り替えボタン
-                          IconButton(
-                            icon: Icon(
-                              _useGoogleMap ? Icons.map_outlined : Icons.explore_outlined,
-                              color: const Color(0xFFC8A97A),
-                            ),
-                            tooltip: _useGoogleMap ? '手書き古地図を表示' : 'Google Mapを表示',
-                            onPressed: () {
-                              setState(() {
-                                _useGoogleMap = !_useGoogleMap;
-                              });
-                            },
-                          ),
+                          // タイトルを中央に配置するためのダミー枠
+                          const SizedBox(width: 48),
                         ],
                       ),
                     ),
