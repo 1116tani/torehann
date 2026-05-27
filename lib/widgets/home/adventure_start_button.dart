@@ -13,7 +13,7 @@ class AdventureStartButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // 💡 みぃくんが作ってくれた、うっすらと光のオーラをまとわせる魔法はそのまま！
+      // 💡 うっすらと光のオーラをまとわせる
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
@@ -35,7 +35,7 @@ class AdventureStartButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(28),
             ),
             // 💡 光のオーラがあるから、ボタン自体の影（elevation）は0にすると綺麗だよ！
-            elevation: 0, 
+            elevation: 0,
           ),
           onPressed: () {
             // 💡 みぃくんの書いた画面遷移コードをそのまま活かすよ！
