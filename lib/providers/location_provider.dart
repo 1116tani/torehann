@@ -1,39 +1,55 @@
 // lib/providers/location_provider.dart
 
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
-final locationProvider = StreamProvider<Position?>((ref) async* {
-  // ── 位置情報サービスの確認 ──
-  final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-    yield null;
-    return;
-  }
+import '../services/location_service.dart';
 
-  // ── 権限の確認・リクエスト ──
-  var permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) {
-      yield null;
-      return;
-    }
-  }
+// ─────────────────────────────
+// 📍 LocationService Provider
+// ─────────────────────────────
 
-  if (permission == LocationPermission.deniedForever) {
-    yield null;
-    return;
-  }
+final locationServiceProvider = Provider<LocationService>((ref) {
+  return LocationService();
+});
 
-  // ── 位置情報ストリームを流す ──
-  const locationSettings = LocationSettings(
-    accuracy: LocationAccuracy.high,
-    distanceFilter: 5, // 5m動いたら更新
-  );
+// ─────────────────────────────
+// 📡 現在地ストリーム Provider
+// ─────────────────────────────
 
-  // Position → Position? にキャストして流す
-  yield* Geolocator.getPositionStream(
-    locationSettings: locationSettings,
-  ).map((position) => position as Position?);
+final locationProvider = StreamProvider.autoDispose<Position>((ref) {
+  final locationService = ref.read(locationServiceProvider);
+
+  return locationService.getLocationStream();
+});
+
+// ─────────────────────────────
+// 📍 現在地取得 Provider
+// 単発取得用
+// ─────────────────────────────
+
+final currentLocationProvider = FutureProvider<Position>((ref) async {
+  final locationService = ref.read(locationServiceProvider);
+
+  return locationService.getCurrentLocation();
+});
+
+// ─────────────────────────────
+// 🛰️ GPS状態監視
+// ─────────────────────────────
+
+final locationServiceStatusProvider = StreamProvider<ServiceStatus>((ref) {
+  return Geolocator.getServiceStatusStream();
+});
+
+// ─────────────────────────────
+// 📍 権限状態取得
+// ─────────────────────────────
+
+final locationPermissionProvider = FutureProvider<LocationPermission>((
+  ref,
+) async {
+  return Geolocator.checkPermission();
 });

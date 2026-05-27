@@ -1,12 +1,15 @@
 // lib/widgets/navigation/destination_marker.dart
 
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+
 import '../../models/spot_model.dart';
 
 class DestinationMarker extends StatelessWidget {
-  final SpotModel spot; // 次の目的地スポット
-  final double? distanceToSpot; // 距離（m）
-  final bool isNearby; // 20m以内かどうか
+  final SpotModel spot;
+  final double? distanceToSpot;
+  final bool isNearby;
 
   const DestinationMarker({
     super.key,
@@ -17,186 +20,226 @@ class DestinationMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isNearby
-            ? const Color(0xFF1A3A2A) // 近くにいる時は緑っぽく
-            : const Color(0xFF3D2B1F),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isNearby ? const Color(0xFF57D6C9) : const Color(0xFFC8A97A),
-          width: isNearby ? 1.5 : 0.5,
-        ),
-        boxShadow: isNearby
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF57D6C9).withValues(alpha: 0.25),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
-      child: Row(
-        children: [
-          // ── アイコン ──
-          _SpotIcon(isNearby: isNearby, category: spot.category),
-          const SizedBox(width: 12),
+    final title = spot.aiStoryName.isNotEmpty ? spot.aiStoryName : spot.name;
 
-          // ── スポット情報 ──
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 近くにいる時のバナー
-                if (isNearby) ...[
-                  const Text(
-                    '📍 到達しました！',
-                    style: TextStyle(
-                      color: Color(0xFF57D6C9),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                ],
-
-                // AIが付けた物語風の名前
-                Text(
-                  spot.aiStoryName.isNotEmpty ? spot.aiStoryName : spot.name,
-                  style: TextStyle(
-                    color: isNearby ? Colors.white : const Color(0xFFF5EDD8),
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-
-                // 実際のスポット名
-                if (spot.aiStoryName.isNotEmpty)
-                  Text(
-                    spot.name,
-                    style: const TextStyle(
-                      color: Color(0xFF7A5C3A),
-                      fontSize: 11,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-
-                // フレーバーテキスト（近くにいる時だけ表示）
-                if (isNearby && spot.aiFlavorText.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    spot.aiFlavorText,
-                    style: const TextStyle(
-                      color: Color(0xFF57D6C9),
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: isNearby ? const Color(0xCC143227) : const Color(0xAA1F1813),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isNearby
+                  ? const Color(0xFF6FE7D8)
+                  : const Color(0x55D6B06A),
+              width: 1.3,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+              if (isNearby)
+                BoxShadow(
+                  color: const Color(0xFF6FE7D8).withValues(alpha: 0.18),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+            ],
           ),
 
-          const SizedBox(width: 8),
+          child: Row(
+            children: [
+              _SpotIcon(category: spot.category, isNearby: isNearby),
 
-          // ── 距離表示 ──
-          if (distanceToSpot != null && !isNearby)
-            _DistanceBadge(distance: distanceToSpot!),
-        ],
+              const SizedBox(width: 16),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (isNearby) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0x226FE7D8),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: const Text(
+                          'DISCOVERED',
+                          style: TextStyle(
+                            color: Color(0xFF6FE7D8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+                    ],
+
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isNearby
+                            ? Colors.white
+                            : const Color(0xFFF5EDD8),
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+
+                    if (spot.aiStoryName.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+
+                      Text(
+                        spot.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF9E8465),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+
+                    if (spot.aiFlavorText.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+
+                      Text(
+                        spot.aiFlavorText,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isNearby
+                              ? const Color(0xFFA7FFF4)
+                              : const Color(0xCCF5EDD8),
+                          fontSize: 12,
+                          height: 1.45,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              if (distanceToSpot != null && !isNearby)
+                _DistanceBadge(distance: distanceToSpot!),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-// ── スポットアイコン ──────────────────────────
-class _SpotIcon extends StatelessWidget {
-  final bool isNearby;
-  final String category;
+// ─────────────────────────────
+// 📍 スポットアイコン
+// ─────────────────────────────
 
-  const _SpotIcon({required this.isNearby, required this.category});
+class _SpotIcon extends StatelessWidget {
+  final String category;
+  final bool isNearby;
+
+  const _SpotIcon({required this.category, required this.isNearby});
 
   @override
   Widget build(BuildContext context) {
-    final icon = _iconForCategory(category);
+    final icon = _getIcon();
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: 44,
-      height: 44,
+      duration: const Duration(milliseconds: 250),
+      width: 58,
+      height: 58,
       decoration: BoxDecoration(
-        color: isNearby
-            ? const Color(0xFF57D6C9).withValues(alpha: 0.2)
-            : const Color(0xFFB8860B).withValues(alpha: 0.15),
         shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: isNearby
+              ? [const Color(0x446FE7D8), const Color(0x22143227)]
+              : [const Color(0x33D6B06A), const Color(0x11221813)],
+        ),
         border: Border.all(
-          color: isNearby ? const Color(0xFF57D6C9) : const Color(0xFFB8860B),
-          width: 1.5,
+          color: isNearby ? const Color(0xFF6FE7D8) : const Color(0x88D6B06A),
+          width: 1.4,
         ),
       ),
       child: Icon(
         icon,
-        size: 22,
-        color: isNearby ? const Color(0xFF57D6C9) : const Color(0xFFB8860B),
+        size: 26,
+        color: isNearby ? const Color(0xFF6FE7D8) : const Color(0xFFD6B06A),
       ),
     );
   }
 
-  IconData _iconForCategory(String category) {
+  IconData _getIcon() {
     return switch (category) {
       'カフェ' => Icons.coffee,
       '公園' => Icons.park,
       '神社' => Icons.temple_buddhist,
       '史跡' => Icons.account_balance,
       '商店街' => Icons.storefront,
-      '路地裏' => Icons.turn_right,
+      '路地裏' => Icons.route,
+      '風景' => Icons.landscape,
       _ => Icons.place,
     };
   }
 }
 
-// ── 距離バッジ ──────────────────────────────
+// ─────────────────────────────
+// 🧭 距離表示
+// ─────────────────────────────
+
 class _DistanceBadge extends StatelessWidget {
   final double distance;
 
   const _DistanceBadge({required this.distance});
 
-  String get _label {
+  String get label {
     if (distance >= 1000) {
       return '${(distance / 1000).toStringAsFixed(1)}km';
     }
+
     return '${distance.toInt()}m';
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      width: 68,
+      padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF7A5C3A), width: 0.5),
+        color: const Color(0xAA18120E),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0x44D6B06A)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.navigation, size: 12, color: Color(0xFFC8A97A)),
-          const SizedBox(height: 2),
+          const Icon(Icons.navigation, size: 15, color: Color(0xFFD6B06A)),
+
+          const SizedBox(height: 4),
+
           Text(
-            _label,
+            label,
             style: const TextStyle(
-              color: Color(0xFFC8A97A),
-              fontSize: 11,
+              color: Color(0xFFF5EDD8),
+              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),
