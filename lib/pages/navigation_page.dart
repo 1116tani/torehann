@@ -1,6 +1,7 @@
 // lib/pages/navigation_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // 💡 kDebugMode用
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -391,6 +392,43 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                   }
                 },
                 child: const Icon(Icons.my_location, size: 20),
+              ),
+            ),
+
+          // 🧪 ハッカソン・開発テスト用の強制チェックインボタン (デバッグビルド時のみ表示)
+          if (kDebugMode && !isCompleted)
+            Positioned(
+              left: 16,
+              top: 100,
+              child: ActionChip(
+                backgroundColor: const Color(0xFFCC3333).withValues(alpha: 0.85),
+                side: const BorderSide(color: Color(0xFFC8A97A), width: 1),
+                label: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.bolt, size: 14, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text(
+                      'デバッグ: 到着判定',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  ref.read(navigationProvider.notifier).forceCheckInNextSpot();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('⚡ デバッグ：次のスポットへ強制移動しました！'),
+                      backgroundColor: Color(0xFFCC3333),
+                      duration: Duration(seconds: 1),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
               ),
             ),
         ],
