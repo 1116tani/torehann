@@ -16,7 +16,7 @@ final loggerProvider = Provider((ref) => Logger());
 final authStateProvider = StreamProvider<User?>((ref) {
   // 💡 ダミーのユーザーオブジェクトを作って、強制的に「ログイン済み」にしちゃうよ！
   // これで AuthGate は絶対に HomeScreen を開いてくれます！
-  return Stream.value(FirebaseAuth.instance.currentUser ?? _DummyUser());
+  return FirebaseAuth.instance.authStateChanges();
 });
 
 /// ── 💡 匿名ログインの処理を担当するコントローラー ──
@@ -32,8 +32,7 @@ class AuthController {
   Future<UserCredential?> signInAnonymously() async {
     try {
       // 💡 Firebaseのエラーで止まらないように、ここもお休みさせるよ
-      _logger.i('デバッグ中だからFirebase通信はスキップするよ！');
-      return null;
+      return await FirebaseAuth.instance.signInAnonymously();
     } catch (e) {
       _logger.e('サインインに失敗しました…: $e');
       return null;
@@ -47,11 +46,3 @@ class AuthController {
 }
 
 // 💡 強制ホーム用のダミーユーザー定義（一応用意しておくね）
-class _DummyUser implements User {
-  @override
-  String get uid => 'dummy_master_mii_kun';
-  @override
-  bool get isAnonymous => true;
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
