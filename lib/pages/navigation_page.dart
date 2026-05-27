@@ -1,7 +1,7 @@
 // lib/pages/navigation_page.dart
 
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // 💡 kDebugMode用
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,7 +14,6 @@ import '../providers/navigation_provider.dart';
 import '../providers/route_provider.dart'; // 💡 dummySpotsProvider 用
 import '../router/route_names.dart';
 import '../widgets/navigation/camera_button.dart';
-import '../widgets/navigation/compass_widget.dart';
 import '../widgets/navigation/destination_marker.dart';
 import '../widgets/navigation/fog_effect_overlay.dart';
 import '../widgets/navigation/retro_mock_map.dart';
@@ -28,7 +27,7 @@ class NavigationPage extends ConsumerStatefulWidget {
 }
 
 class _NavigationPageState extends ConsumerState<NavigationPage> {
-  bool _useGoogleMap = false; // 💡 デフォルトはGoogle Mapsを使わない模擬マップモード
+  bool _useGoogleMap = true; // 💡 最初からマップ（Google Maps）を開いた状態に変更
   GoogleMapController? _mapController;
   String? _darkMapStyle;
 
@@ -119,41 +118,6 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF2C2318), // ダークセピア
-      appBar: AppBar(
-        title: Text(
-          navState.currentRoute?.themeName ?? '未知の探索路',
-          style: const TextStyle(
-            color: Color(0xFFF5EDD8),
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-        ),
-        backgroundColor: const Color(0xFF3D2B1F),
-        elevation: 4,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Color(0xFFF5EDD8)),
-          onPressed: () {
-            navNotifier.finishAdventure();
-            context.go(AppRoutes.home);
-          },
-        ),
-        actions: [
-          // 🗺️ 地図切替ボタン（Google Maps ⇆ 古地図）
-          IconButton(
-            icon: Icon(
-              _useGoogleMap ? Icons.map_outlined : Icons.explore_outlined,
-              color: const Color(0xFFC8A97A),
-            ),
-            tooltip: _useGoogleMap ? '手書き古地図を表示' : 'Google Mapを表示',
-            onPressed: () {
-              setState(() {
-                _useGoogleMap = !_useGoogleMap;
-              });
-            },
-          ),
-        ],
-      ),
       body: Stack(
         children: [
           // 1️⃣ マップレイヤー（Google Map または 模擬マップ）
@@ -211,166 +175,111 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
           ),
 
           // 2️⃣ 謎の霧エフェクト（雰囲気を醸し出す）
-          const FogEffectOverlay(density: 0.6),
+          const FogEffectOverlay(density: 0.5),
 
-          // 3️⃣ ナビゲーションUI要素
-          Column(
-            children: [
-              // 進行度プログレスバー
-              RouteProgressBar(
-                progress: navState.progress,
-                visitedCount: navState.visitedSpotIds.length,
-                totalCount: routeSpots.length,
-                distanceToNext: navState.distanceToNextSpot,
+          // 3️⃣ 上部ヘッダー（半透明グラデーションを効かせたAppBar ＋ 進行度プログレスバー）
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF2C2318).withValues(alpha: 0.95),
+                    const Color(0xFF2C2318).withValues(alpha: 0.80),
+                    Colors.transparent,
+                  ],
+                ),
               ),
-
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSizes.p24,
-                      vertical: AppSizes.p20,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: AppSizes.p12),
-
-                        // 🧭 魔導羅針盤コンパス
-                        CompassWidget(
-                          currentPosition: currentPosition,
-                          targetSpot: navState.nextSpot,
-                        ),
-
-                        const SizedBox(height: AppSizes.p24),
-
-                        // 📍 ナビゲーションメインカード
-                        if (navState.nextSpot != null)
-                          DestinationMarker(
-                            spot: navState.nextSpot!,
-                            distanceToSpot: navState.distanceToNextSpot,
-                            isNearby: (navState.distanceToNextSpot ?? 999.0) < 20.0,
-                          )
-                        else ...[
-                          // すべてクリア時の表示
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(AppSizes.p24),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3D2B1F).withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                              border: Border.all(
-                                color: const Color(0xFFC8A97A),
-                                width: 1,
-                              ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black45,
-                                  blurRadius: 8,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Column(
-                              children: [
-                                Icon(
-                                  Icons.auto_awesome,
-                                  size: 48,
-                                  color: Color(0xFFC8A97A),
-                                ),
-                                SizedBox(height: AppSizes.p16),
-                                Text(
-                                  '調査任務コンプリート！',
-                                  style: TextStyle(
-                                    color: Color(0xFFF5EDD8),
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: AppSizes.p12),
-                                Text(
-                                  'この地のすべての断片（テール）を記録しました。拠点へ戻って成果を確認しましょう！',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Color(0xFF9E8465),
-                                    fontSize: 13,
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-
-                        const SizedBox(height: AppSizes.p20),
-
-                        // 📸 カメラ起動ボタン
-                        if (!isCompleted)
-                          CameraButton(
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // カスタム AppBar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Color(0xFFF5EDD8)),
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('📷 パシャリ！街の断片を写真に収めた！'),
-                                  backgroundColor: Color(0xFF3D2B1F),
-                                  duration: Duration(seconds: 2),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
+                              navNotifier.finishAdventure();
+                              context.go(AppRoutes.home);
                             },
                           ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // 最下部固定：冒険完了ボタン
-              Padding(
-                padding: const EdgeInsets.all(AppSizes.p24),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: isCompleted
-                        ? () {
-                            context.go(AppRoutes.result);
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC8A97A),
-                      foregroundColor: const Color(0xFF2C2318),
-                      disabledBackgroundColor: const Color(0xFF3D2B1F),
-                      disabledForegroundColor: const Color(0xFF7A5C3A),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppSizes.radiusM),
-                        side: BorderSide(
-                          color: isCompleted ? Colors.transparent : const Color(0xFF4A3728),
-                        ),
-                      ),
-                      elevation: isCompleted ? 4 : 0,
-                    ),
-                    child: Text(
-                      isCompleted ? '冒険の記録を報告する' : 'すべてのスポットを調査してください',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                          Expanded(
+                            child: Text(
+                              navState.currentRoute?.themeName ?? '未知の探索路',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Color(0xFFF5EDD8),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                          // マップ切り替えボタン
+                          IconButton(
+                            icon: Icon(
+                              _useGoogleMap ? Icons.map_outlined : Icons.explore_outlined,
+                              color: const Color(0xFFC8A97A),
+                            ),
+                            tooltip: _useGoogleMap ? '手書き古地図を表示' : 'Google Mapを表示',
+                            onPressed: () {
+                              setState(() {
+                                _useGoogleMap = !_useGoogleMap;
+                              });
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                    // 進行度プログレスバー
+                    RouteProgressBar(
+                      progress: navState.progress,
+                      visitedCount: navState.visitedSpotIds.length,
+                      totalCount: routeSpots.length,
+                      distanceToNext: navState.distanceToNextSpot,
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
 
-          // 模擬マップ操作時の現在地ボタン（Google Maps非アクティブ時も動作）
-          if (currentPosition != null)
+          // 4️⃣ 中間〜下部フローティング操作ボタン群
+          // 📸 カメラ起動ボタン (未クリア時のみ、右下に浮かせる)
+          if (!isCompleted)
             Positioned(
               right: 16,
-              top: 100,
+              bottom: 146, // 目的地カードの上側
+              child: CameraButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('📷 パシャリ！街の断片を写真に収めた！'),
+                      backgroundColor: Color(0xFF3D2B1F),
+                      duration: Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+            ),
+
+          // 現在地追従ボタン (右側、カメラボタンの上側)
+          if (currentPosition != null)
+            Positioned(
+              right: 28, // カメラボタンの中心軸と合わせるための微調整
+              bottom: isCompleted ? 100 : 252,
               child: FloatingActionButton(
                 mini: true,
-                backgroundColor: const Color(0xFF3D2B1F),
+                backgroundColor: const Color(0xFF3D2B1F).withValues(alpha: 0.85),
                 foregroundColor: const Color(0xFFC8A97A),
                 onPressed: () {
                   if (_useGoogleMap && _mapController != null) {
@@ -395,11 +304,11 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               ),
             ),
 
-          // 🧪 ハッカソン・開発テスト用の強制チェックインボタン (デバッグビルド時のみ表示)
+          // 🧪 ハッカソン用：デバッグ到着判定ボタン (左下、カードの上側)
           if (kDebugMode && !isCompleted)
             Positioned(
               left: 16,
-              top: 100,
+              bottom: 146,
               child: ActionChip(
                 backgroundColor: const Color(0xFFCC3333).withValues(alpha: 0.85),
                 side: const BorderSide(color: Color(0xFFC8A97A), width: 1),
@@ -409,7 +318,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                     Icon(Icons.bolt, size: 14, color: Colors.white),
                     SizedBox(width: 4),
                     Text(
-                      'デバッグ: 到着判定',
+                      '到着判定',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -431,6 +340,45 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                 },
               ),
             ),
+
+          // 5️⃣ 最下部：次の目的地カード または 冒険報告ボタン
+          Positioned(
+            bottom: 24,
+            left: 16,
+            right: 16,
+            child: isCompleted
+                ? SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.go(AppRoutes.result);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFC8A97A),
+                        foregroundColor: const Color(0xFF2C2318),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: const Text(
+                        '冒険の記録を報告する',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  )
+                : (navState.nextSpot != null
+                    ? DestinationMarker(
+                        spot: navState.nextSpot!,
+                        distanceToSpot: navState.distanceToNextSpot,
+                        isNearby: (navState.distanceToNextSpot ?? 999.0) < 20.0,
+                      )
+                    : const SizedBox.shrink()),
+          ),
         ],
       ),
     );

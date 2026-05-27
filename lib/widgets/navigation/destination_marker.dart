@@ -19,12 +19,12 @@ class DestinationMarker extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isNearby
-            ? const Color(0xFF1A3A2A) // 近くにいる時は緑っぽく
-            : const Color(0xFF3D2B1F),
+            ? const Color(0xFF1A3A2A).withValues(alpha: 0.85) // 近くにいる時は緑っぽく
+            : const Color(0xFF3D2B1F).withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isNearby ? const Color(0xFF57D6C9) : const Color(0xFFC8A97A),
