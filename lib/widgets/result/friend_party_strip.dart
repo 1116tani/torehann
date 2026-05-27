@@ -157,9 +157,7 @@ class _FriendAvatar extends StatelessWidget {
 
           child: Center(
             child: Text(
-              name.isNotEmpty
-                  ? name.characters.first
-                  : '?',
+              _initial,
 
               style: const TextStyle(
                 color: Colors.white,
@@ -189,5 +187,10 @@ class _FriendAvatar extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String get _initial {
+    if (name.isEmpty) return '?';
+    return String.fromCharCode(name.runes.first);
   }
 }

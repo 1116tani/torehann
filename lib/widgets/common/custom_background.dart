@@ -4,9 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../constants/app_colors.dart';
 import '../../constants/app_gradients.dart';
-import '../../constants/app_shadows.dart';
 
 class CustomBackground extends StatelessWidget {
   final Widget child;
@@ -93,7 +91,7 @@ class CustomBackground extends StatelessWidget {
         // ─────────────────────────────
         // 🔮 Decorative Overlay
         // ─────────────────────────────
-        if (overlay != null) overlay!,
+        ?overlay,
 
         // ─────────────────────────────
         // 📜 Main Content

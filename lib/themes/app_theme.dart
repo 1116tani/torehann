@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
-import '../constants/app_gradients.dart';
 import '../constants/app_radius.dart';
-import '../constants/app_shadows.dart';
 import '../constants/app_sizes.dart';
 import '../constants/app_text_styles.dart';
 
@@ -14,8 +12,6 @@ class AppTheme {
     final base = ThemeData.dark();
 
     return base.copyWith(
-      useMaterial3: true,
-
       brightness: Brightness.dark,
 
       scaffoldBackgroundColor: AppColors.background,

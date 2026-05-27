@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../constants/app_durations.dart';
-import '../../constants/app_radius.dart';
 import '../../constants/app_shadows.dart';
 
 // ─────────────────────────────
@@ -117,7 +116,7 @@ class _CameraButtonState extends State<CameraButton>
                 AnimatedBuilder(
                   animation: _pulseController,
 
-                  builder: (_, __) {
+                  builder: (_, child) {
                     final pulse = _pulseController.value;
 
                     return Container(

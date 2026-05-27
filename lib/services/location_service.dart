@@ -39,10 +39,11 @@ class LocationService {
     await checkPermission();
 
     return Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
-
-      // GPS取得失敗時に無限待機しない
-      timeLimit: Duration(seconds: 10),
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        // GPS取得失敗時に無限待機しない
+        timeLimit: Duration(seconds: 10),
+      ),
     );
   }
 

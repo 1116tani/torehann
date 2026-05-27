@@ -20,38 +20,7 @@ class DestinationMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     final title = spot.aiStoryName.isNotEmpty ? spot.aiStoryName : spot.name;
-=======
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isNearby
-            ? const Color(0xFF1A3A2A).withValues(alpha: 0.85) // 近くにいる時は緑っぽく
-            : const Color(0xFF3D2B1F).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isNearby ? const Color(0xFF57D6C9) : const Color(0xFFC8A97A),
-          width: isNearby ? 1.5 : 0.5,
-        ),
-        boxShadow: isNearby
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF57D6C9).withValues(alpha: 0.25),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
-      child: Row(
-        children: [
-          // ── アイコン ──
-          _SpotIcon(isNearby: isNearby, category: spot.category),
-          const SizedBox(width: 12),
->>>>>>> f6fb035acfcd648a4312dd36a29e4bb810041937
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),

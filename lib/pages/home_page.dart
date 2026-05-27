@@ -69,9 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final locationAsync = ref.read(locationProvider);
 
     locationAsync.whenData((pos) {
-      final target = pos != null
-          ? LatLng(pos.latitude, pos.longitude)
-          : _defaultPosition;
+      final target = LatLng(pos.latitude, pos.longitude);
 
       _mapController?.animateCamera(
         CameraUpdate.newCameraPosition(
@@ -192,7 +190,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // ─────────────────────────────
 
     locationAsync.whenData((pos) {
-      if (pos != null && _isFirstLocationFetch && _mapController != null) {
+      if (_isFirstLocationFetch && _mapController != null) {
         _mapController!.animateCamera(
           CameraUpdate.newLatLngZoom(LatLng(pos.latitude, pos.longitude), 16),
         );
