@@ -1,117 +1,134 @@
-// lib/widgets/adventure_setup/mood_selector.dart
+// lib/widgets/adventure_setup/mode_selector.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../constants/app_colors.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_text_styles.dart';
+
 import '../../providers/adventure_provider.dart';
+import '../../core/enums/adventure_mode.dart';
 
-class MoodSelector extends ConsumerWidget {
-  const MoodSelector({super.key});
-
-  // 気分の定義
-  static const _moods = [
-    (mood: AdventureMood.relaxed, emoji: '🌸', label: 'のんびり'),
-    (mood: AdventureMood.excited, emoji: '✨', label: 'わくわく'),
-    (mood: AdventureMood.intense, emoji: '🔥', label: 'ガッツリ'),
-    (mood: AdventureMood.random, emoji: '🎲', label: 'きまぐれ'),
-  ];
+class ModeSelector extends ConsumerWidget {
+  const ModeSelector({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentMood = ref.watch(adventureProvider.select((s) => s.mood));
+    final currentMode = ref.watch(
+      adventureProvider.select((state) => state.mode),
+    );
+
     final notifier = ref.read(adventureProvider.notifier);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ── セクションラベル ──
-        Row(
-          children: [
-            const Text('😊', style: TextStyle(fontSize: AppSizes.iconS)),
-            const SizedBox(width: AppSizes.p8),
-            Text('今の気分', style: AppTextStyles.titleSmall),
-          ],
-        ),
-        const SizedBox(height: AppSizes.p12),
+      children: AdventureMode.values.map((mode) {
+        final isSelected = currentMode == mode;
 
-        // ── 気分ボタングリッド ──
-        Row(
-          children: _moods.map((item) {
-            final isSelected = currentMood == item.mood;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSizes.p4),
-                child: _MoodButton(
-                  emoji: item.emoji,
-                  label: item.label,
-                  isSelected: isSelected,
-                  onTap: () => notifier.setMood(item.mood),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSizes.p12),
+
+          child: _ModeCard(
+            mode: mode,
+            isSelected: isSelected,
+
+            onTap: () {
+              notifier.setMode(mode);
+            },
+          ),
+        );
+      }).toList(),
     );
   }
 }
 
-// ── 気分ボタン1個 ──────────────────────────
-class _MoodButton extends StatelessWidget {
-  final String emoji;
-  final String label;
+// ─────────────────────────────
+// 🗺️ Mode Card
+// ─────────────────────────────
+
+class _ModeCard extends StatelessWidget {
+  final AdventureMode mode;
+
   final bool isSelected;
+
   final VoidCallback onTap;
 
-  const _MoodButton({
-    required this.emoji,
-    required this.label,
+  const _ModeCard({
+    required this.mode,
     required this.isSelected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        height: AppSizes.moodButtonSize,
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.selectedItem : AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSizes.radiusM),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: isSelected ? 1.5 : 0.5,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // 絵文字
-            Text(emoji, style: TextStyle(fontSize: isSelected ? 28 : 24)),
-            const SizedBox(height: AppSizes.p4),
+    return Material(
+      color: Colors.transparent,
 
-            // ラベル
-            Text(
-              label,
-              style: isSelected
-                  ? AppTextStyles.moodLabelSelected
-                  : AppTextStyles.moodLabelUnselected,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSizes.radiusL),
+
+        onTap: onTap,
+
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.p20,
+            vertical: AppSizes.p16,
+          ),
+
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.selectedItem : AppColors.surface,
+
+            borderRadius: BorderRadius.circular(AppSizes.radiusL),
+
+            border: Border.all(
+              color: isSelected ? AppColors.primary : AppColors.border,
+
+              width: isSelected ? 1.6 : 1,
             ),
-          ],
+          ),
+
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+                    Text(
+                      mode.label,
+
+                      style: AppTextStyles.titleSmall.copyWith(
+                        color: isSelected
+                            ? AppColors.textPrimary
+                            : AppColors.modeTextUnselected,
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      mode.distanceRange,
+
+                      style: AppTextStyles.caption.copyWith(
+                        color: isSelected
+                            ? AppColors.textSecondary
+                            : AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
+            ],
+          ),
         ),
       ),
     );

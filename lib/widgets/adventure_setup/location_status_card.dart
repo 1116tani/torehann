@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../constants/app_colors.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_text_styles.dart';
@@ -17,65 +18,78 @@ class LocationStatusCard extends ConsumerWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSizes.p16,
-        vertical: AppSizes.p12,
+        horizontal: AppSizes.p20,
+        vertical: AppSizes.p16,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSizes.radiusM),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        borderRadius: BorderRadius.circular(AppSizes.radiusL),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
-          // ── GPS状態アイコン ──
+          // ───────────────────
+          // 📍 Status Icon
+          // ───────────────────
           statusAsync.when(
             data: (status) => _StatusIcon(status: status),
             loading: () => const _LoadingIcon(),
             error: (_, _) => const _StatusIcon(status: LocationStatus.error),
           ),
-          const SizedBox(width: AppSizes.p12),
 
-          // ── 表示テキスト ──
+          const SizedBox(width: AppSizes.p16),
+
+          // ───────────────────
+          // 🛰️ Status Text
+          // ───────────────────
           Expanded(
             child: statusAsync.when(
-              data: (status) => switch (status) {
-                LocationStatus.loading => _label(
-                  '現在地を取得中...',
-                  AppColors.textMuted,
-                ),
-                LocationStatus.success => labelAsync.when(
-                  data: (label) => _label(label, AppColors.textPrimary),
-                  loading: () => _label('現在地を取得中...', AppColors.textMuted),
-                  error: (_, _) => _label('現在地を取得できません', AppColors.error),
-                ),
-                LocationStatus.error => _label('現在地を取得できません', AppColors.error),
-                LocationStatus.disabled => _label(
-                  'GPSがOFFです',
-                  AppColors.warning,
-                ),
+              data: (status) {
+                switch (status) {
+                  case LocationStatus.loading:
+                    return _label('現在地を取得しています...', AppColors.textMuted);
+
+                  case LocationStatus.success:
+                    return labelAsync.when(
+                      data: (label) =>
+                          _label('現在地：$label', AppColors.textPrimary),
+                      loading: () => _label('位置情報を確認中...', AppColors.textMuted),
+                      error: (_, _) => _label('現在地を取得できません', AppColors.error),
+                    );
+
+                  case LocationStatus.error:
+                    return _label('現在地を取得できません', AppColors.error);
+
+                  case LocationStatus.disabled:
+                    return _label('GPSがOFFになっています', AppColors.warning);
+                }
               },
-              loading: () => _label('現在地を取得中...', AppColors.textMuted),
+              loading: () => _label('現在地を取得しています...', AppColors.textMuted),
               error: (_, _) => _label('現在地を取得できません', AppColors.error),
             ),
           ),
 
-          // ── 再取得ボタン ──
+          // ───────────────────
+          // 🔄 Retry Button
+          // ───────────────────
           statusAsync.whenOrNull(
-                data: (status) =>
-                    status == LocationStatus.error ||
-                        status == LocationStatus.disabled
-                    ? IconButton(
-                        icon: const Icon(
-                          Icons.refresh,
-                          size: AppSizes.iconS,
-                          color: AppColors.secondary,
-                        ),
-                        onPressed: () {
-                          ref.invalidate(currentLocationProvider);
-                          ref.invalidate(locationStatusProvider);
-                        },
-                      )
-                    : null,
+                data: (status) {
+                  if (status == LocationStatus.error ||
+                      status == LocationStatus.disabled) {
+                    return IconButton(
+                      onPressed: () {
+                        ref.invalidate(currentLocationProvider);
+                        ref.invalidate(locationStatusProvider);
+                      },
+                      icon: const Icon(
+                        Icons.refresh_rounded,
+                        color: AppColors.secondary,
+                      ),
+                    );
+                  }
+
+                  return null;
+                },
               ) ??
               const SizedBox.shrink(),
         ],
@@ -86,42 +100,64 @@ class LocationStatusCard extends ConsumerWidget {
   Widget _label(String text, Color color) {
     return Text(
       text,
-      style: AppTextStyles.bodySmall.copyWith(color: color),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
+      style: AppTextStyles.bodyMedium.copyWith(
+        color: color,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 }
 
-// ── GPS状態アイコン ──────────────────────────
+// ─────────────────────────────
+// 📍 Status Icon
+// ─────────────────────────────
+
 class _StatusIcon extends StatelessWidget {
   final LocationStatus status;
+
   const _StatusIcon({required this.status});
 
   @override
   Widget build(BuildContext context) {
     final (icon, color) = switch (status) {
-      LocationStatus.loading => (Icons.gps_not_fixed, AppColors.textMuted),
-      LocationStatus.success => (Icons.gps_fixed, AppColors.accentGreen),
-      LocationStatus.error => (Icons.gps_off, AppColors.error),
-      LocationStatus.disabled => (Icons.location_disabled, AppColors.warning),
+      LocationStatus.loading => (
+        Icons.gps_not_fixed_rounded,
+        AppColors.textMuted,
+      ),
+
+      LocationStatus.success => (
+        Icons.gps_fixed_rounded,
+        AppColors.accentGreen,
+      ),
+
+      LocationStatus.error => (Icons.gps_off_rounded, AppColors.error),
+
+      LocationStatus.disabled => (
+        Icons.location_disabled_rounded,
+        AppColors.warning,
+      ),
     };
 
-    return Icon(icon, size: AppSizes.iconS, color: color);
+    return Icon(icon, size: AppSizes.iconM, color: color);
   }
 }
 
-// ── ローディング中のアイコン ─────────────────
+// ─────────────────────────────
+// 🌙 Loading Icon
+// ─────────────────────────────
+
 class _LoadingIcon extends StatelessWidget {
   const _LoadingIcon();
 
   @override
   Widget build(BuildContext context) {
     return const SizedBox(
-      width: AppSizes.iconS,
-      height: AppSizes.iconS,
+      width: AppSizes.iconM,
+      height: AppSizes.iconM,
       child: CircularProgressIndicator(
-        strokeWidth: 2,
+        strokeWidth: 2.2,
         color: AppColors.secondary,
       ),
     );
