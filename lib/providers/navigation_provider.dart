@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
-import 'route_provider.dart';
 
 // ── 冒険中のナビゲーション状態 ──────────────────────
 class NavigationState {
@@ -74,10 +73,12 @@ class NavigationNotifier extends Notifier<NavigationState> {
 
   // 🛰️ 位置情報が更新されたら、画面側から自動で呼び出されるメソッド
   void updateLocation(Position position) {
-    if (!state.isAdventureStarted || state.currentRoute == null) return;
+    if (!state.isAdventureStarted || state.currentRoute == null) {
+      return;
+    }
 
     final route = state.currentRoute!;
-    final spots = ref.read(dummySpotsProvider);
+    final spots = {for (var s in route.generatedSpots) s.id: s};
     final updatedVisitedSpots = Set<String>.from(state.visitedSpotIds);
 
     bool reachedNewSpot = true;
@@ -132,9 +133,11 @@ class NavigationNotifier extends Notifier<NavigationState> {
 
   // 💡 最初のスポットを初期化するメソッド
   void _initializeNextSpot() {
-    if (state.currentRoute == null) return;
+    if (state.currentRoute == null) {
+      return;
+    }
     final route = state.currentRoute!;
-    final spots = ref.read(dummySpotsProvider);
+    final spots = {for (var s in route.generatedSpots) s.id: s};
 
     for (final spotId in route.spotIds) {
       if (!state.visitedSpotIds.contains(spotId)) {
@@ -146,11 +149,16 @@ class NavigationNotifier extends Notifier<NavigationState> {
 
   // 🧪 デバッグ・ハッカソン用：現在の目的地に強制チェックインする
   void forceCheckInNextSpot() {
-    if (!state.isAdventureStarted || state.currentRoute == null || state.nextSpot == null) return;
+    if (!state.isAdventureStarted ||
+        state.currentRoute == null ||
+        state.nextSpot == null) {
+      return;
+    }
 
     final route = state.currentRoute!;
-    final spots = ref.read(dummySpotsProvider);
-    final updatedVisitedSpots = Set<String>.from(state.visitedSpotIds)..add(state.nextSpot!.id);
+    final spots = {for (var s in route.generatedSpots) s.id: s};
+    final updatedVisitedSpots = Set<String>.from(state.visitedSpotIds)
+      ..add(state.nextSpot!.id);
 
     // 次のスポットを探す
     SpotModel? targetSpot;

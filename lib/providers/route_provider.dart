@@ -4,8 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
+import '../repositories/route_repository.dart';
+import '../services/gemini_service.dart';
 
 import 'adventure_provider.dart';
+import 'location_provider.dart';
 
 // ─────────────────────────────
 // 🗺️ Route State
@@ -39,6 +42,10 @@ class RouteSelectState {
     }
   }
 
+  // ─────────────────────────────
+  // ✨ copyWith
+  // ─────────────────────────────
+
   RouteSelectState copyWith({
     List<RouteModel>? routes,
     String? selectedRouteId,
@@ -62,6 +69,14 @@ class RouteSelectState {
 }
 
 // ─────────────────────────────
+// 🛰️ Repository Provider
+// ─────────────────────────────
+
+final routeRepositoryProvider = Provider<RouteRepository>((ref) {
+  return RouteRepository(geminiService: GeminiService());
+});
+
+// ─────────────────────────────
 // 🗺️ Route Notifier
 // ─────────────────────────────
 
@@ -80,106 +95,49 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
   }
 
   // ─────────────────────────────
-  // ✨ ルート生成
+  // ✨ AIルート生成
   // ─────────────────────────────
 
   Future<void> generateRoutes() async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
-      final settings = ref.read(adventureProvider);
+      // 🌌 冒険設定取得
+      final adventure = ref.read(adventureProvider);
 
-      final allSpots = ref.read(dummySpotsProvider);
+      // 📍 現在地取得
+      final position = await ref.read(currentLocationProvider.future);
 
-      // 🌙 演出用待機
-      await Future.delayed(const Duration(seconds: 2));
+      // 🛰️ Repository
+      final repository = ref.read(routeRepositoryProvider);
 
-      final generatedRoutes = [
-        // ───────────────────
-        // 黄昏ルート
-        // ───────────────────
-        RouteModel(
-          id: 'route_twilight_memory',
+      // ✨ Gemini生成
+      final routes = await repository.generateRoutes(
+        lat: position.latitude,
+        lng: position.longitude,
 
-          themeName: '黄昏の記憶巡礼',
+        mood: adventure.mood.name,
 
-          themeDescription: '夕暮れに沈む街の断片を辿る、静かな探索路。',
+        mode: adventure.mode.label,
 
-          spotIds: const ['spot_001', 'spot_002', 'spot_003'],
+        hobbyTags: adventure.hobbyTags,
 
-          generatedSpots: const [
-            'spot_001',
-            'spot_002',
-            'spot_003',
-          ].map((id) => allSpots[id]!).toList(),
+        destination: adventure.isRandomMode ? '' : adventure.destination,
+      );
 
-          totalDistance: 2.4,
-
-          estimatedTime: 36,
-
-          tags: ['#${settings.mode.label}', '#黄昏', '#静かな冒険'],
-        ),
-
-        // ───────────────────
-        // レトロルート
-        // ───────────────────
-        RouteModel(
-          id: 'route_nostalgia',
-
-          themeName: '忘却街のレトロ探索',
-
-          themeDescription: '色あせた商店街に眠る記憶を解読する旅。',
-
-          spotIds: const ['spot_006', 'spot_007', 'spot_008'],
-
-          generatedSpots: const [
-            'spot_006',
-            'spot_007',
-            'spot_008',
-          ].map((id) => allSpots[id]!).toList(),
-
-          totalDistance: 1.8,
-
-          estimatedTime: 28,
-
-          tags: const ['#レトロ', '#路地裏', '#物語収集'],
-        ),
-
-        // ───────────────────
-        // 夜霧ルート
-        // ───────────────────
-        RouteModel(
-          id: 'route_midnight_fog',
-
-          themeName: '夜霧の境界探索',
-
-          themeDescription: '霧に隠された都市の裏側を歩く禁断の探索路。',
-
-          spotIds: const ['spot_011', 'spot_012', 'spot_013'],
-
-          generatedSpots: const [
-            'spot_011',
-            'spot_012',
-            'spot_013',
-          ].map((id) => allSpots[id]!).toList(),
-
-          totalDistance: 3.1,
-
-          estimatedTime: 45,
-
-          tags: const ['#夜', '#霧', '#幻想'],
-        ),
-      ];
+      if (routes.isEmpty) {
+        throw Exception('ルートが生成されませんでした');
+      }
 
       state = state.copyWith(
-        routes: generatedRoutes,
+        routes: routes,
 
-        selectedRouteId: generatedRoutes.first.id,
+        selectedRouteId: routes.first.id,
 
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: '探索路の生成に失敗しました。');
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 
@@ -202,153 +160,16 @@ final routeSelectProvider =
     );
 
 // ─────────────────────────────
-// 📍 ダミースポット
+// 📍 Spots Lookup
 // ─────────────────────────────
 
 final dummySpotsProvider = Provider<Map<String, SpotModel>>((ref) {
-  return {
-    // ───────────────────
-    // 黄昏ルート
-    // ───────────────────
-    'spot_001': const SpotModel(
-      id: 'spot_001',
-
-      lat: 35.6812,
-      lng: 139.7671,
-
-      name: '老舗パン屋',
-
-      category: 'カフェ',
-
-      aiStoryName: '記憶の香りを宿す工房',
-
-      aiFlavorText: '焼き立ての香りが、遠い日の帰り道を思い出させる。',
-    ),
-
-    'spot_002': const SpotModel(
-      id: 'spot_002',
-
-      lat: 35.6820,
-      lng: 139.7680,
-
-      name: '隠れ家喫茶',
-
-      category: 'カフェ',
-
-      aiStoryName: '時の止まった喫茶室',
-
-      aiFlavorText: '静かなレコードの音が、黄昏に溶けていく。',
-    ),
-
-    'spot_003': const SpotModel(
-      id: 'spot_003',
-
-      lat: 35.6835,
-      lng: 139.7665,
-
-      name: '小さな公園',
-
-      category: '公園',
-
-      aiStoryName: '都会の隙間の庭園',
-
-      aiFlavorText: '風に揺れる木々が、旅人へ静かに語りかける。',
-    ),
-
-    // ───────────────────
-    // レトロルート
-    // ───────────────────
-    'spot_006': const SpotModel(
-      id: 'spot_006',
-
-      lat: 35.6800,
-      lng: 139.7650,
-
-      name: '駄菓子屋',
-
-      category: '商店街',
-
-      aiStoryName: '色あせない宝箱',
-
-      aiFlavorText: '幼い日の夢が、棚いっぱいに並べられている。',
-    ),
-
-    'spot_007': const SpotModel(
-      id: 'spot_007',
-
-      lat: 35.6790,
-      lng: 139.7640,
-
-      name: '時計店',
-
-      category: '商店街',
-
-      aiStoryName: '時を刻む工房',
-
-      aiFlavorText: '静かな秒針が、街の鼓動のように響いている。',
-    ),
-
-    'spot_008': const SpotModel(
-      id: 'spot_008',
-
-      lat: 35.6780,
-      lng: 139.7630,
-
-      name: '夕日の丘',
-
-      category: '風景',
-
-      aiStoryName: '黄昏の観測所',
-
-      aiFlavorText: '世界の終わりみたいな夕焼けが広がっている。',
-    ),
-
-    // ───────────────────
-    // 夜霧ルート
-    // ───────────────────
-    'spot_011': const SpotModel(
-      id: 'spot_011',
-
-      lat: 35.6765,
-      lng: 139.7615,
-
-      name: '地下通路',
-
-      category: '路地裏',
-
-      aiStoryName: '霧に沈む回廊',
-
-      aiFlavorText: '誰もいないはずなのに、足音だけが響いている。',
-    ),
-
-    'spot_012': const SpotModel(
-      id: 'spot_012',
-
-      lat: 35.6755,
-      lng: 139.7602,
-
-      name: '廃映画館',
-
-      category: '史跡',
-
-      aiStoryName: '終幕の劇場',
-
-      aiFlavorText: '色褪せたポスターが、過去の幻を映している。',
-    ),
-
-    'spot_013': const SpotModel(
-      id: 'spot_013',
-
-      lat: 35.6742,
-      lng: 139.7590,
-
-      name: '橋の展望台',
-
-      category: '風景',
-
-      aiStoryName: '夜境の観測地点',
-
-      aiFlavorText: '霧の向こうで、街の灯りが揺れている。',
-    ),
-  };
+  final routes = ref.watch(routeSelectProvider).routes;
+  final map = <String, SpotModel>{};
+  for (final route in routes) {
+    for (final spot in route.generatedSpots) {
+      map[spot.id] = spot;
+    }
+  }
+  return map;
 });
