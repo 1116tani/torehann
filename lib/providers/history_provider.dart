@@ -1,24 +1,27 @@
 // lib/providers/history_provider.dart
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/adventure_history_model.dart';
+import 'dart:async';
 
-// ── 並び替えの種類 ──
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../models/adventure_history_model.dart';
+import '../repositories/history_repository.dart';
+import 'auth_provider.dart';
+
 enum SortOrder {
-  newestFirst,    // 新しい順（デフォルト）
-  oldestFirst,    // 古い順
-  longestDistance, // 距離が長い順
-  longestDuration, // 所要時間が長い順
+  newestFirst,
+  oldestFirst,
+  longestDistance,
+  longestDuration,
 }
 
-// ── 絞り込みの種類（複数選択可） ──
 enum FilterTag {
-  completedOnly,  // 完走のみ
-  withAbandoned,  // 中断あり
-  withPhotos,     // 写真あり
-  morning,        // 朝の冒険（6〜11時）
-  night,          // 夜の冒険（20時以降）
-  rainy,          // 雨の日
+  completedOnly,
+  withAbandoned,
+  withPhotos,
+  morning,
+  night,
+  rainy,
 }
 
 class HistoryState {
@@ -26,12 +29,14 @@ class HistoryState {
   final SortOrder sortOrder;
   final Set<FilterTag> activeFilters;
   final bool isLoading;
+  final String? errorMessage;
 
   const HistoryState({
     this.histories = const [],
     this.sortOrder = SortOrder.newestFirst,
     this.activeFilters = const {},
     this.isLoading = false,
+    this.errorMessage,
   });
 
   HistoryState copyWith({
@@ -39,57 +44,100 @@ class HistoryState {
     SortOrder? sortOrder,
     Set<FilterTag>? activeFilters,
     bool? isLoading,
+    String? errorMessage,
   }) {
     return HistoryState(
       histories: histories ?? this.histories,
       sortOrder: sortOrder ?? this.sortOrder,
       activeFilters: activeFilters ?? this.activeFilters,
       isLoading: isLoading ?? this.isLoading,
+      errorMessage: errorMessage,
     );
   }
 
-  // ── 並び替え＋絞り込みを適用したリストを返す ──
   List<AdventureHistoryModel> get filteredHistories {
     var result = List<AdventureHistoryModel>.from(histories);
 
-    // 絞り込み
     for (final filter in activeFilters) {
-      result = result.where((h) {
+      result = result.where((history) {
         return switch (filter) {
-          FilterTag.completedOnly  => h.isCompleted,
-          FilterTag.withAbandoned  => !h.isCompleted,
-          FilterTag.withPhotos     => h.imageUrls.isNotEmpty,
-          FilterTag.morning        => h.createdAt.hour >= 6 && h.createdAt.hour < 11,
-          FilterTag.night          => h.createdAt.hour >= 20,
-          FilterTag.rainy          => h.tags.contains('雨の日'),
+          FilterTag.completedOnly => history.isCompleted,
+          FilterTag.withAbandoned => !history.isCompleted,
+          FilterTag.withPhotos => history.imageUrls.isNotEmpty,
+          FilterTag.morning =>
+            history.createdAt.hour >= 6 && history.createdAt.hour < 11,
+          FilterTag.night => history.createdAt.hour >= 20,
+          FilterTag.rainy => history.tags.contains('rainy'),
         };
       }).toList();
     }
 
-    // 並び替え
     result.sort((a, b) {
       return switch (sortOrder) {
-        SortOrder.newestFirst      => b.createdAt.compareTo(a.createdAt),
-        SortOrder.oldestFirst      => a.createdAt.compareTo(b.createdAt),
-        SortOrder.longestDistance  => b.distanceKm.compareTo(a.distanceKm),
-        SortOrder.longestDuration  => b.durationMinutes.compareTo(a.durationMinutes),
+        SortOrder.newestFirst => b.createdAt.compareTo(a.createdAt),
+        SortOrder.oldestFirst => a.createdAt.compareTo(b.createdAt),
+        SortOrder.longestDistance => b.distanceKm.compareTo(a.distanceKm),
+        SortOrder.longestDuration =>
+          b.durationMinutes.compareTo(a.durationMinutes),
       };
     });
 
     return result;
   }
 
-  // ── サマリー計算 ──
   int get totalCount => histories.length;
-  double get totalDistanceKm =>
-      histories.fold(0.0, (sum, h) => sum + h.distanceKm);
+
+  double get totalDistanceKm {
+    return histories.fold(0.0, (sum, history) => sum + history.distanceKm);
+  }
 }
 
+final historyRepositoryProvider = Provider<HistoryRepository>((ref) {
+  return HistoryRepository();
+});
+
 class HistoryNotifier extends Notifier<HistoryState> {
+  StreamSubscription<List<AdventureHistoryModel>>? _subscription;
+
   @override
   HistoryState build() {
-    // ダミーデータ（Firestore連携まで）
-    return HistoryState(histories: _dummyHistories());
+    ref.onDispose(() => _subscription?.cancel());
+    Future.microtask(_subscribeToCurrentUserHistories);
+    return const HistoryState(isLoading: true);
+  }
+
+  void _subscribeToCurrentUserHistories() {
+    final user = ref.read(firebaseAuthProvider).currentUser;
+    _subscription?.cancel();
+
+    if (user == null) {
+      state = const HistoryState();
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    _subscription = ref
+        .read(historyRepositoryProvider)
+        .watchHistories(user.uid)
+        .listen(
+      (histories) {
+        state = state.copyWith(
+          histories: histories,
+          isLoading: false,
+          errorMessage: null,
+        );
+      },
+      onError: (Object error) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: error.toString(),
+        );
+      },
+    );
+  }
+
+  Future<void> reload() async {
+    _subscribeToCurrentUserHistories();
   }
 
   void setSortOrder(SortOrder order) {
@@ -98,51 +146,16 @@ class HistoryNotifier extends Notifier<HistoryState> {
 
   void toggleFilter(FilterTag filter) {
     final current = Set<FilterTag>.from(state.activeFilters);
-    current.contains(filter) ? current.remove(filter) : current.add(filter);
+    if (current.contains(filter)) {
+      current.remove(filter);
+    } else {
+      current.add(filter);
+    }
     state = state.copyWith(activeFilters: current);
   }
 
   void clearFilters() {
     state = state.copyWith(activeFilters: {});
-  }
-
-  // ダミーデータ
-  List<AdventureHistoryModel> _dummyHistories() {
-    return [
-      AdventureHistoryModel(
-        id: 'h001',
-        createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
-        title: '古のパン屋を巡る調査員',
-        weather: '☀️',
-        distanceKm: 2.3,
-        durationMinutes: 35,
-        isCompleted: true,
-        imageUrls: [],
-        tags: ['朝の冒険'],
-      ),
-      AdventureHistoryModel(
-        id: 'h002',
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        title: '夕暮れの商店街冒険記',
-        weather: '🌧️',
-        distanceKm: 3.1,
-        durationMinutes: 45,
-        isCompleted: true,
-        imageUrls: [],
-        tags: ['雨の日'],
-      ),
-      AdventureHistoryModel(
-        id: 'h003',
-        createdAt: DateTime.now().subtract(const Duration(days: 7)),
-        title: '緑の隠れ家を求めて',
-        weather: '☀️',
-        distanceKm: 1.8,
-        durationMinutes: 25,
-        isCompleted: false,
-        imageUrls: [],
-        tags: [],
-      ),
-    ];
   }
 }
 

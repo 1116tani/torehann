@@ -1,12 +1,11 @@
 // lib/providers/auth_provider.dart
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
-/// ─────────────────────────────────
-/// 🔥 FirebaseAuth Instance
-/// ─────────────────────────────────
+import '../repositories/auth_repository.dart';
+import '../repositories/user_repository.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
@@ -16,65 +15,66 @@ final loggerProvider = Provider<Logger>((ref) {
   return Logger();
 });
 
-/// ─────────────────────────────────
-/// 👤 ログイン状態監視
-/// FirebaseAuth の状態変化を監視
-/// ─────────────────────────────────
-
-final authStateProvider = StreamProvider<User?>((ref) {
-  return ref.watch(firebaseAuthProvider).authStateChanges();
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepository(auth: ref.watch(firebaseAuthProvider));
 });
 
-/// ─────────────────────────────────
-/// 🔐 Auth Controller
-/// ─────────────────────────────────
+final userRepositoryProvider = Provider<UserRepository>((ref) {
+  return UserRepository();
+});
+
+final authStateProvider = StreamProvider<User?>((ref) {
+  return ref.watch(authRepositoryProvider).authStateChanges();
+});
 
 final authControllerProvider = Provider<AuthController>((ref) {
   return AuthController(
-    ref.watch(firebaseAuthProvider),
+    ref.watch(authRepositoryProvider),
+    ref.watch(userRepositoryProvider),
     ref.watch(loggerProvider),
   );
 });
 
 class AuthController {
-  final FirebaseAuth _auth;
+  final AuthRepository _authRepository;
+  final UserRepository _userRepository;
   final Logger _logger;
 
-  AuthController(this._auth, this._logger);
-
-  /// ─────────────────────────────
-  /// 🪄 匿名ログイン
-  /// ─────────────────────────────
+  AuthController(
+    this._authRepository,
+    this._userRepository,
+    this._logger,
+  );
 
   Future<UserCredential?> signInAnonymously() async {
     try {
-      final credential = await _auth.signInAnonymously();
+      final credential = await _authRepository.signInAnonymously();
+      final user = credential.user;
 
-      _logger.i('匿名ログイン成功: ${credential.user?.uid}');
+      if (user != null) {
+        await _userRepository.ensureUser(userId: user.uid);
+      }
 
+      _logger.i('Anonymous sign-in succeeded: ${user?.uid}');
       return credential;
-    } on FirebaseAuthException catch (e) {
-      _logger.e('FirebaseAuthException: ${e.code}');
-
+    } on FirebaseAuthException catch (e, st) {
+      _logger.e(
+        'Firebase anonymous sign-in failed: ${e.code} ${e.message}',
+        error: e,
+        stackTrace: st,
+      );
       return null;
-    } catch (e) {
-      _logger.e('匿名ログイン失敗: $e');
-
+    } catch (e, st) {
+      _logger.e(
+        'Anonymous sign-in failed',
+        error: e,
+        stackTrace: st,
+      );
       return null;
     }
   }
 
-  /// ─────────────────────────────
-  /// 🚪 ログアウト
-  /// ─────────────────────────────
-
   Future<void> signOut() async {
-    try {
-      await _auth.signOut();
-
-      _logger.i('ログアウトしました');
-    } catch (e) {
-      _logger.e('ログアウト失敗: $e');
-    }
+    await _authRepository.signOut();
   }
 }
