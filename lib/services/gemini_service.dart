@@ -20,9 +20,21 @@ class GeminiService {
   // ─────────────────────────────
 
   static const _dartDefineApiKey = String.fromEnvironment('GEMINI_API_KEY');
+  static const _dartDefineApiKeyAlias = String.fromEnvironment(
+    'Gemini_API_Key',
+  );
 
-  static String get _apiKey =>
-      _dartDefineApiKey.isNotEmpty ? _dartDefineApiKey : ApiConstants.geminiApiKey;
+  static String get _apiKey {
+    if (_dartDefineApiKey.isNotEmpty) {
+      return _dartDefineApiKey;
+    }
+
+    if (_dartDefineApiKeyAlias.isNotEmpty) {
+      return _dartDefineApiKeyAlias;
+    }
+
+    return ApiConstants.geminiApiKey;
+  }
 
   static const _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
