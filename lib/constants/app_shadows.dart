@@ -11,7 +11,7 @@ class AppShadows {
 
   static List<BoxShadow> soft = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.12),
+      color: Colors.black.withValues(alpha: 0.12),
       blurRadius: 10,
       offset: const Offset(0, 4),
     ),
@@ -23,7 +23,7 @@ class AppShadows {
 
   static List<BoxShadow> medium = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.18),
+      color: Colors.black.withValues(alpha: 0.18),
       blurRadius: 18,
       offset: const Offset(0, 8),
     ),
@@ -35,7 +35,7 @@ class AppShadows {
 
   static List<BoxShadow> large = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.24),
+      color: Colors.black.withValues(alpha: 0.24),
       blurRadius: 28,
       offset: const Offset(0, 14),
     ),
@@ -47,7 +47,7 @@ class AppShadows {
 
   static List<BoxShadow> goldGlow = [
     BoxShadow(
-      color: AppColors.primary.withOpacity(0.35),
+      color: AppColors.primary.withValues(alpha: 0.35),
       blurRadius: 24,
       spreadRadius: 1,
       offset: const Offset(0, 6),
@@ -60,7 +60,7 @@ class AppShadows {
 
   static List<BoxShadow> glass = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.16),
+      color: Colors.black.withValues(alpha: 0.16),
       blurRadius: 20,
       offset: const Offset(0, 10),
     ),
@@ -72,7 +72,7 @@ class AppShadows {
 
   static List<BoxShadow> floatingSheet = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.28),
+      color: Colors.black.withValues(alpha: 0.28),
       blurRadius: 32,
       offset: const Offset(0, -4),
     ),
@@ -84,7 +84,7 @@ class AppShadows {
 
   static List<BoxShadow> reward = [
     BoxShadow(
-      color: AppColors.primaryLight.withOpacity(0.30),
+      color: AppColors.primaryLight.withValues(alpha: 0.30),
       blurRadius: 36,
       spreadRadius: 4,
       offset: const Offset(0, 0),

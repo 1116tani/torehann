@@ -2,151 +2,182 @@
   {
     "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#120a1c"
-      }
+      { "color": "#18130f" }
     ]
   },
   {
     "elementType": "labels.text.fill",
     "stylers": [
-      {
-        "color": "#d5b46e"
-      }
+      { "color": "#f4ead7" }
     ]
   },
   {
     "elementType": "labels.text.stroke",
     "stylers": [
-      {
-        "color": "#1b0a2b"
-      }
+      { "color": "#120f0c" },
+      { "weight": 2 }
     ]
   },
+
   {
-    "featureType": "administrative",
-    "elementType": "geometry.stroke",
+    "featureType": "landscape",
+    "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#4a2c6d"
-      }
-    ]
-  },
-  {
-    "featureType": "administrative.land_parcel",
-    "elementType": "geometry.stroke",
-    "stylers": [
-      {
-        "color": "#2c1a4d"
-      }
+      { "color": "#1f1813" }
     ]
   },
   {
     "featureType": "landscape.natural",
     "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#0d0614"
-      }
+      { "color": "#241c16" }
     ]
   },
+
   {
     "featureType": "poi",
     "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#1c102a"
-      }
+      { "color": "#2b2119" }
     ]
   },
   {
     "featureType": "poi",
     "elementType": "labels.text.fill",
     "stylers": [
-      {
-        "color": "#b18b42"
-      }
+      { "color": "#d2b27d" }
+    ]
+  },
+  {
+    "featureType": "poi.business",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#32261d" }
     ]
   },
   {
     "featureType": "poi.park",
-    "elementType": "geometry.fill",
+    "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#0a261c"
-      }
+      { "color": "#1d241b" }
     ]
   },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      { "color": "#7fa06d" }
+    ]
+  },
+
+
   {
     "featureType": "road",
     "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#2d1b46"
-      }
+      { "color": "#463628" }
     ]
   },
+  {
+    "featureType": "road",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      { "color": "#2c221a" }
+    ]
+  },
+
   {
     "featureType": "road.arterial",
     "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#3f2762"
-      }
+      { "color": "#8d6732" }
     ]
   },
+
   {
     "featureType": "road.highway",
     "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#947029"
-      }
+      { "color": "#d6b06a" }
     ]
   },
   {
     "featureType": "road.highway",
     "elementType": "geometry.stroke",
     "stylers": [
-      {
-        "color": "#5c4314"
-      }
+      { "color": "#7c5928" }
     ]
   },
+
   {
     "featureType": "road.local",
     "elementType": "labels.text.fill",
     "stylers": [
-      {
-        "color": "#8c71a3"
-      }
+      { "color": "#b89c77" }
     ]
   },
+
   {
     "featureType": "transit.line",
     "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#1c102a"
-      }
+      { "color": "#5a4631" }
     ]
   },
   {
-    "featureType": "water",
-    "elementType": "geometry.fill",
+    "featureType": "transit.station",
+    "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#101d36"
-      }
+      { "color": "#3a2d22" }
+    ]
+  },
+
+
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      { "color": "#101923" }
     ]
   },
   {
     "featureType": "water",
     "elementType": "labels.text.fill",
     "stylers": [
-      {
-        "color": "#4a70a8"
-      }
+      { "color": "#607d94" }
+    ]
+  },
+
+
+  {
+    "featureType": "administrative",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      { "color": "#4c3a2b" }
+    ]
+  },
+
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      { "color": "#30241b" }
+    ]
+  },
+
+  {
+    "featureType": "poi",
+    "elementType": "labels.icon",
+    "stylers": [
+      { "visibility": "off" }
+    ]
+  },
+
+  {
+    "featureType": "transit",
+    "elementType": "labels.icon",
+    "stylers": [
+      { "visibility": "off" }
     ]
   }
 ]

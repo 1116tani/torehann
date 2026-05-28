@@ -42,46 +42,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDYD7SrY3qbWoRYKIoq4xRcpVFgCV25xKw',
-    appId: '1:650008545794:web:1a7ba6d375fa4e8767751b',
-    messagingSenderId: '650008545794',
-    projectId: 'tale-trace-app',
-    authDomain: 'tale-trace-app.firebaseapp.com',
-    storageBucket: 'tale-trace-app.firebasestorage.app',
+    apiKey: 'AIzaSyB8mwyp_3ngYd60R8StZeOsc4b9icHp2YQ',
+    appId: '1:523566725208:web:3cc9487268646ace40b22d',
+    messagingSenderId: '523566725208',
+    projectId: 'navigation-3eb77',
+    authDomain: 'navigation-3eb77.firebaseapp.com',
+    storageBucket: 'navigation-3eb77.firebasestorage.app',
+    measurementId: 'G-KNXM89MJ4R',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD3-spsKjF5mjlxLyO6qq9B9stAGTA-sgA',
-    appId: '1:650008545794:android:9fd195f2265148f067751b',
-    messagingSenderId: '650008545794',
-    projectId: 'tale-trace-app',
-    storageBucket: 'tale-trace-app.firebasestorage.app',
+    apiKey: 'AIzaSyDJ9ts6CvNr1NFKQ3CLg-S3c0mnBxo1tuo',
+    appId: '1:523566725208:android:90e9b0cd7b1eea9240b22d',
+    messagingSenderId: '523566725208',
+    projectId: 'navigation-3eb77',
+    storageBucket: 'navigation-3eb77.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDSmgaSDp_5NMjd9iL5ssjmS5LRWPWMf8w',
-    appId: '1:650008545794:ios:9a1e935a8acf6fc467751b',
-    messagingSenderId: '650008545794',
-    projectId: 'tale-trace-app',
-    storageBucket: 'tale-trace-app.firebasestorage.app',
+    apiKey: 'AIzaSyCKYuDJM06P7wTB-qF_QDIXmCD9Py4eGrg',
+    appId: '1:523566725208:ios:9867d213b84d444f40b22d',
+    messagingSenderId: '523566725208',
+    projectId: 'navigation-3eb77',
+    storageBucket: 'navigation-3eb77.firebasestorage.app',
     iosBundleId: 'com.example.taleTrace',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDSmgaSDp_5NMjd9iL5ssjmS5LRWPWMf8w',
-    appId: '1:650008545794:ios:9a1e935a8acf6fc467751b',
-    messagingSenderId: '650008545794',
-    projectId: 'tale-trace-app',
-    storageBucket: 'tale-trace-app.firebasestorage.app',
+    apiKey: 'AIzaSyCKYuDJM06P7wTB-qF_QDIXmCD9Py4eGrg',
+    appId: '1:523566725208:ios:9867d213b84d444f40b22d',
+    messagingSenderId: '523566725208',
+    projectId: 'navigation-3eb77',
+    storageBucket: 'navigation-3eb77.firebasestorage.app',
     iosBundleId: 'com.example.taleTrace',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAHRS0mMG25NZX_zuHM1al_ZYUuAaY1fy0',
-    appId: '1:650008545794:web:5c9fee7f3ac630ba67751b',
-    messagingSenderId: '650008545794',
-    projectId: 'tale-trace-app',
-    authDomain: 'tale-trace-app.firebaseapp.com',
-    storageBucket: 'tale-trace-app.firebasestorage.app',
+    apiKey: 'AIzaSyB8mwyp_3ngYd60R8StZeOsc4b9icHp2YQ',
+    appId: '1:523566725208:web:ba4574785d677bcd40b22d',
+    messagingSenderId: '523566725208',
+    projectId: 'navigation-3eb77',
+    authDomain: 'navigation-3eb77.firebaseapp.com',
+    storageBucket: 'navigation-3eb77.firebasestorage.app',
+    measurementId: 'G-RYK0Q4HCV2',
   );
+
 }

@@ -12,6 +12,7 @@ import '../constants/app_durations.dart';
 import '../constants/app_sizes.dart';
 
 import '../providers/location_provider.dart';
+import '../providers/user_provider.dart';
 
 import '../widgets/home/home_widgets.dart';
 
@@ -24,6 +25,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   GoogleMapController? _mapController;
+  String? _mapStyle;
 
   static const LatLng _defaultPosition = LatLng(35.681236, 139.767125);
 
@@ -32,6 +34,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   double _sheetPosition = 0.22;
 
   MapType _currentMapType = MapType.normal;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMapStyle();
+  }
+
+  Future<void> _loadMapStyle() async {
+    try {
+      final style = await rootBundle.loadString('assets/map_styles/dark_fantasy_map.json');
+      if (mounted) {
+        setState(() {
+          _mapStyle = style;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading map style: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -48,9 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final locationAsync = ref.read(locationProvider);
 
     locationAsync.whenData((pos) {
-      final target = pos != null
-          ? LatLng(pos.latitude, pos.longitude)
-          : _defaultPosition;
+      final target = LatLng(pos.latitude, pos.longitude);
 
       _mapController?.animateCamera(
         CameraUpdate.newCameraPosition(
@@ -164,13 +183,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final locationAsync = ref.watch(locationProvider);
+    final mapStyleSetting = ref.watch(userProvider.select((s) => s.mapStyle));
 
     // ─────────────────────────────
     // 📍 初回位置取得
     // ─────────────────────────────
 
     locationAsync.whenData((pos) {
-      if (pos != null && _isFirstLocationFetch && _mapController != null) {
+      if (_isFirstLocationFetch && _mapController != null) {
         _mapController!.animateCamera(
           CameraUpdate.newLatLngZoom(LatLng(pos.latitude, pos.longitude), 16),
         );
@@ -222,6 +242,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               compassEnabled: false,
 
               buildingsEnabled: true,
+
+              style: mapStyleSetting == 'game' ? _mapStyle : null,
 
               onMapCreated: (controller) {
                 _mapController = controller;

@@ -2,7 +2,7 @@ name: tale_trace
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -38,6 +38,7 @@ dependencies:
   dio: ^5.9.2
   google_maps_flutter: ^2.17.0
   geolocator: ^14.0.2
+  geocoding: ^3.0.0
   permission_handler: ^12.0.1
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
@@ -51,6 +52,7 @@ dependencies:
   hooks_riverpod: ^3.3.1
   intl: ^0.20.2
   cached_network_image: ^3.4.1
+  http: ^1.4.0
 
 dev_dependencies:
   flutter_test:
@@ -71,7 +73,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

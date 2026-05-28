@@ -1,19 +1,33 @@
 // lib/widgets/home/home_glass_header.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../constants/app_colors.dart';
 import '../../constants/app_radius.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_text_styles.dart';
+import '../../constants/app_ranks.dart';
+import '../../providers/user_provider.dart';
 
 import '../common/glass_card.dart';
 
-class HomeGlassHeader extends StatelessWidget {
+class HomeGlassHeader extends ConsumerWidget {
   const HomeGlassHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userState = ref.watch(userProvider);
+    final name = userState.name.isEmpty ? '無名の旅人' : userState.name;
+
+    // 現在のレベル設定（実データ導入まではモックレベルとして24を使用します）
+    const level = 24;
+    const currentExp = 2450;
+    const nextLevelExp = 3000;
+    final progress = currentExp / nextLevelExp;
+
+    final rankData = RankData.getRankData(level);
+
     return GlassCard(
       borderRadius: AppRadius.xl,
       opacity: 0.08,
@@ -36,16 +50,16 @@ class HomeGlassHeader extends StatelessWidget {
                   shape: BoxShape.circle,
 
                   gradient: LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryDark],
+                    colors: [rankData.color, rankData.color.withValues(alpha: 0.6)],
                   ),
 
                   border: Border.all(
-                    color: AppColors.primaryLight.withValues(alpha: 0.4),
+                    color: rankData.color.withValues(alpha: 0.4),
                   ),
                 ),
 
-                child: const Icon(
-                  Icons.auto_stories_rounded,
+                child: Icon(
+                  rankData.icon,
                   color: AppColors.textDark,
                   size: 28,
                 ),
@@ -59,14 +73,19 @@ class HomeGlassHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-                    Text('ユーザー', style: AppTextStyles.titleSmall),
+                    Text(
+                      name,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
 
                     const SizedBox(height: 4),
 
                     Text(
-                      '街律の翻訳官',
+                      rankData.title,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.primaryLight,
+                        color: rankData.color,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -82,12 +101,12 @@ class HomeGlassHeader extends StatelessWidget {
                 ),
 
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: rankData.color.withValues(alpha: 0.12),
 
                   borderRadius: BorderRadius.circular(AppRadius.lg),
 
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.24),
+                    color: rankData.color.withValues(alpha: 0.24),
                   ),
                 ),
 
@@ -96,11 +115,18 @@ class HomeGlassHeader extends StatelessWidget {
                     Text(
                       'Lv',
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.primary,
+                        color: rankData.color,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    Text('24', style: AppTextStyles.statMedium),
+                    Text(
+                      '$level',
+                      style: AppTextStyles.statMedium.copyWith(
+                        color: rankData.color,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -120,9 +146,15 @@ class HomeGlassHeader extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                 children: [
-                  Text('次の階級まで', style: AppTextStyles.caption),
+                  Text('次の階級への断片', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
 
-                  Text('2,450 / 3,000 EXP', style: AppTextStyles.caption),
+                  Text(
+                    '$currentExp / $nextLevelExp EXP',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
 
@@ -136,14 +168,14 @@ class HomeGlassHeader extends StatelessWidget {
                     Container(height: 10, color: AppColors.surfaceLight),
 
                     FractionallySizedBox(
-                      widthFactor: 0.81,
+                      widthFactor: progress.clamp(0, 1),
 
                       child: Container(
                         height: 10,
 
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [AppColors.primaryLight, AppColors.primary],
+                            colors: [rankData.color.withValues(alpha: 0.5), rankData.color],
                           ),
                         ),
                       ),

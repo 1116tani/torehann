@@ -1,92 +1,178 @@
 // lib/providers/adventure_provider.dart
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 
-class AdventureSettingState {
+import '../core/enums/adventure_mode.dart';
+
+// ─────────────────────────────
+// 🌌 Adventure State
+// ─────────────────────────────
+
+enum AdventureMood {
+  relaxed, // のんびり
+  excited, // わくわく
+  intense, // ガッツリ
+  random, // きまぐれ
+}
+
+class AdventureState {
+  // 気分
+  final AdventureMood mood;
+
+  // 難易度
+  final AdventureMode mode;
+
+  // 目的地
   final String destination;
-  final bool isRandom;
-  final String mood;
-  final String mode;
-  final bool isLoading;
 
-  const AdventureSettingState({
+  // おまかせモード
+  final bool isRandomMode;
+
+  // 空き時間（分）
+  final int freeTimeMinutes;
+
+  // 趣味タグ
+  final List<String> hobbyTags;
+
+  // 生成中
+  final bool isGenerating;
+
+  // エラー
+  final String? errorMessage;
+
+  const AdventureState({
+    this.mood = AdventureMood.relaxed,
+    this.mode = AdventureMode.walk,
     this.destination = '',
-    this.isRandom = false,
-    this.mood = 'のんびり',
-    this.mode = 'お散歩',
-    this.isLoading = false,
+    this.isRandomMode = true,
+    this.freeTimeMinutes = 60,
+    this.hobbyTags = const [],
+    this.isGenerating = false,
+    this.errorMessage,
   });
 
-  AdventureSettingState copyWith({
+  // ─────────────────────────────
+  // ✨ copyWith
+  // ─────────────────────────────
+
+  AdventureState copyWith({
+    AdventureMood? mood,
+    AdventureMode? mode,
     String? destination,
-    bool? isRandom,
-    String? mood,
-    String? mode,
-    bool? isLoading,
+    bool? isRandomMode,
+    int? freeTimeMinutes,
+    List<String>? hobbyTags,
+    bool? isGenerating,
+    String? errorMessage,
   }) {
-    return AdventureSettingState(
-      destination: destination ?? this.destination,
-      isRandom: isRandom ?? this.isRandom,
+    return AdventureState(
       mood: mood ?? this.mood,
       mode: mode ?? this.mode,
-      isLoading: isLoading ?? this.isLoading,
+      destination: destination ?? this.destination,
+      isRandomMode: isRandomMode ?? this.isRandomMode,
+      freeTimeMinutes: freeTimeMinutes ?? this.freeTimeMinutes,
+      hobbyTags: hobbyTags ?? this.hobbyTags,
+      isGenerating: isGenerating ?? this.isGenerating,
+      errorMessage: errorMessage,
     );
   }
 }
 
-class AdventureSettingNotifier extends Notifier<AdventureSettingState> {
+// ─────────────────────────────
+// 🧭 Adventure Notifier
+// ─────────────────────────────
+
+class AdventureNotifier extends Notifier<AdventureState> {
   @override
-  AdventureSettingState build() => const AdventureSettingState();
-
-  void setDestination(String destination) {
-    state = state.copyWith(destination: destination, isRandom: false);
+  AdventureState build() {
+    return const AdventureState();
   }
 
-  void setRandom() {
-    state = state.copyWith(destination: '', isRandom: true);
-  }
+  // ─────────────────────────────
+  // 😊 気分変更
+  // ─────────────────────────────
 
-  void setMood(String mood) {
+  void setMood(AdventureMood mood) {
     state = state.copyWith(mood: mood);
   }
 
-  void setMode(String mode) {
+  // ─────────────────────────────
+  // 🗺️ 難易度変更
+  // ─────────────────────────────
+
+  void setMode(AdventureMode mode) {
     state = state.copyWith(mode: mode);
   }
 
-  void reset() {
-    state = const AdventureSettingState();
+  // ─────────────────────────────
+  // 📍 目的地入力
+  // ─────────────────────────────
+
+  void setDestination(String destination) {
+    state = state.copyWith(destination: destination, isRandomMode: false);
   }
 
-  Future<bool> generateRoutes() async {
-    state = state.copyWith(isLoading: true);
+  // ─────────────────────────────
+  // 🎲 おまかせモード
+  // ─────────────────────────────
 
-    try {
-      await Future.delayed(const Duration(seconds: 2));
-      return true;
-    } catch (_) {
-      return false;
-    } finally {
-      state = state.copyWith(isLoading: false);
-    }
+  void enableRandomMode() {
+    state = state.copyWith(isRandomMode: true, destination: '');
+  }
+
+  // ─────────────────────────────
+  // ⏰ 空き時間変更
+  // ─────────────────────────────
+
+  void setFreeTime(int minutes) {
+    state = state.copyWith(freeTimeMinutes: minutes);
+  }
+
+  // ─────────────────────────────
+  // 🏷️ 趣味タグ変更
+  // ─────────────────────────────
+
+  void setHobbyTags(List<String> tags) {
+    state = state.copyWith(hobbyTags: tags);
+  }
+
+  // ─────────────────────────────
+  // 🔄 生成開始
+  // ─────────────────────────────
+
+  void startGenerating() {
+    state = state.copyWith(isGenerating: true, errorMessage: null);
+  }
+
+  // ─────────────────────────────
+  // ✅ 生成完了
+  // ─────────────────────────────
+
+  void finishGenerating() {
+    state = state.copyWith(isGenerating: false);
+  }
+
+  // ─────────────────────────────
+  // ❌ エラー設定
+  // ─────────────────────────────
+
+  void setError(String message) {
+    state = state.copyWith(isGenerating: false, errorMessage: message);
+  }
+
+  // ─────────────────────────────
+  // 🧹 リセット
+  // ─────────────────────────────
+
+  void reset() {
+    state = const AdventureState();
   }
 }
 
-final adventureSettingProvider =
-    NotifierProvider<AdventureSettingNotifier, AdventureSettingState>(
-      AdventureSettingNotifier.new,
-    );
+// ─────────────────────────────
+// 🌌 Provider
+// ─────────────────────────────
 
-final currentAddressProvider = FutureProvider<String>((ref) async {
-  try {
-    await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
-    );
-
-    // TODO: Geocodingで住所に変換する
-    return '愛知県豊田市';
-  } catch (_) {
-    return '現在地を検索中...';
-  }
-});
+final adventureProvider = NotifierProvider<AdventureNotifier, AdventureState>(
+  AdventureNotifier.new,
+);

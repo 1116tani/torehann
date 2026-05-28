@@ -1,14 +1,13 @@
 // lib/widgets/navigation/fog_effect_overlay.dart
+
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class FogEffectOverlay extends StatefulWidget {
-  final double density; // 霧の濃さ（0.0 〜 1.0）
+  final double density;
 
-  const FogEffectOverlay({
-    super.key,
-    this.density = 0.65,
-  });
+  const FogEffectOverlay({super.key, this.density = 0.65});
 
   @override
   State<FogEffectOverlay> createState() => _FogEffectOverlayState();
@@ -16,155 +15,197 @@ class FogEffectOverlay extends StatefulWidget {
 
 class _FogEffectOverlayState extends State<FogEffectOverlay>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+  late final AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    // 霧を無限にゆっくりと漂わせるためのアニメーション
-    _animationController = AnimationController(
+
+    _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 15),
+      duration: const Duration(seconds: 18),
     )..repeat();
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _controller.dispose();
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return CustomPaint(
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return RepaintBoundary(
+            child: CustomPaint(
               size: Size.infinite,
               painter: _FogPainter(
-                timeValue: _animationController.value,
+                progress: _controller.value,
                 density: widget.density,
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
 class _FogPainter extends CustomPainter {
-  final double timeValue;
+  final double progress;
+
   final double density;
 
-  _FogPainter({required this.timeValue, required this.density});
+  _FogPainter({required this.progress, required this.density});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
+    // ─────────────────────────────
+    // 🌑 周囲暗転
+    // ─────────────────────────────
 
-    // 1️⃣ 画面の周辺部（四隅）を暗く＆霧深くするグラデーション（ケラレ効果）
-    final edgeGradient = RadialGradient(
-      center: Alignment.center,
-      radius: 1.2,
-      colors: [
-        Colors.transparent,
-        const Color(0xFF1E1710).withValues(alpha: 0.15 * density), // 内周
-        const Color(0xFF160E08).withValues(alpha: 0.85 * density), // 外周（濃いセピア闇）
-      ],
-      stops: const [0.3, 0.7, 1.0],
-    );
+    final vignettePaint = Paint()
+      ..shader = RadialGradient(
+        center: Alignment.center,
+        radius: 1.15,
+        colors: [
+          Colors.transparent,
+          const Color(0xFF1A120C).withValues(alpha: 0.18 * density),
+          const Color(0xFF100A06).withValues(alpha: 0.82 * density),
+        ],
+        stops: const [0.45, 0.75, 1.0],
+      ).createShader(Offset.zero & size);
 
-    paint.shader = edgeGradient.createShader(Offset.zero & size);
-    canvas.drawRect(Offset.zero & size, paint);
+    canvas.drawRect(Offset.zero & size, vignettePaint);
 
-    // 2️⃣ 漂流する3層の幻想霧（異なる速度・角度・不透明度の波を描写）
-    paint.shader = null; // シェーダーをリセット
+    // ─────────────────────────────
+    // 🌫️ 漂う霧
+    // ─────────────────────────────
 
-    // 霧の発生体（blob）の定義
-    final List<_FogBlob> blobs = [
+    final fogBlobs = [
       _FogBlob(
-        relativeCenter: const Offset(0.2, 0.25),
-        radiusFactor: 0.5,
-        speedFactor: 1.0,
-        baseAngle: 0.0,
-        opacity: 0.12 * density,
-      ),
-      _FogBlob(
-        relativeCenter: const Offset(0.8, 0.3),
-        radiusFactor: 0.6,
-        speedFactor: 0.7,
-        baseAngle: math.pi / 3,
-        opacity: 0.15 * density,
-      ),
-      _FogBlob(
-        relativeCenter: const Offset(0.4, 0.75),
+        baseOffset: const Offset(0.15, 0.22),
         radiusFactor: 0.55,
-        speedFactor: 1.2,
-        baseAngle: math.pi / 1.5,
-        opacity: 0.14 * density,
+        speed: 1.0,
+        opacity: 0.10,
+        angleOffset: 0,
       ),
       _FogBlob(
-        relativeCenter: const Offset(0.85, 0.8),
-        radiusFactor: 0.45,
-        speedFactor: 0.9,
-        baseAngle: math.pi,
-        opacity: 0.10 * density,
+        baseOffset: const Offset(0.72, 0.18),
+        radiusFactor: 0.48,
+        speed: 0.8,
+        opacity: 0.13,
+        angleOffset: math.pi / 2,
+      ),
+      _FogBlob(
+        baseOffset: const Offset(0.42, 0.72),
+        radiusFactor: 0.65,
+        speed: 1.3,
+        opacity: 0.12,
+        angleOffset: math.pi,
+      ),
+      _FogBlob(
+        baseOffset: const Offset(0.9, 0.8),
+        radiusFactor: 0.42,
+        speed: 0.7,
+        opacity: 0.09,
+        angleOffset: math.pi / 3,
       ),
     ];
 
-    for (final blob in blobs) {
-      // 時間経過に伴うサイン波移動で揺らぐ位置を算出
-      final angle = blob.baseAngle + (timeValue * 2 * math.pi * blob.speedFactor);
-      final dx = math.cos(angle) * 35.0; // 左右への最大揺れ幅
-      final dy = math.sin(angle) * 20.0; // 上下への最大揺れ幅
+    for (final blob in fogBlobs) {
+      final t = (progress * 2 * math.pi * blob.speed) + blob.angleOffset;
 
-      final targetCenter = Offset(
-        size.width * blob.relativeCenter.dx + dx,
-        size.height * blob.relativeCenter.dy + dy,
+      final dx = math.cos(t) * 36;
+      final dy = math.sin(t) * 22;
+
+      final center = Offset(
+        size.width * blob.baseOffset.dx + dx,
+        size.height * blob.baseOffset.dy + dy,
       );
 
       final radius = size.width * blob.radiusFactor;
 
-      // 霧のモコモコ感を出すグラデーション
-      final blobGradient = RadialGradient(
-        colors: [
-          const Color(0xFF6B5848).withValues(alpha: blob.opacity), // 中心
-          const Color(0xFF4A3728).withValues(alpha: blob.opacity * 0.4), // 中間
-          Colors.transparent, // 外側へ消える
-        ],
-        stops: const [0.0, 0.5, 1.0],
-      );
+      final fogPaint = Paint()
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30)
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFF8A7766).withValues(alpha: blob.opacity * density),
+            const Color(
+              0xFF5A4638,
+            ).withValues(alpha: blob.opacity * 0.45 * density),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.55, 1.0],
+        ).createShader(Rect.fromCircle(center: center, radius: radius));
 
-      paint.shader = blobGradient.createShader(
-        Rect.fromCircle(center: targetCenter, radius: radius),
-      );
-
-      canvas.drawCircle(targetCenter, radius, paint);
+      canvas.drawCircle(center, radius, fogPaint);
     }
+
+    // ─────────────────────────────
+    // ✨ 微粒子
+    // ─────────────────────────────
+
+    final dustPaint = Paint()
+      ..color = const Color(0xFFC8A97A).withValues(alpha: 0.025 * density);
+
+    for (int i = 0; i < 40; i++) {
+      final seed = i * 13.0;
+
+      final x =
+          (math.sin(progress * 2 * math.pi + seed) * 0.5 + 0.5) * size.width;
+
+      final y =
+          ((i / 40) * size.height +
+              math.cos(progress * 2 * math.pi + seed) * 12) %
+          size.height;
+
+      final r = (i % 3 + 1).toDouble();
+
+      canvas.drawCircle(Offset(x, y), r, dustPaint);
+    }
+
+    // ─────────────────────────────
+    // 🌫️ 全体ぼかし膜
+    // ─────────────────────────────
+
+    final overlayPaint = Paint()
+      ..color = const Color(0xFF2C2318).withValues(alpha: 0.04 * density)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18);
+
+    canvas.drawRect(Offset.zero & size, overlayPaint);
   }
 
   @override
   bool shouldRepaint(covariant _FogPainter oldDelegate) {
-    return oldDelegate.timeValue != timeValue || oldDelegate.density != density;
+    return oldDelegate.progress != progress || oldDelegate.density != density;
   }
 }
 
-// 霧の塊データモデル
-class _FogBlob {
-  final Offset relativeCenter; // 画面幅基準の初期相対位置 (0.0〜1.0)
-  final double radiusFactor;   // 画面幅に対する半径比率
-  final double speedFactor;    // アニメーションのスピード係数
-  final double baseAngle;      // 初期位相角
-  final double opacity;        // 基本透明度
+// ─────────────────────────────
+// 🌫️ Fog Data
+// ─────────────────────────────
 
-  _FogBlob({
-    required this.relativeCenter,
+class _FogBlob {
+  final Offset baseOffset;
+
+  final double radiusFactor;
+
+  final double speed;
+
+  final double opacity;
+
+  final double angleOffset;
+
+  const _FogBlob({
+    required this.baseOffset,
     required this.radiusFactor,
-    required this.speedFactor,
-    required this.baseAngle,
+    required this.speed,
     required this.opacity,
+    required this.angleOffset,
   });
 }

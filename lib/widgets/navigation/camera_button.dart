@@ -1,15 +1,29 @@
 // lib/widgets/navigation/camera_button.dart
+
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
+import '../../constants/app_colors.dart';
+import '../../constants/app_durations.dart';
+import '../../constants/app_shadows.dart';
+
+// ─────────────────────────────
+// 📸 Camera Button
+// ─────────────────────────────
 
 class CameraButton extends StatefulWidget {
   final VoidCallback onPressed;
+
   final double size;
+
+  final bool showPulse;
 
   const CameraButton({
     super.key,
     required this.onPressed,
-    this.size = 72.0,
+    this.size = 72,
+    this.showPulse = true,
   });
 
   @override
@@ -17,87 +31,179 @@ class CameraButton extends StatefulWidget {
 }
 
 class _CameraButtonState extends State<CameraButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _rotationController;
+    with TickerProviderStateMixin {
+  late final AnimationController _rotationController;
+
+  late final AnimationController _pulseController;
+
   bool _isPressed = false;
 
   @override
   void initState() {
     super.initState();
-    // 周囲の魔法陣を回転させるアニメーション
+
+    // ─────────────────────────
+    // 🔄 魔法陣回転
+    // ─────────────────────────
+
     _rotationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 12),
+      duration: const Duration(seconds: 16),
     )..repeat();
+
+    // ─────────────────────────
+    // ✨ 外側パルス
+    // ─────────────────────────
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
     _rotationController.dispose();
+
+    _pulseController.dispose();
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onPressed,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.90 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeInOut,
+    final totalSize = widget.size + 28;
+
+    return AnimatedScale(
+      scale: _isPressed ? 0.92 : 1.0,
+      duration: AppDurations.fast,
+
+      curve: Curves.easeOut,
+
+      child: GestureDetector(
+        onTapDown: (_) {
+          setState(() {
+            _isPressed = true;
+          });
+        },
+
+        onTapUp: (_) {
+          setState(() {
+            _isPressed = false;
+          });
+        },
+
+        onTapCancel: () {
+          setState(() {
+            _isPressed = false;
+          });
+        },
+
+        onTap: widget.onPressed,
+
         child: SizedBox(
-          width: widget.size + 24,
-          height: widget.size + 24,
+          width: totalSize,
+          height: totalSize,
+
           child: Stack(
             alignment: Alignment.center,
+
             children: [
-              // 1️⃣ 背後で光り、ゆっくり回る魔法サークル（カスタムペイント）
+              // ─────────────────────
+              // ✨ 呼吸する光
+              // ─────────────────────
+              if (widget.showPulse)
+                AnimatedBuilder(
+                  animation: _pulseController,
+
+                  builder: (_, child) {
+                    final pulse = _pulseController.value;
+
+                    return Container(
+                      width: widget.size + (pulse * 16),
+
+                      height: widget.size + (pulse * 16),
+
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(
+                              alpha: 0.10 - (pulse * 0.05),
+                            ),
+
+                            blurRadius: 28 + (pulse * 12),
+
+                            spreadRadius: 4 + (pulse * 4),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+              // ─────────────────────
+              // 🪄 魔法陣
+              // ─────────────────────
               RotationTransition(
                 turns: _rotationController,
+
                 child: CustomPaint(
-                  size: Size(widget.size + 24, widget.size + 24),
+                  size: Size(totalSize, totalSize),
+
                   painter: _MagicCirclePainter(),
                 ),
               ),
 
-              // 2️⃣ ボタン本体（金枠＋ガラス風デザイン）
+              // ─────────────────────
+              // 📸 本体
+              // ─────────────────────
               Container(
                 width: widget.size,
                 height: widget.size,
+
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
+
                   gradient: const RadialGradient(
-                    colors: [
-                      Color(0xFF3D2B1F), // 中央部
-                      Color(0xFF2C2318), // 縁部
-                    ],
+                    colors: [Color(0xFF473526), Color(0xFF2B2118)],
+
+                    radius: 0.95,
                   ),
-                  border: Border.all(
-                    color: const Color(0xFFC8A97A),
-                    width: 2.0,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFC8A97A).withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      spreadRadius: 1,
+
+                  border: Border.all(color: AppColors.primary, width: 2),
+
+                  boxShadow: AppShadows.goldGlow,
+                ),
+
+                child: Stack(
+                  alignment: Alignment.center,
+
+                  children: [
+                    // 内側リング
+                    Container(
+                      width: widget.size - 10,
+
+                      height: widget.size - 10,
+
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.18),
+                        ),
+                      ),
                     ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      blurRadius: 6,
-                      offset: const Offset(0, 4),
+
+                    const Icon(
+                      Icons.photo_camera,
+
+                      color: AppColors.textPrimary,
+
+                      size: 30,
                     ),
                   ],
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.photo_camera,
-                    color: Color(0xFFF5EDD8),
-                    size: 32,
-                  ),
                 ),
               ),
             ],
@@ -108,66 +214,101 @@ class _CameraButtonState extends State<CameraButton>
   }
 }
 
-// 💮 シャッターの背景で回る魔導の幾何学サークルを描画するペインター
+// ─────────────────────────────
+// 🪄 Magic Circle Painter
+// ─────────────────────────────
+
 class _MagicCirclePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFC8A97A).withValues(alpha: 0.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
     final center = Offset(size.width / 2, size.height / 2);
-    final maxRadius = size.width / 2 - 2;
 
-    // 外側の点線円
-    final dashPaint = Paint()
-      ..color = const Color(0xFFC8A97A).withValues(alpha: 0.25)
+    final radius = size.width / 2 - 2;
+
+    // ─────────────────────────
+    // 外円
+    // ─────────────────────────
+
+    final outerPaint = Paint()
+      ..color = AppColors.primary.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 1;
 
-    const int dashCount = 36;
+    canvas.drawCircle(center, radius, outerPaint);
+
+    // ─────────────────────────
+    // 点線リング
+    // ─────────────────────────
+
+    final dashPaint = Paint()
+      ..color = AppColors.primary.withValues(alpha: 0.28)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    const dashCount = 32;
+
     for (int i = 0; i < dashCount; i++) {
-      final angleStart = i * (2 * math.pi / dashCount);
-      final angleEnd = angleStart + (math.pi / dashCount);
+      final start = i * (2 * math.pi / dashCount);
+
+      const sweep = 0.08;
+
       canvas.drawArc(
-        Rect.fromCircle(center: center, radius: maxRadius),
-        angleStart,
-        angleEnd - angleStart,
+        Rect.fromCircle(center: center, radius: radius - 5),
+
+        start,
+
+        sweep,
+
         false,
+
         dashPaint,
       );
     }
 
-    // 内側の補助円
-    canvas.drawCircle(center, maxRadius - 6, paint..color = const Color(0xFFC8A97A).withValues(alpha: 0.3));
+    // ─────────────────────────
+    // 星型ライン
+    // ─────────────────────────
 
-    // 星型（十二角形の幾何学線）
+    final starPaint = Paint()
+      ..color = AppColors.primary.withValues(alpha: 0.14)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
     final path = Path();
-    const int points = 12;
+
+    const points = 12;
+
     for (int i = 0; i < points; i++) {
       final angle = i * (2 * math.pi / points);
-      // 隣り合う頂点ではなく、5つ隣の頂点と結ぶことで美しい多角形の星を作る
-      final nextAngle = (i + 5) * (2 * math.pi / points);
+
+      final targetAngle = (i + 5) * (2 * math.pi / points);
 
       final p1 = Offset(
-        center.dx + math.cos(angle) * (maxRadius - 3),
-        center.dy + math.sin(angle) * (maxRadius - 3),
+        center.dx + math.cos(angle) * (radius - 8),
+
+        center.dy + math.sin(angle) * (radius - 8),
       );
+
       final p2 = Offset(
-        center.dx + math.cos(nextAngle) * (maxRadius - 3),
-        center.dy + math.sin(nextAngle) * (maxRadius - 3),
+        center.dx + math.cos(targetAngle) * (radius - 8),
+
+        center.dy + math.sin(targetAngle) * (radius - 8),
       );
 
       if (i == 0) {
         path.moveTo(p1.dx, p1.dy);
       }
+
       path.lineTo(p2.dx, p2.dy);
     }
+
     path.close();
-    canvas.drawPath(path, paint..color = const Color(0xFFC8A97A).withValues(alpha: 0.18));
+
+    canvas.drawPath(path, starPaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
 }

@@ -1,4 +1,6 @@
-// lib/repositories/auth_repository.dartclass AuthRepository {
+// lib/repositories/auth_repository.dart
+
+class AuthRepository {
   Future<void> signInAnonymously() async {
     // あとでFirebase接続
   }
