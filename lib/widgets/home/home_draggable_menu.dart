@@ -15,7 +15,7 @@ class HomeDraggableMenu extends StatelessWidget {
     return DraggableScrollableSheet(
       initialChildSize: 0.22,
       minChildSize: 0.15,
-      maxChildSize: 0.7,
+      maxChildSize: 0.54,
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
