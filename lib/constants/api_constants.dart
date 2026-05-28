@@ -1,21 +1,23 @@
 // lib/constants/api_constants.dart
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConstants {
   // ─────────────────────────────
-  // 🔑 API Keys
+  // 🔑 API Keys (from .env)
   // ─────────────────────────────
 
   /// Gemini API Key
-  /// Get it from: https://aistudio.google.com/
-  static const String geminiApiKey = '';
+  static String get geminiApiKey => dotenv.get('GEMINI_API_KEY', fallback: '');
 
   /// Google Places API Key
-  /// Get it from: https://console.cloud.google.com/
-  static const String googlePlacesApiKey = '';
+  static String get googlePlacesApiKey =>
+      dotenv.get('GOOGLE_PLACES_API_KEY', fallback: '');
 
   /// OpenWeatherMap API Key
-  /// Get it from: https://openweathermap.org/api
-  static const String openWeatherMapApiKey = '';
+  static String get openWeatherMapApiKey =>
+      dotenv.get('OPEN_WEATHER_MAP_API_KEY', fallback: '');
 
-  // Android/iOS Native Maps API Key (if needed)
-  static const String googleMapsApiKey = '';
+  /// Google Maps API Key
+  static String get googleMapsApiKey =>
+      dotenv.get('GOOGLE_MAPS_API_KEY', fallback: '');
 }

@@ -55,7 +55,7 @@ class PlaceDetail {
 // ─────────────────────────────
 
 class PlacesService {
-  static const String _apiKey = ApiConstants.googlePlacesApiKey;
+  static String get _apiKey => ApiConstants.googlePlacesApiKey;
 
   static const String _baseUrl = 'https://maps.googleapis.com/maps/api/place';
 

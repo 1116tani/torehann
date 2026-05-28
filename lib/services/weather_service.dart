@@ -110,7 +110,7 @@ class WeatherService {
   // 🔑 OpenWeatherMap API Key
   // ─────────────────────────────
 
-  static const String _apiKey = ApiConstants.openWeatherMapApiKey;
+  static String get _apiKey => ApiConstants.openWeatherMapApiKey;
 
   static const String _baseUrl =
       'https://api.openweathermap.org/data/2.5/weather';
