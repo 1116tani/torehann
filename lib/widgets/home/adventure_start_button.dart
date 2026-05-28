@@ -27,7 +27,7 @@ class AdventureStartButton extends StatelessWidget {
 
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.18),
+              color: AppColors.primary.withValues(alpha: 0.3), // 💡 グローシャドウを明るく強化
 
               blurRadius: 18,
               offset: const Offset(0, 8),
@@ -41,7 +41,7 @@ class AdventureStartButton extends StatelessWidget {
           },
 
           style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 64),
+            minimumSize: const Size(double.infinity, 72), // 💡 高さ 64 → 72 (大きく押しやすく)
 
             backgroundColor: Colors.transparent,
 
@@ -57,12 +57,12 @@ class AdventureStartButton extends StatelessWidget {
 
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10), // 💡 内側余白 8 → 10
 
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
 
-                  color: AppColors.textPrimary.withValues(alpha: 0.12),
+                  color: AppColors.textPrimary.withValues(alpha: 0.2), // 💡 サークルを少し明るく
                 ),
 
                 child: const Icon(
@@ -70,18 +70,20 @@ class AdventureStartButton extends StatelessWidget {
 
                   color: AppColors.textDark,
 
-                  size: 22,
+                  size: 26, // 💡 アイコンサイズ 22 → 26 (大きく)
                 ),
               ),
 
-              const SizedBox(width: AppSizes.p12),
+              const SizedBox(width: AppSizes.p16), // 💡 間隔 12 → 16
 
               Text(
                 '冒険へ出発する',
 
                 style: AppTextStyles.button.copyWith(
-                  fontSize: 17,
-                  letterSpacing: 0.8,
+                  fontSize: 19, // 💡 文字サイズ 17 → 19 (大きく)
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2, // 💡 文字間隔を広げて視認性向上
+                  color: AppColors.textDark, // 💡 ボタン背景（金）に合わせて文字をクッキリ濃く
                 ),
               ),
             ],

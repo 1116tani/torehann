@@ -19,9 +19,19 @@ class HomeDraggableMenu extends StatelessWidget {
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.9), // メニュー背景
+            color: const Color(0xFF1D150F).withValues(alpha: 0.97), // 💡 より暗い深セピア背景で視認性を強化
             borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.35), // 💡 金枠を少し明るくクッキリ
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 15,
+                spreadRadius: 2,
+              ),
+            ],
           ),
           child: ListView(
             controller: scrollController,
@@ -41,16 +51,17 @@ class HomeDraggableMenu extends StatelessWidget {
 
               const AdventureStartButton(),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 32),
               const Text(
                 "冒険のログ",
                 style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
+                  color: AppColors.primary, // 💡 文字をゴールドに明るく
+                  fontSize: 14, // 💡 12 → 14 (大きく)
                   fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -61,12 +72,17 @@ class HomeDraggableMenu extends StatelessWidget {
                   _buildMenuItem(context, theme, Icons.settings, "設定", AppRoutes.settings),
                 ],
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 32),
               const Text(
                 "ギルド拡張（準備中）",
-                style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                style: TextStyle(
+                  color: AppColors.textSecondary, // 💡 textMuted → textSecondary (明るく)
+                  fontSize: 14, // 💡 12 → 14 (大きく)
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -94,33 +110,36 @@ class HomeDraggableMenu extends StatelessWidget {
     return InkWell(
       onTap: isLocked || route == null ? null : () => context.push(route),
       child: Opacity(
-        opacity: isLocked ? 0.3 : 1.0,
+        opacity: isLocked ? 0.35 : 1.0,
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14), // 💡 12 → 14 (アイコン枠を大きく)
               decoration: BoxDecoration(
                 color: isLocked
                     ? AppColors.border.withValues(alpha: 0.5)
-                    : theme.colorScheme.primary.withValues(alpha: 0.1),
+                    : theme.colorScheme.primary.withValues(alpha: 0.18), // 💡 枠内を少し明るく
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isLocked
                       ? Colors.transparent
-                      : theme.colorScheme.primary.withValues(alpha: 0.3),
+                      : theme.colorScheme.primary.withValues(alpha: 0.45), // 💡 枠線を明るく
+                  width: 1.2,
                 ),
               ),
               child: Icon(
                 icon,
                 color: isLocked ? AppColors.textMuted : theme.colorScheme.primary,
+                size: 26, // 💡 アイコンサイズを大きく (24 → 26)
               ),
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 11,
+                color: AppColors.textPrimary, // 💡 textSecondary → textPrimary (明るい羊皮紙色)
+                fontSize: 12.5, // 💡 11 → 12.5 (文字を大きく)
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
