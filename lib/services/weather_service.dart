@@ -140,6 +140,18 @@ class WeatherService {
     required double latitude,
     required double longitude,
   }) async {
+    if (_apiKey.isEmpty) {
+      return const WeatherInfo(
+        locationName: '現在地',
+        temperature: 22,
+        description: 'clear sky',
+        iconCode: '01d',
+        humidity: 50,
+        windSpeed: 1.5,
+        isRaining: false,
+      );
+    }
+
     try {
       final uri = Uri.parse(
         '$_baseUrl'

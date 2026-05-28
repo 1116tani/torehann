@@ -36,6 +36,8 @@ class GeminiService {
     return ApiConstants.geminiApiKey;
   }
 
+  static bool get hasApiKey => _apiKey.isNotEmpty;
+
   static const _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
@@ -64,7 +66,7 @@ class GeminiService {
     if (_apiKey.isEmpty) {
       throw Exception(
         'Gemini APIキーが設定されていません。\n'
-        '--dart-define=GEMINI_API_KEY=xxxx を設定してください。',
+        'GEMINI_API_KEY または Gemini_API_Key を設定してください。',
       );
     }
 
