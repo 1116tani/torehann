@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
+import '../constants/api_constants.dart';
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
 
@@ -13,10 +14,15 @@ class GeminiService {
 
   // ─────────────────────────────
   // 🔑 API設定
-  // flutter run --dart-define=GEMINI_API_KEY=xxxx
+  // 優先順位:
+  // 1. --dart-define=GEMINI_API_KEY=xxxx
+  // 2. ApiConstants.geminiApiKey
   // ─────────────────────────────
 
-  static const _apiKey = String.fromEnvironment('GEMINI_API_KEY');
+  static const _apiKey = String.fromEnvironment(
+    'GEMINI_API_KEY',
+    defaultValue: ApiConstants.geminiApiKey,
+  );
 
   static const _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';

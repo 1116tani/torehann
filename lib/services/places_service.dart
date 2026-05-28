@@ -4,6 +4,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../constants/api_constants.dart';
+
 // ─────────────────────────────
 // 📍 Place Suggestion Model
 // ─────────────────────────────
@@ -53,8 +55,7 @@ class PlaceDetail {
 // ─────────────────────────────
 
 class PlacesService {
-  // ⚠️ 後で.env化推奨
-  static const String _apiKey = 'YOUR_GOOGLE_PLACES_API_KEY';
+  static const String _apiKey = ApiConstants.googlePlacesApiKey;
 
   static const String _baseUrl = 'https://maps.googleapis.com/maps/api/place';
 
