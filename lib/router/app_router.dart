@@ -1,46 +1,42 @@
-//lib/router/app_router.dart
+// lib/router/app_router.dart
+
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
+import 'adventure_routes.dart';
 import 'auth_routes.dart';
 import 'home_routes.dart';
-import 'adventure_routes.dart';
 import 'route_names.dart';
 
 final appRouter = GoRouter(
-  // 最初に表示を試みる場所を認証画面に設定しているね、これはこのままで大丈夫！
   initialLocation: AppRoutes.auth,
-
+  refreshListenable: GoRouterRefreshStream(
+    _authStateChanges(),
+  ),
   redirect: (context, state) {
-    // 現在のユーザーのログイン状態を取得するよ
-    final user = FirebaseAuth.instance.currentUser;
-    // 💡 開発中はダミーユーザーを使用しているため、常にログイン済み（true）として扱います。
-    // 本番環境で本物のFirebase認証を使用する際は `user != null` に戻してください。
-    final isLoggedIn = user != null ;
-
+    final isLoggedIn = _currentUser() != null;
     final isGoingToAuth = state.matchedLocation == AppRoutes.auth;
+    final isGoingToTitle = state.matchedLocation == AppRoutes.title;
+    final isGoingToLoginArea = isGoingToAuth || isGoingToTitle;
 
-    // 1. 未ログインの場合の挙動
-    // ignore: dead_code
-    if (!isLoggedIn && !isGoingToAuth) {
+    if (!isLoggedIn && !isGoingToLoginArea) {
       return AppRoutes.auth;
     }
 
-    // 2. ログイン済みの場合の挙動
-    if (isLoggedIn && isGoingToAuth) {
+    if (isLoggedIn && isGoingToLoginArea) {
       return AppRoutes.home;
     }
 
     return null;
   },
-
   routes: [
     ...authRoutes,
     ...homeRoutes,
     ...adventureRoutes,
   ],
-
   errorBuilder: (context, state) {
     return const Scaffold(
       body: Center(
@@ -49,3 +45,36 @@ final appRouter = GoRouter(
     );
   },
 );
+
+User? _currentUser() {
+  try {
+    return FirebaseAuth.instance.currentUser;
+  } on FirebaseException {
+    return null;
+  }
+}
+
+Stream<User?> _authStateChanges() {
+  try {
+    return FirebaseAuth.instance.authStateChanges();
+  } on FirebaseException {
+    return const Stream<User?>.empty();
+  }
+}
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  late final StreamSubscription<dynamic> _subscription;
+
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen(
+      (_) => notifyListeners(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
