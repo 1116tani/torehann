@@ -37,13 +37,13 @@ class AppColors {
   static const Color secondary = Color(0xFFC8A97A);
 
   /// オトモ吹き出し
-static const Color speechBubble = Color(0xFFF1DFC2);
+  static const Color speechBubble = Color(0xFFF1DFC2);
 
-/// 吹き出しタイトル
-static const Color speechAccent = Color(0xFFD6B06A);
+  /// 吹き出しタイトル
+  static const Color speechAccent = Color(0xFFD6B06A);
 
-/// BottomSheet背景
-static const Color sheetBackground = Color(0xE62A1F18);
+  /// BottomSheet背景
+  static const Color sheetBackground = Color(0xE62A1F18);
 
   // ─────────────────────────────────
   // 📜 Text Colors
@@ -61,6 +61,21 @@ static const Color sheetBackground = Color(0xE62A1F18);
 
   /// 明るい背景上の文字
   static const Color textDark = Color(0xFF1A1A1A);
+
+  /// 押せないボタン・グレーアウト（Tier B以降の機能）
+  static const Color disabled = Color(0xFF4A4440);
+
+  /// 無効テキスト
+  static const Color textDisabled = Color(0xFF6B6560);
+
+  /// 選択中のモード・気分ボタン背景
+  static const Color selectedItem = Color(0xFF4A3520);
+
+  /// 未選択の難易度テキスト（今より明るく）
+  static const Color modeTextUnselected = Color(0xFFB8A898);
+
+  /// おまかせ選択時の目的地入力を暗くする色
+  static const Color inputDisabledBg = Color(0xFF1E1810);
 
   // ─────────────────────────────────
   // 🌍 Map / Adventure Accent

@@ -4,21 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/adventure_provider.dart';
+import '../providers/location_provider.dart';
+import '../providers/route_provider.dart';
 import '../router/route_names.dart';
 import '../constants/app_sizes.dart';
+import '../core/enums/adventure_mode.dart';
 
 class AdventureSettingPage extends ConsumerWidget {
   const AdventureSettingPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(adventureSettingProvider);
-    final notifier = ref.read(adventureSettingProvider.notifier);
+    final state = ref.watch(adventureProvider);
+    final notifier = ref.read(adventureProvider.notifier);
 
     return Scaffold(
       backgroundColor: const Color(0xFF2C2318),
       body: SafeArea(
-        child: state.isLoading
+        child: state.isGenerating
             ? const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -128,7 +131,7 @@ class AdventureSettingPage extends ConsumerWidget {
     final weekday = weekdays[now.weekday - 1];
 
     // 📍 現在地APIの呼び出し
-    final addressAsync = ref.watch(currentAddressProvider);
+    final addressAsync = ref.watch(currentLocationLabelProvider);
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.p16), // 💡 大きく
@@ -207,8 +210,8 @@ class AdventureSettingPage extends ConsumerWidget {
 
   // ── 目的地入力 ──
   Widget _buildDestinationSection(
-    AdventureSettingState state,
-    AdventureSettingNotifier notifier,
+    AdventureState state,
+    AdventureNotifier notifier,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,14 +272,14 @@ class AdventureSettingPage extends ConsumerWidget {
             ),
             const SizedBox(width: AppSizes.p12),
             GestureDetector(
-              onTap: notifier.setRandom,
+              onTap: notifier.enableRandomMode,
               child: Container(
                 height: 56, // 💡 ボタンを高く
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSizes.p20,
                 ), // 💡 幅も広く
                 decoration: BoxDecoration(
-                  color: state.isRandom
+                  color: state.isRandomMode
                       ? const Color(0xFFB8860B)
                       : const Color(0xFF3D2B1F),
                   borderRadius: BorderRadius.circular(AppSizes.radiusM),
@@ -289,7 +292,7 @@ class AdventureSettingPage extends ConsumerWidget {
                 child: Text(
                   'おまかせ',
                   style: TextStyle(
-                    color: state.isRandom
+                    color: state.isRandomMode
                         ? Colors.white
                         : const Color(0xFFC8A97A),
                     fontSize: 16, // 💡 12 -> 16
@@ -306,14 +309,14 @@ class AdventureSettingPage extends ConsumerWidget {
 
   // ── 気分選択 ──
   Widget _buildMoodSection(
-    AdventureSettingState state,
-    AdventureSettingNotifier notifier,
+    AdventureState state,
+    AdventureNotifier notifier,
   ) {
     final moods = [
-      ('のんびり', '🌸'),
-      ('わくわく', '✨'),
-      ('ガッツリ', '🔥'),
-      ('きまぐれ', '🎲'),
+      (AdventureMood.relaxed, 'のんびり', '🌸'),
+      (AdventureMood.excited, 'わくわく', '✨'),
+      (AdventureMood.intense, 'ガッツリ', '🔥'),
+      (AdventureMood.random, 'きまぐれ', '🎲'),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -358,12 +361,12 @@ class AdventureSettingPage extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      mood.$2,
+                      mood.$3,
                       style: const TextStyle(fontSize: 28),
                     ), // 💡 20 -> 28
                     const SizedBox(height: 8),
                     Text(
-                      mood.$1,
+                      mood.$2,
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
@@ -386,8 +389,8 @@ class AdventureSettingPage extends ConsumerWidget {
 
   // ── モード選択 ──
   Widget _buildModeSection(
-    AdventureSettingState state,
-    AdventureSettingNotifier notifier,
+    AdventureState state,
+    AdventureNotifier notifier,
   ) {
     final modes = [
       ('お散歩', '1-3km、ゆったりペース'),
@@ -400,9 +403,11 @@ class AdventureSettingPage extends ConsumerWidget {
         const _SectionLabel(icon: Icons.directions_walk, label: '難易度'),
         const SizedBox(height: AppSizes.p12),
         ...modes.map((mode) {
-          final isSelected = state.mode == mode.$1;
+          final isSelected = state.mode.label == mode.$1;
           return GestureDetector(
-            onTap: () => notifier.setMode(mode.$1),
+            onTap: () => notifier.setMode(
+              AdventureMode.values.firstWhere((m) => m.label == mode.$1),
+            ),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: double.infinity,
@@ -458,10 +463,10 @@ class AdventureSettingPage extends ConsumerWidget {
   Widget _buildGenerateButton(
     BuildContext context,
     WidgetRef ref,
-    AdventureSettingState state,
-    AdventureSettingNotifier notifier,
+    AdventureState state,
+    AdventureNotifier notifier,
   ) {
-    final canGenerate = state.isRandom || state.destination.trim().isNotEmpty;
+    final canGenerate = state.isRandomMode || state.destination.trim().isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -487,10 +492,11 @@ class AdventureSettingPage extends ConsumerWidget {
           ),
           onPressed: canGenerate
               ? () async {
-                  // 🚀 APIを叩く！
-                  final success = await notifier.generateRoutes();
-                  if (success && context.mounted) {
-                    // 成功したら次の画面へ
+                  // 🚀 ルート生成
+                  await ref
+                      .read(routeSelectProvider.notifier)
+                      .generateRoutes();
+                  if (context.mounted) {
                     context.go(AppRoutes.routeSelect);
                   }
                 }

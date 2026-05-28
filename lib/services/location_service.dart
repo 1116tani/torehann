@@ -1,5 +1,8 @@
 // lib/services/location_service.dart
 
+import 'dart:async';
+
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
@@ -38,13 +41,20 @@ class LocationService {
   Future<Position> getCurrentLocation() async {
     await checkPermission();
 
-    return Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        // GPS取得失敗時に無限待機しない
-        timeLimit: Duration(seconds: 10),
-      ),
-    );
+    try {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+
+          // GPS取得失敗時に無限待機しない
+          timeLimit: Duration(seconds: 12),
+        ),
+      );
+    } on TimeoutException {
+      throw Exception('GPS取得がタイムアウトしました。');
+    } catch (e) {
+      throw Exception('現在地の取得に失敗しました: $e');
+    }
   }
 
   // ─────────────────────────────
@@ -90,5 +100,87 @@ class LocationService {
     required double endLng,
   }) {
     return Geolocator.bearingBetween(startLat, startLng, endLat, endLng);
+  }
+
+  // ─────────────────────────────
+  // 🏙️ 緯度経度 → 地名変換
+  // （現在地表示用）
+  // ─────────────────────────────
+
+  Future<String> getPlaceName({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
+
+      if (placemarks.isEmpty) {
+        return '現在地取得中...';
+      }
+
+      final place = placemarks.first;
+
+      // 市区町村優先
+      final locality = place.locality;
+      final subLocality = place.subLocality;
+      final administrativeArea = place.administrativeArea;
+
+      if (locality != null && locality.isNotEmpty) {
+        return locality;
+      }
+
+      if (subLocality != null && subLocality.isNotEmpty) {
+        return subLocality;
+      }
+
+      if (administrativeArea != null && administrativeArea.isNotEmpty) {
+        return administrativeArea;
+      }
+
+      return '現在地';
+    } catch (_) {
+      return '現在地';
+    }
+  }
+
+  // ─────────────────────────────
+  // 📍 GPS精度テキスト
+  // UI表示用
+  // ─────────────────────────────
+
+  String getAccuracyLabel(double accuracy) {
+    if (accuracy <= 10) {
+      return 'GPS精度: 高';
+    }
+
+    if (accuracy <= 30) {
+      return 'GPS精度: 中';
+    }
+
+    return 'GPS精度: 低';
+  }
+
+  // ─────────────────────────────
+  // 🛰️ GPS利用可能か
+  // ─────────────────────────────
+
+  Future<bool> isGpsAvailable() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+      if (!serviceEnabled) {
+        return false;
+      }
+
+      final permission = await Geolocator.checkPermission();
+
+      return permission != LocationPermission.denied &&
+          permission != LocationPermission.deniedForever;
+    } catch (_) {
+      return false;
+    }
   }
 }

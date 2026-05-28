@@ -40,7 +40,7 @@ class AppSizes {
   // 📦 Card / Component Heights
   // ─────────────────────────────────
 
-  static const double buttonHeight = 56.0;
+  static const double buttonHeight = 60.0;
 
   static const double bottomSheetRadius = 32.0;
 
@@ -88,4 +88,30 @@ class AppSizes {
   static const double chartHeight = 220.0;
 
   static const double ringSize = 180.0;
+
+  /// 気分選択ボタンの高さ（今より大きく）
+  static const double moodButtonSize = 88.0;
+
+  /// 難易度選択ボタンの高さ（今より大きく）
+  static const double modeButtonHeight = 64.0;
+
+  /// 目的地入力フィールドの高さ
+  static const double inputHeight = 56.0;
+
+  /// おまかせボタンの幅
+  static const double randomButtonWidth = 100.0;
+
+  // ─────────────────────────────────
+  // 🃏 Cards
+  // カードサイズ
+  // ─────────────────────────────────
+
+  /// ルートカードの幅（横スクロール用）
+  static const double routeCardWidth = 300.0;
+
+  /// 履歴カードのサムネイル
+  static const double historyThumbSize = 64.0;
+
+  /// 断片グリッドの1マス
+  static const double fragmentGridSize = 80.0;
 }

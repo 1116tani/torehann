@@ -61,7 +61,6 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
-
         centerTitle: true,
 
         backgroundColor: Colors.transparent,
@@ -106,9 +105,9 @@ class AppTheme {
 
           foregroundColor: AppColors.textDark,
 
-          disabledBackgroundColor: AppColors.surfaceLight,
+          disabledBackgroundColor: AppColors.disabled,
 
-          disabledForegroundColor: AppColors.textMuted,
+          disabledForegroundColor: AppColors.textDisabled,
 
           minimumSize: const Size(double.infinity, AppSizes.buttonHeight),
 
@@ -143,6 +142,20 @@ class AppTheme {
           ),
 
           textStyle: AppTextStyles.button,
+        ),
+      ),
+
+      // ─────────────────────────────────
+      // 🔘 Text Button
+      // ─────────────────────────────────
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primary,
+
+          textStyle: AppTextStyles.button.copyWith(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
@@ -229,6 +242,71 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.md),
 
           borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+        ),
+
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+
+          borderSide: const BorderSide(color: AppColors.error, width: 1.4),
+        ),
+      ),
+
+      // ─────────────────────────────────
+      // 🎚 Slider
+      // ─────────────────────────────────
+      sliderTheme: SliderThemeData(
+        activeTrackColor: AppColors.primary,
+
+        inactiveTrackColor: AppColors.surfaceLight,
+
+        thumbColor: AppColors.primaryLight,
+
+        overlayColor: AppColors.primary.withValues(alpha: 0.2),
+
+        trackHeight: 4,
+      ),
+
+      // ─────────────────────────────────
+      // 🔄 Switch
+      // ─────────────────────────────────
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primary;
+          }
+
+          return AppColors.textMuted;
+        }),
+
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primaryDark;
+          }
+
+          return AppColors.surfaceLight;
+        }),
+      ),
+
+      // ─────────────────────────────────
+      // 💬 SnackBar
+      // ─────────────────────────────────
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.surface,
+
+        contentTextStyle: AppTextStyles.bodyMedium,
+
+        behavior: SnackBarBehavior.floating,
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+
+          side: const BorderSide(color: AppColors.border),
         ),
       ),
     );

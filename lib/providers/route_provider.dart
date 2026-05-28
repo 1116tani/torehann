@@ -87,7 +87,7 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
-      final settings = ref.read(adventureSettingProvider);
+      final settings = ref.read(adventureProvider);
 
       final allSpots = ref.read(dummySpotsProvider);
 
@@ -117,7 +117,7 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
 
           estimatedTime: 36,
 
-          tags: ['#${settings.mode}', '#黄昏', '#静かな冒険'],
+          tags: ['#${settings.mode.label}', '#黄昏', '#静かな冒険'],
         ),
 
         // ───────────────────
