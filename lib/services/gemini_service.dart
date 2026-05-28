@@ -36,8 +36,6 @@ class GeminiService {
     return ApiConstants.geminiApiKey;
   }
 
-  static bool get hasApiKey => _apiKey.isNotEmpty;
-
   static const _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 

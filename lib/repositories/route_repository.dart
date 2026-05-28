@@ -2,7 +2,6 @@
 
 import '../models/route_model.dart';
 import '../services/gemini_service.dart';
-import '../utils/route_dummy_data.dart';
 
 class RouteRepository {
   final GeminiService _geminiService;
@@ -23,17 +22,6 @@ class RouteRepository {
     String destination = '',
   }) async {
     try {
-      if (!GeminiService.hasApiKey) {
-        return buildFallbackRoutes(
-          lat: lat,
-          lng: lng,
-          mood: mood,
-          mode: mode,
-          hobbyTags: hobbyTags,
-          destination: destination,
-        );
-      }
-
       final routes = await _geminiService.generateRoutes(
         lat: lat,
         lng: lng,
