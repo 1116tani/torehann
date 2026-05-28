@@ -30,6 +30,7 @@ class ApiConstants {
   /// OpenWeatherMap API Key
   static String get openWeatherMapApiKey => _getFirstNonEmpty([
     'OPEN_WEATHER_MAP_API_KEY',
+    'OPEN_WEATHER_API_KEY',
     'Weather_API_Key',
   ]);
 
