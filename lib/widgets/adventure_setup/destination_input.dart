@@ -21,6 +21,7 @@ class DestinationInput extends ConsumerStatefulWidget {
 
 class _DestinationInputState extends ConsumerState<DestinationInput> {
   late final TextEditingController _controller;
+  late final FocusNode _focusNode; // 💡 フォーカス制御用
   Timer? _debounce;
 
   @override
@@ -28,12 +29,14 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
     super.initState();
     final initialText = ref.read(adventureProvider).destination;
     _controller = TextEditingController(text: initialText);
+    _focusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -76,43 +79,119 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
         // ───────────────────
         // ✏️ Input
         // ───────────────────
-        AbsorbPointer(
-          absorbing: isRandomMode,
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 200),
-            opacity: isRandomMode ? 0.5 : 1.0,
-            child: TextField(
-              controller: _controller,
-              onChanged: _onChanged,
-              style: AppTextStyles.bodyLarge,
-              decoration: InputDecoration(
-                hintText: '駅名・街・スポット名を入力',
-                prefixIcon: const Icon(
-                  Icons.search_rounded,
-                  color: AppColors.textMuted,
-                ),
-                filled: true,
-                fillColor: AppColors.surfaceLight,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.p16,
-                  vertical: AppSizes.p16,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                  borderSide: const BorderSide(
-                    color: AppColors.primary,
-                    width: 1.5,
+        GestureDetector(
+          onTap: () {
+            if (isRandomMode) {
+              ref.read(adventureProvider.notifier).setRandomMode(false);
+              // タップ時に即フォーカスを当てる
+              _focusNode.requestFocus();
+            }
+          },
+          child: AbsorbPointer(
+            absorbing: isRandomMode,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: isRandomMode ? 0.45 : 1.0, // 💡 おまかせ時は暗くする
+              child: TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                onChanged: _onChanged,
+                onTap: () {
+                  if (isRandomMode) {
+                    ref.read(adventureProvider.notifier).setRandomMode(false);
+                  }
+                },
+                style: AppTextStyles.bodyLarge,
+                decoration: InputDecoration(
+                  hintText: '駅名・街・スポット名を入力',
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textMuted,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.surfaceLight,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSizes.p16,
+                    vertical: AppSizes.p16,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusL),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusL),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusL),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: AppSizes.p12),
+
+        // 🎲 おまかせボタン
+        GestureDetector(
+          onTap: () {
+            final nextMode = !isRandomMode;
+            ref.read(adventureProvider.notifier).setRandomMode(nextMode);
+            if (nextMode) {
+              FocusScope.of(context).unfocus();
+            } else {
+              _focusNode.requestFocus();
+            }
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppSizes.radiusL),
+              color: isRandomMode
+                  ? AppColors.primary // 💡 選択中（おまかせ）は明るいゴールド
+                  : const Color(0xFF2C2318), // 💡 未選択（入力）は暗いセピアウッド
+              border: Border.all(
+                color: isRandomMode
+                    ? AppColors.primaryLight
+                    : AppColors.border,
+                width: 1.2,
+              ),
+              boxShadow: isRandomMode
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ]
+                  : null,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.casino_rounded,
+                  color: isRandomMode ? AppColors.textDark : AppColors.textSecondary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '目的地をおまかせする',
+                  style: TextStyle(
+                    color: isRandomMode ? AppColors.textDark : AppColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

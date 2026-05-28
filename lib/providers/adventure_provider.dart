@@ -120,6 +120,13 @@ class AdventureNotifier extends Notifier<AdventureState> {
     state = state.copyWith(isRandomMode: true, destination: '');
   }
 
+  void setRandomMode(bool enabled) {
+    state = state.copyWith(
+      isRandomMode: enabled,
+      destination: enabled ? '' : state.destination,
+    );
+  }
+
   // ─────────────────────────────
   // ⏰ 空き時間変更
   // ─────────────────────────────

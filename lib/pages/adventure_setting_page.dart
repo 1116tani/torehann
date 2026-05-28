@@ -56,13 +56,20 @@ class AdventureSettingPage extends ConsumerWidget {
                 // ─────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
-                    AppSizes.p20,
+                    AppSizes.p8, // 💡 左の余白を少し詰める（戻るボタンのため）
                     AppSizes.p20,
                     AppSizes.p20,
                     AppSizes.p12,
                   ),
                   child: Row(
                     children: [
+                      // 💡 戻るボタンを左上に配置 (Xから←へ)
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+                        iconSize: 30,
+                      ),
+                      const SizedBox(width: AppSizes.p8),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,28 +77,22 @@ class AdventureSettingPage extends ConsumerWidget {
                             Text(
                               '冒険セッティング',
                               style: AppTextStyles.titleLarge.copyWith(
-                                fontSize: 30,
+                                fontSize: 26,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
 
-                            const SizedBox(height: AppSizes.p8),
+                            const SizedBox(height: AppSizes.p4),
 
                             Text(
                               '気分に合わせて、街を歩こう',
                               style: AppTextStyles.bodyMedium.copyWith(
                                 color: AppColors.textSecondary,
-                                fontSize: 16,
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
-                      ),
-
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded),
-                        iconSize: 30,
                       ),
                     ],
                   ),
