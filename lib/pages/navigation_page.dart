@@ -55,9 +55,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
       if (_useGoogleMap && _mapController != null) {
         _mapController!.animateCamera(
-          CameraUpdate.newLatLng(
-            LatLng(position.latitude, position.longitude),
-          ),
+          CameraUpdate.newLatLng(LatLng(position.latitude, position.longitude)),
         );
       }
     });
@@ -117,7 +115,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     // 📍 スポット一覧
     // ─────────────────────────────
 
-    final spotsMap = ref.watch(dummySpotsProvider);
+    final spotsMap = ref.watch(generatedSpotsProvider);
 
     final routeSpots =
         navState.currentRoute?.spotIds
@@ -182,11 +180,17 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                   children: [
                     // カスタム AppBar
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                        vertical: 4.0,
+                      ),
                       child: Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.close, color: Color(0xFFF5EDD8)),
+                            icon: const Icon(
+                              Icons.close,
+                              color: Color(0xFFF5EDD8),
+                            ),
                             onPressed: () {
                               navNotifier.finishAdventure();
                               context.go(AppRoutes.home);
@@ -249,7 +253,9 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               bottom: isCompleted ? 100 : 252,
               child: FloatingActionButton(
                 mini: true,
-                backgroundColor: const Color(0xFF3D2B1F).withValues(alpha: 0.85),
+                backgroundColor: const Color(
+                  0xFF3D2B1F,
+                ).withValues(alpha: 0.85),
                 foregroundColor: const Color(0xFFC8A97A),
 
                 onPressed: () {
@@ -276,7 +282,9 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               left: 16,
               bottom: 146,
               child: ActionChip(
-                backgroundColor: const Color(0xFFCC3333).withValues(alpha: 0.85),
+                backgroundColor: const Color(
+                  0xFFCC3333,
+                ).withValues(alpha: 0.85),
                 side: const BorderSide(color: Color(0xFFC8A97A), width: 1),
                 label: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -338,12 +346,13 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                     ),
                   )
                 : (navState.nextSpot != null
-                    ? DestinationMarker(
-                        spot: navState.nextSpot!,
-                        distanceToSpot: navState.distanceToNextSpot,
-                        isNearby: (navState.distanceToNextSpot ?? 999.0) < 20.0,
-                      )
-                    : const SizedBox.shrink()),
+                      ? DestinationMarker(
+                          spot: navState.nextSpot!,
+                          distanceToSpot: navState.distanceToNextSpot,
+                          isNearby:
+                              (navState.distanceToNextSpot ?? 999.0) < 20.0,
+                        )
+                      : const SizedBox.shrink()),
           ),
         ],
       ),

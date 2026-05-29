@@ -26,15 +26,16 @@ class GeminiService {
     return ApiConstants.geminiApiKey;
   }
 
+  // 🌟 最新の 3.5-flash モデルのエンドポイントだよ
   static const _baseUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 
   GeminiService()
     : _dio = Dio(
         BaseOptions(
-          connectTimeout: const Duration(seconds: 20),
-          receiveTimeout: const Duration(seconds: 30),
-          sendTimeout: const Duration(seconds: 20),
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 30),
           headers: {'Content-Type': 'application/json'},
         ),
       );
@@ -82,7 +83,7 @@ class GeminiService {
           'generationConfig': {
             'temperature': 0.85,
             'topP': 0.95,
-            'maxOutputTokens': 4096,
+            'maxOutputTokens': 8192,
 
             'responseMimeType': 'application/json',
           },
@@ -218,7 +219,7 @@ $durationMinutes分
     final destinationText = destination.isEmpty ? '現在地周辺でおまかせ' : destination;
 
     return '''
-以下条件に合う、実在する場所を巡る徒歩ルートを3つ生成して、指定されたJSON形式のデータのみを出力してください。
+以下条件に合う、実在する場所を巡る徒歩ルートを【1つだけ】生成して、指定されたJSON形式のデータのみを出力してください。
 他の挨拶や説明、バッククォートなどのマークアップは一切含めないでください。
 
 【形式】
@@ -264,10 +265,10 @@ $mode
 $hobbies
 
 【ルール】
-- 3つの異なるテーマを作る
+- 1つの明確なテーマを作る
 - 実在する場所を使う
 - 徒歩で巡れる範囲
-- 各ルート2〜4スポット
+- ルートには2〜4スポットを含める
 - カフェ、公園、路地裏、史跡などを混ぜる
 - 幻想的・ゲーム的なタイトル
 - aiStoryName は物語風

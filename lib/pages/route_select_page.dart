@@ -21,7 +21,7 @@ class RouteSelectPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(routeSelectProvider);
     final notifier = ref.read(routeSelectProvider.notifier);
-    final spots = ref.watch(dummySpotsProvider);
+    final spots = ref.watch(generatedSpotsProvider);
 
     final selectedRoute = _selectedRoute(state.routes, state.selectedRouteId);
 
@@ -277,7 +277,8 @@ class _RouteChoicesView extends StatelessWidget {
 
                   return SizedBox(
                     width: cardWidth,
-                    child: RouteCard( // 👈 共通化したカードをここで綺麗に召喚！
+                    child: RouteCard(
+                      // 👈 共通化したカードをここで綺麗に召喚！
                       route: route,
                       spots: _spotsForRoute(route, spots),
                       isSelected: isSelected,

@@ -9,10 +9,18 @@ import '../core/enums/adventure_mode.dart';
 // ─────────────────────────────
 
 enum AdventureMood {
-  relaxed, // のんびり
-  excited, // わくわく
-  intense, // ガッツリ
-  random, // きまぐれ
+  relaxed('のんびり', '🌸'),
+  excited('わくわく', '✨'),
+  intense('ガッツリ', '🔥'),
+  random('きまぐれ', '🎲');
+
+  const AdventureMood(this.label, this.emoji);
+
+  // Geminiプロンプト・UI表示用ラベル
+  final String label;
+
+  // 絵文字
+  final String emoji;
 }
 
 class AdventureState {
