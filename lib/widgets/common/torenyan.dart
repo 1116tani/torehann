@@ -63,10 +63,7 @@ class Torenyan extends StatefulWidget {
   State<Torenyan> createState() => _TorenyanState();
 }
 
-class _TorenyanState extends State<Torenyan> with TickerProviderStateMixin {
-  late final AnimationController _floatingController;
-  late final Animation<double> _floatingAnimation;
-  
+class _TorenyanState extends State<Torenyan> {
   double _scale = 1.0;
   String _currentLine = '';
   final _random = math.Random();
@@ -74,20 +71,6 @@ class _TorenyanState extends State<Torenyan> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
-    // 🌊 ふわふわ浮遊アニメーション (上下に4dp)
-    _floatingController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
-
-    _floatingAnimation = Tween<double>(begin: -4.0, end: 4.0).animate(
-      CurvedAnimation(
-        parent: _floatingController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
     _updateLine();
   }
 
@@ -97,12 +80,6 @@ class _TorenyanState extends State<Torenyan> with TickerProviderStateMixin {
     if (oldWidget.state != widget.state) {
       _updateLine();
     }
-  }
-
-  @override
-  void dispose() {
-    _floatingController.dispose();
-    super.dispose();
   }
 
   void _updateLine() {
@@ -138,21 +115,11 @@ class _TorenyanState extends State<Torenyan> with TickerProviderStateMixin {
       children: [
         // 💬 ゲームライクな吹き出し
         if (widget.showSpeechBubble && _currentLine.isNotEmpty)
-          AnimatedBuilder(
-            animation: _floatingAnimation,
-            builder: (context, child) {
-              // 吹き出しも少し連動して揺れるように
-              return Transform.translate(
-                offset: Offset(0, _floatingAnimation.value * 0.4),
-                child: child,
-              );
-            },
-            child: _buildSpeechBubble(),
-          ),
+          _buildSpeechBubble(),
           
         const SizedBox(height: 4),
 
-        // 🐱 トレにゃん本体 (ふわふわ浮遊 ＋ タップ収縮アニメーション)
+        // 🐱 トレにゃん本体 (タップ収縮フィードバックのみ)
         GestureDetector(
           onTapDown: (_) {
             if (widget.enableTap) {
@@ -174,20 +141,11 @@ class _TorenyanState extends State<Torenyan> with TickerProviderStateMixin {
             scale: _scale,
             duration: const Duration(milliseconds: 100),
             curve: Curves.easeOut,
-            child: AnimatedBuilder(
-              animation: _floatingAnimation,
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: Offset(0, _floatingAnimation.value),
-                  child: child,
-                );
-              },
-              child: Image.asset(
-                'assets/images/mascot/mascot_neko.png',
-                width: widget.size,
-                height: widget.size,
-                fit: BoxFit.contain,
-              ),
+            child: Image.asset(
+              'assets/images/mascot/mascot_neko.png',
+              width: widget.size,
+              height: widget.size,
+              fit: BoxFit.contain,
             ),
           ),
         ),
@@ -222,32 +180,14 @@ class _TorenyanState extends State<Torenyan> with TickerProviderStateMixin {
               ),
             ],
           ),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 240),
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0.0, 0.15),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-                  ),
-                  child: child,
-                ),
-              );
-            },
-            child: Text(
-              _currentLine,
-              key: ValueKey<String>(_currentLine),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFFF5EDD8), // 温かみのあるクリームゴールド
-                fontSize: 13.0,
-                fontWeight: FontWeight.bold,
-                height: 1.35,
-              ),
+          child: Text(
+            _currentLine,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFFF5EDD8), // 温かみのあるクリームゴールド
+              fontSize: 13.0,
+              fontWeight: FontWeight.bold,
+              height: 1.35,
             ),
           ),
         ),

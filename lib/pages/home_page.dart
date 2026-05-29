@@ -267,27 +267,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
 
             // ─────────────────────
-            // 🧚 Partner
-            // ─────────────────────
-            AnimatedPositioned(
-              duration: AppDurations.fast,
-
-              curve: Curves.easeOut,
-
-              left: AppSizes.p20,
-
-              bottom: dynamicBottom,
-
-              child: AnimatedOpacity(
-                duration: AppDurations.normal,
-
-                opacity: elementOpacity,
-
-                child: const PartnerCharacter(),
-              ),
-            ),
-
-            // ─────────────────────
             // 🗺 Controls
             // ─────────────────────
             AnimatedPositioned(

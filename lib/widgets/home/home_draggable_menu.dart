@@ -101,12 +101,12 @@ class HomeDraggableMenu extends StatelessWidget {
           ),
         ),
         
-        // 🐱 ボトムシートの上に乗るトレにゃん
+        // 🐱 ボトムシートの上に乗るトレにゃん（左側に大きく配置し、フチを掴んでいるように）
         const Positioned(
-          top: -96, // 吹き出し(約40dp) + 猫本体(約48dp) がはみ出す位置
-          right: 24,
+          top: -136, // 吹き出し + 猫本体がボトムシートのフチにかぶる高さ
+          left: 24,
           child: Torenyan(
-            size: 64, // ボトムシート上に綺麗に収まるサイズ
+            size: 125, // 大きさを125に変更
             state: TorenyanState.idle,
             enableTap: true,
           ),
