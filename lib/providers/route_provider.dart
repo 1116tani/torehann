@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
+
 import '../repositories/route_repository.dart';
 import '../services/gemini_service.dart';
 
@@ -35,6 +36,8 @@ class RouteSelectState {
   // ─────────────────────────────
 
   RouteModel? get selectedRoute {
+    if (selectedRouteId == null) return null;
+
     try {
       return routes.firstWhere((route) => route.id == selectedRouteId);
     } catch (_) {
@@ -51,13 +54,14 @@ class RouteSelectState {
     String? selectedRouteId,
     bool? isLoading,
     String? errorMessage,
-    bool clearSelected = false,
+
+    bool clearSelectedRoute = false,
     bool clearError = false,
   }) {
     return RouteSelectState(
       routes: routes ?? this.routes,
 
-      selectedRouteId: clearSelected
+      selectedRouteId: clearSelectedRoute
           ? null
           : (selectedRouteId ?? this.selectedRouteId),
 
@@ -95,28 +99,41 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
   }
 
   // ─────────────────────────────
-  // ✨ AIルート生成
+  // ✨ ルート生成
   // ─────────────────────────────
 
-  Future<void> generateRoutes() async {
+  Future<bool> generateRoutes() async {
     try {
+      // 🔄 Loading開始
       state = state.copyWith(isLoading: true, clearError: true);
 
-      // 🌌 冒険設定取得
-      final adventure = ref.read(adventureProvider);
-
+      // ───────────────────
       // 📍 現在地取得
+      // ───────────────────
+
       final position = await ref.read(currentLocationProvider.future);
 
-      // 🛰️ Repository
+      // ───────────────────
+      // 🌌 冒険設定取得
+      // ───────────────────
+
+      final adventure = ref.read(adventureProvider);
+
+      // ───────────────────
+      // 🛰️ Repository取得
+      // ───────────────────
+
       final repository = ref.read(routeRepositoryProvider);
 
-      // ✨ Gemini生成
+      // ───────────────────
+      // ✨ AI生成
+      // ───────────────────
+
       final routes = await repository.generateRoutes(
         lat: position.latitude,
         lng: position.longitude,
 
-        mood: adventure.mood.name,
+        mood: adventure.mood.label,
 
         mode: adventure.mode.label,
 
@@ -125,9 +142,17 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
         destination: adventure.isRandomMode ? '' : adventure.destination,
       );
 
+      // ───────────────────
+      // ❌ 空チェック
+      // ───────────────────
+
       if (routes.isEmpty) {
         throw Exception('ルートが生成されませんでした');
       }
+
+      // ───────────────────
+      // ✅ 成功
+      // ───────────────────
 
       state = state.copyWith(
         routes: routes,
@@ -136,8 +161,16 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
 
         isLoading: false,
       );
+
+      return true;
     } catch (e) {
+      // ───────────────────
+      // ❌ エラー
+      // ───────────────────
+
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+
+      return false;
     }
   }
 
@@ -147,6 +180,14 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
 
   void reset() {
     state = const RouteSelectState();
+  }
+
+  // ─────────────────────────────
+  // ❌ エラークリア
+  // ─────────────────────────────
+
+  void clearError() {
+    state = state.copyWith(clearError: true);
   }
 }
 
@@ -160,16 +201,19 @@ final routeSelectProvider =
     );
 
 // ─────────────────────────────
-// 📍 Spots Lookup
+// 📍 Spot Lookup
 // ─────────────────────────────
 
-final dummySpotsProvider = Provider<Map<String, SpotModel>>((ref) {
+final generatedSpotsProvider = Provider<Map<String, SpotModel>>((ref) {
   final routes = ref.watch(routeSelectProvider).routes;
+
   final map = <String, SpotModel>{};
+
   for (final route in routes) {
     for (final spot in route.generatedSpots) {
       map[spot.id] = spot;
     }
   }
+
   return map;
 });
