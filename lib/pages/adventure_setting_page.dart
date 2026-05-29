@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../router/route_names.dart';
 
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
@@ -172,7 +174,11 @@ class AdventureSettingPage extends ConsumerWidget {
                   border: Border(top: BorderSide(color: AppColors.border)),
                 ),
 
-                child: const GenerateRouteButton(),
+                child: GenerateRouteButton(
+                  onSuccess: () {
+                    context.push(AppRoutes.routeSelect);
+                  },
+                ),
               ),
             ),
 
