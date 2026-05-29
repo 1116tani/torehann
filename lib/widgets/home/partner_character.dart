@@ -17,9 +17,9 @@ class PartnerCharacter extends StatelessWidget {
   const PartnerCharacter({
     super.key,
 
-    this.characterName = '案内妖精・アイリス',
+    this.characterName = 'オトモねこ・トレにゃん',
 
-    this.currentMessage = '今日はどんな物語を\n紡ぎに行くの？',
+    this.currentMessage = '今日はどんな物語を\n紡ぎに行くにゃ？',
 
     this.imagePath = '',
   });
