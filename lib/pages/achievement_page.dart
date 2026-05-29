@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../constants/app_colors.dart';
 import '../../models/achievement_model.dart';
 import '../../providers/achievement_provider.dart';
 import '../../widgets/achievement/achievement_card.dart';
@@ -23,13 +24,13 @@ class AchievementPage extends ConsumerWidget {
         .length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610),
+      backgroundColor: AppColors.background,
 
       appBar: AppBar(
         title: const Text(
           '✦ 実績 ✦',
           style: TextStyle(
-            color: Color(0xFFF5EDD8),
+            color: AppColors.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
@@ -37,11 +38,11 @@ class AchievementPage extends ConsumerWidget {
         ),
 
         centerTitle: true,
-        backgroundColor: const Color(0xFF2C2318),
+        backgroundColor: AppColors.surface,
         elevation: 0,
 
         iconTheme: const IconThemeData(
-          color: Color(0xFFC8A97A),
+          color: AppColors.primary,
         ),
       ),
 
@@ -58,7 +59,7 @@ class AchievementPage extends ConsumerWidget {
               ),
 
               decoration: const BoxDecoration(
-                color: Color(0xFF2C2318),
+                color: AppColors.surface,
 
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(20),
@@ -80,31 +81,27 @@ class AchievementPage extends ConsumerWidget {
                     '現在の実績達成度',
 
                     style: TextStyle(
-                      color: Color(0xFF7A5C3A),
-                      fontSize: 12,
+                      color: Color(0xFFC8A97A),
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1.1,
                     ),
                   ),
 
                   const SizedBox(height: 6),
 
                   Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.center,
-
-                    crossAxisAlignment:
-                        CrossAxisAlignment.baseline,
-
-                    textBaseline:
-                        TextBaseline.alphabetic,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
 
                     children: [
                       Text(
                         '$earnedCount',
 
                         style: const TextStyle(
-                          color: Color(0xFFB8860B),
-                          fontSize: 36,
+                          color: Color(0xFFE5A93C),
+                          fontSize: 38,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -113,8 +110,9 @@ class AchievementPage extends ConsumerWidget {
                         ' / ${achievements.length}',
 
                         style: const TextStyle(
-                          color: Color(0xFFC8A97A),
-                          fontSize: 16,
+                          color: Color(0xFFE5D5BC),
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
 
@@ -124,8 +122,9 @@ class AchievementPage extends ConsumerWidget {
                         '個解放',
 
                         style: TextStyle(
-                          color: Color(0xFFC8A97A),
-                          fontSize: 12,
+                          color: Color(0xFFE5D5BC),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -163,10 +162,9 @@ class AchievementPage extends ConsumerWidget {
             // ── Achievement List ──
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.only(
-                  left: 12,
-                  right: 12,
-                  bottom: 24,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
 
                 itemCount: achievements.length,

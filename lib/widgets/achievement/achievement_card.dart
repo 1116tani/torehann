@@ -1,6 +1,7 @@
 // lib/widgets/achievement/achievement_card.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import '../../models/achievement_model.dart';
 
 class AchievementCard extends StatelessWidget {
@@ -17,10 +18,10 @@ class AchievementCard extends StatelessWidget {
       context: context,
       builder: (context) {
         return Dialog(
-          backgroundColor: const Color(0xFF2C2318), // 渋ブラウン
+          backgroundColor: AppColors.surface, // 💡 共通のsurfaceカラー
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Color(0xFFB8860B), width: 1.5), // 金の縁取り
+            side: const BorderSide(color: AppColors.primary, width: 1.5), // 金の縁取り
           ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -48,22 +49,33 @@ class AchievementCard extends StatelessWidget {
                   isUnearned ? '？？？？？？' : achievement.title,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isUnearned ? const Color(0xFF7A5C3A) : const Color(0xFFF5EDD8),
+                    color: isUnearned ? const Color(0xFFD2C2B2) : const Color(0xFFF5EDD8), // 💡 0xFFB5A189 → 0xFFD2C2B2 (さらに明るく)
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 12),
-                const Divider(color: Color(0xFF5C4033), thickness: 1),
-                const SizedBox(height: 12),
-                // 詳細な説明文（宝のフレーバーテキスト風）
+                 const SizedBox(height: 12),
+                 const Divider(color: AppColors.divider, thickness: 1),
+                 const SizedBox(height: 10),
+                 // 🎯 解放・達成条件を大きく表示
+                 Text(
+                   '達成目標: ${achievement.nextThreshold.toStringAsFixed(achievement.unit == 'km' ? 1 : 0)} ${achievement.unit}',
+                   style: const TextStyle(
+                     color: Color(0xFFE5A93C), // 輝くゴールド
+                     fontSize: 15,
+                     fontWeight: FontWeight.bold,
+                     letterSpacing: 1.1,
+                   ),
+                 ),
+                 const SizedBox(height: 10),
+                 // 詳細な説明文（宝のフレーバーテキスト風）
                 Text(
                   isUnearned
                       ? 'まだ見ぬ冒険の記憶が、ここに刻まれる。\n（条件を満たすと詳細が解放されるよ）'
                       : achievement.description,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isUnearned ? const Color(0xFF5C422A) : const Color(0xFFC8A97A),
+                    color: isUnearned ? const Color(0xFFBCAFA0) : const Color(0xFFC8A97A), // 💡 0xFF9E8E7C → 0xFFBCAFA0 (さらに明るく)
                     fontSize: 13,
                     height: 1.5,
                   ),
@@ -73,14 +85,14 @@ class AchievementCard extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1C1610),
-                      foregroundColor: const Color(0xFFC8A97A),
-                      side: const BorderSide(color: Color(0xFF5C4033)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
+                     style: ElevatedButton.styleFrom(
+                       backgroundColor: AppColors.background,
+                       foregroundColor: AppColors.secondary,
+                       side: const BorderSide(color: AppColors.border),
+                       shape: RoundedRectangleBorder(
+                         borderRadius: BorderRadius.circular(10),
+                       ),
+                     ),
                     onPressed: () => Navigator.of(context).pop(),
                     child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
@@ -124,16 +136,16 @@ class AchievementCard extends StatelessWidget {
     }
 
     return Opacity(
-      opacity: isUnearned ? 0.6 : 1.0,
+      opacity: isUnearned ? 0.85 : 1.0, // 💡 0.6 → 0.85 (明るくして視認性を向上)
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // 💡 縦の隙間を少し広げたよ
+        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 6), // 💡 左右マージンを0にして、リスト全体のパディングに委ねることで横幅を広く確保
         decoration: BoxDecoration(
-          color: const Color(0xFF2C2318),
+          color: AppColors.surface, // 💡 共通のsurfaceカラー
           borderRadius: BorderRadius.circular(16), // 💡 角丸を少しリッチに大きく（14 -> 16）
           border: Border.all(
             color: rank != AchievementRank.none
-                ? const Color(0xFFB8860B)
-                : const Color(0xFF5C4033),
+                ? AppColors.primary
+                : AppColors.border,
             width: rank != AchievementRank.none ? 1.2 : 0.6,
           ),
           boxShadow: [
@@ -202,9 +214,9 @@ class AchievementCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: isUnearned
-                                ? const Color(0xFF7A5C3A)
+                                ? const Color(0xFFD2C2B2) // 💡 0xFFB5A189 → 0xFFD2C2B2 (さらに明るく)
                                 : const Color(0xFFF5EDD8),
-                            fontSize: 15, // 💡 文字を大きく（14 -> 15）
+                            fontSize: 16, // 💡 文字を大きく（15 -> 16）
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -219,43 +231,59 @@ class AchievementCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: isUnearned
-                                ? const Color(0xFF5C422A)
+                                ? const Color(0xFFBCAFA0) // 💡 0xFF9E8E7C → 0xFFBCAFA0 (さらに明るく)
                                 : const Color(0xFFC8A97A),
-                            fontSize: 12, // 💡 文字を大きく（11 -> 12）
+                            fontSize: 13, // 💡 文字を大きく（12 -> 13）
                             height: 1.4,
                           ),
                         ),
                         const SizedBox(height: 14), // 💡 進捗バーとの間隔を広げたよ
 
                         // ── Progress Area ──
-                        Row(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: achievement.progressRatio,
-                                  minHeight: 7, // 💡 ゲージを少し太くして見やすく（6 -> 7）
-                                  backgroundColor: const Color(0xFF1C1610),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    rank == AchievementRank.gold
-                                        ? const Color(0xFFFFD700)
-                                        : const Color(0xFFB8860B),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  isUnearned ? '未解放の試練' : '進行中',
+                                  style: TextStyle(
+                                    color: isUnearned
+                                        ? const Color(0xFFA59078) // 💡 0xFF8C765C → 0xFFA59078 (さらに明るく)
+                                        : const Color(0xFFC8A97A),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
+                                // 条件数値 (大きく、明るく表示)
+                                Text(
+                                  '${achievement.currentCount.toStringAsFixed(achievement.unit == 'km' ? 1 : 0)} / '
+                                  '${achievement.nextThreshold.toStringAsFixed(achievement.unit == 'km' ? 1 : 0)} '
+                                  '${achievement.unit}',
+                                  style: TextStyle(
+                                    color: isUnearned
+                                        ? const Color(0xFFEBE0D0) // 💡 0xFFD7BE96 → 0xFFEBE0D0 (さらに明るい羊皮紙色)
+                                        : const Color(0xFFE5A93C), // 解放時：輝く黄金色
+                                    fontSize: 14, // 11 -> 14 (スマホで見やすい大きさ)
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-
-                            // 数値
-                            Text(
-                              '${achievement.currentCount.toStringAsFixed(achievement.unit == 'km' ? 1 : 0)} / '
-                              '${achievement.nextThreshold.toStringAsFixed(achievement.unit == 'km' ? 1 : 0)} '
-                              '${achievement.unit}',
-                              style: const TextStyle(
-                                color: Color(0xFF7A5C3A),
-                                fontSize: 11, // 💡 文字を大きく（10 -> 11）
-                                fontWeight: FontWeight.bold,
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: achievement.progressRatio,
+                                minHeight: 7, // 💡 ゲージを少し太くして見やすく（6 -> 7）
+                                backgroundColor: const Color(0xFF1C1610),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  rank == AchievementRank.gold
+                                      ? const Color(0xFFFFD700)
+                                      : const Color(0xFFB8860B),
+                                ),
                               ),
                             ),
                           ],
