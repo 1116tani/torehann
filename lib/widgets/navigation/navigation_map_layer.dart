@@ -121,7 +121,12 @@ class _GoogleMapLayerState extends ConsumerState<_GoogleMapLayer> {
   @override
   void didUpdateWidget(covariant _GoogleMapLayer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_hasSpotsChanged(oldWidget.spots, widget.spots)) {
+    if (_hasSpotsChanged(oldWidget.spots, widget.spots) ||
+        oldWidget.nextSpot?.id != widget.nextSpot?.id ||
+        _hasPositionChanged(
+          oldWidget.currentPosition,
+          widget.currentPosition,
+        )) {
       _fetchRoute();
     }
   }
@@ -129,36 +134,45 @@ class _GoogleMapLayerState extends ConsumerState<_GoogleMapLayer> {
   bool _hasSpotsChanged(List<SpotModel> oldSpots, List<SpotModel> newSpots) {
     if (oldSpots.length != newSpots.length) return true;
     for (int i = 0; i < oldSpots.length; i++) {
-      if (oldSpots[i].lat != newSpots[i].lat || oldSpots[i].lng != newSpots[i].lng) {
+      if (oldSpots[i].lat != newSpots[i].lat ||
+          oldSpots[i].lng != newSpots[i].lng) {
         return true;
       }
     }
     return false;
   }
 
+  bool _hasPositionChanged(Position? oldPosition, Position? newPosition) {
+    if (oldPosition == null || newPosition == null) {
+      return oldPosition != newPosition;
+    }
+
+    return Geolocator.distanceBetween(
+          oldPosition.latitude,
+          oldPosition.longitude,
+          newPosition.latitude,
+          newPosition.longitude,
+        ) >
+        15;
+  }
+
   Future<void> _fetchRoute() async {
-    if (widget.spots.length < 2) {
+    if (widget.nextSpot == null) {
       if (mounted) {
         setState(() {
-          _polylinePoints = widget.spots.map((s) => LatLng(s.lat, s.lng)).toList();
+          _polylinePoints = const [];
         });
       }
       return;
     }
 
     try {
-      final origin = LatLng(widget.spots.first.lat, widget.spots.first.lng);
-      final destination = LatLng(widget.spots.last.lat, widget.spots.last.lng);
-      final waypoints = widget.spots
-          .sublist(1, widget.spots.length - 1)
-          .map((s) => LatLng(s.lat, s.lng))
-          .toList();
+      final origin = _currentOrigin();
+      final destination = LatLng(widget.nextSpot!.lat, widget.nextSpot!.lng);
 
-      final points = await ref.read(directionsServiceProvider).getDirectionsRoute(
-        origin: origin,
-        destination: destination,
-        waypoints: waypoints,
-      );
+      final points = await ref
+          .read(directionsServiceProvider)
+          .getDirectionsRoute(origin: origin, destination: destination);
 
       if (mounted) {
         setState(() {
@@ -168,17 +182,44 @@ class _GoogleMapLayerState extends ConsumerState<_GoogleMapLayer> {
     } catch (_) {
       if (mounted) {
         setState(() {
-          _polylinePoints = widget.spots.map((s) => LatLng(s.lat, s.lng)).toList();
+          _polylinePoints = [
+            _currentOrigin(),
+            LatLng(widget.nextSpot!.lat, widget.nextSpot!.lng),
+          ];
         });
       }
     }
+  }
+
+  LatLng _currentOrigin() {
+    if (widget.currentPosition != null) {
+      return LatLng(
+        widget.currentPosition!.latitude,
+        widget.currentPosition!.longitude,
+      );
+    }
+
+    if (widget.spots.isNotEmpty) {
+      return LatLng(widget.spots.first.lat, widget.spots.first.lng);
+    }
+
+    if (widget.nextSpot != null) {
+      return LatLng(widget.nextSpot!.lat, widget.nextSpot!.lng);
+    }
+
+    return const LatLng(35.6812, 139.7671);
   }
 
   @override
   Widget build(BuildContext context) {
     final routePoints = _polylinePoints.isNotEmpty
         ? _polylinePoints
-        : widget.spots.map((spot) => LatLng(spot.lat, spot.lng)).toList();
+        : [
+            if (widget.nextSpot != null) ...[
+              _currentOrigin(),
+              LatLng(widget.nextSpot!.lat, widget.nextSpot!.lng),
+            ],
+          ];
 
     return GoogleMap(
       myLocationEnabled: true,
@@ -197,7 +238,10 @@ class _GoogleMapLayerState extends ConsumerState<_GoogleMapLayer> {
 
       initialCameraPosition: CameraPosition(
         target: widget.currentPosition != null
-            ? LatLng(widget.currentPosition!.latitude, widget.currentPosition!.longitude)
+            ? LatLng(
+                widget.currentPosition!.latitude,
+                widget.currentPosition!.longitude,
+              )
             : (widget.spots.isNotEmpty
                   ? LatLng(widget.spots.first.lat, widget.spots.first.lng)
                   : const LatLng(35.6812, 139.7671)),
@@ -213,41 +257,34 @@ class _GoogleMapLayerState extends ConsumerState<_GoogleMapLayer> {
         widget.onMapCreated?.call(controller);
       },
 
-      markers: widget.spots.map((spot) {
-        final isVisited = widget.visitedSpotIds.contains(spot.id);
-
-        final isNext = widget.nextSpot?.id == spot.id;
-
-        return Marker(
-          markerId: MarkerId(spot.id),
-
-          position: LatLng(spot.lat, spot.lng),
-
-          infoWindow: InfoWindow(
-            title: spot.aiStoryName.isNotEmpty ? spot.aiStoryName : spot.name,
-
-            snippet: spot.aiFlavorText,
+      markers: {
+        if (widget.nextSpot != null)
+          Marker(
+            markerId: MarkerId(widget.nextSpot!.id),
+            position: LatLng(widget.nextSpot!.lat, widget.nextSpot!.lng),
+            infoWindow: InfoWindow(
+              title: widget.nextSpot!.aiStoryName.isNotEmpty
+                  ? widget.nextSpot!.aiStoryName
+                  : widget.nextSpot!.name,
+              snippet: widget.nextSpot!.aiFlavorText,
+            ),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueViolet,
+            ),
           ),
-
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            isVisited
-                ? BitmapDescriptor.hueYellow
-                : (isNext
-                      ? BitmapDescriptor.hueRed
-                      : BitmapDescriptor.hueViolet),
-          ),
-        );
-      }).toSet(),
+      },
 
       polylines: {
         Polyline(
           polylineId: const PolylineId('adventure_route'),
 
-          width: 5,
+          width: 7,
 
-          color: const Color(0xFFC8A97A),
+          color: const Color(0xFF34F26A),
 
-          geodesic: true,
+          geodesic: false,
+
+          zIndex: 10,
 
           points: routePoints,
         ),

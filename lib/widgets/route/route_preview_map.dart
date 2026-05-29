@@ -3,12 +3,15 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../constants/app_sizes.dart';
 import '../../models/route_model.dart';
 import '../../models/spot_model.dart';
+import '../../services/directions_service.dart';
 
-class RoutePreviewMap extends StatelessWidget {
+class RoutePreviewMap extends ConsumerStatefulWidget {
   final RouteModel route;
   final Map<String, SpotModel> spots;
   final bool isSelected;
@@ -24,11 +27,59 @@ class RoutePreviewMap extends StatelessWidget {
     this.showDetails = false,
   });
 
+  @override
+  ConsumerState<RoutePreviewMap> createState() => _RoutePreviewMapState();
+}
+
+class _RoutePreviewMapState extends ConsumerState<RoutePreviewMap> {
+  List<LatLng> _routeLine = const [];
+
   List<SpotModel> get _routeSpots {
-    return route.spotIds
-        .map((spotId) => spots[spotId])
+    return widget.route.spotIds
+        .map((spotId) => widget.spots[spotId])
         .whereType<SpotModel>()
         .toList(growable: false);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPreviewRoute();
+  }
+
+  @override
+  void didUpdateWidget(covariant RoutePreviewMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.route.id != widget.route.id ||
+        oldWidget.route.spotIds.join(',') != widget.route.spotIds.join(',')) {
+      _fetchPreviewRoute();
+    }
+  }
+
+  Future<void> _fetchPreviewRoute() async {
+    final routeSpots = _routeSpots;
+    if (routeSpots.length < 2) {
+      if (mounted) setState(() => _routeLine = const []);
+      return;
+    }
+
+    final origin = LatLng(routeSpots.first.lat, routeSpots.first.lng);
+    final destination = LatLng(routeSpots.last.lat, routeSpots.last.lng);
+    final waypoints = routeSpots
+        .sublist(1, routeSpots.length - 1)
+        .map((spot) => LatLng(spot.lat, spot.lng))
+        .toList(growable: false);
+
+    final points = await ref
+        .read(directionsServiceProvider)
+        .getDirectionsRoute(
+          origin: origin,
+          destination: destination,
+          waypoints: waypoints,
+        );
+
+    if (!mounted) return;
+    setState(() => _routeLine = points);
   }
 
   @override
@@ -41,14 +92,14 @@ class RoutePreviewMap extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppSizes.radiusM),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: height,
+        height: widget.height,
         decoration: BoxDecoration(
           color: const Color(0xFF2C2318),
           border: Border.all(
-            color: isSelected
+            color: widget.isSelected
                 ? const Color(0xFFB8860B)
                 : const Color(0xFFC8A97A),
-            width: isSelected ? 1.5 : 0.5,
+            width: widget.isSelected ? 1.5 : 0.5,
           ),
         ),
         child: Stack(
@@ -57,18 +108,19 @@ class RoutePreviewMap extends StatelessWidget {
               child: CustomPaint(
                 painter: _RoutePreviewPainter(
                   spots: routeSpots,
-                  isSelected: isSelected,
+                  routeLine: _routeLine,
+                  isSelected: widget.isSelected,
                 ),
               ),
             ),
-            if (showDetails) ...[
+            if (widget.showDetails) ...[
               Positioned(
                 top: AppSizes.p8,
                 left: AppSizes.p8,
                 child: _MapBadge(
                   icon: Icons.explore,
                   label: 'ROUTE PREVIEW',
-                  isActive: isSelected,
+                  isActive: widget.isSelected,
                 ),
               ),
               Positioned(
@@ -77,19 +129,19 @@ class RoutePreviewMap extends StatelessWidget {
                 child: _MapBadge(
                   icon: Icons.place,
                   label: '${routeSpots.length} SPOTS',
-                  isActive: isSelected,
+                  isActive: widget.isSelected,
                 ),
               ),
             ],
             if (routeSpots.isEmpty) const _EmptyPreviewMessage(),
-            if (showDetails)
+            if (widget.showDetails)
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 child: _RouteSummaryStrip(
-                  distance: route.totalDistance,
-                  estimatedTime: route.estimatedTime,
+                  distance: widget.route.totalDistance,
+                  estimatedTime: widget.route.estimatedTime,
                   startName: startSpot?.name,
                   goalName: goalSpot?.name,
                 ),
@@ -103,22 +155,27 @@ class RoutePreviewMap extends StatelessWidget {
 
 class _RoutePreviewPainter extends CustomPainter {
   final List<SpotModel> spots;
+  final List<LatLng> routeLine;
   final bool isSelected;
 
-  const _RoutePreviewPainter({required this.spots, required this.isSelected});
+  const _RoutePreviewPainter({
+    required this.spots,
+    required this.routeLine,
+    required this.isSelected,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     _drawBackground(canvas, size);
 
-    final points = _projectSpots(size);
-    if (points.isEmpty) {
+    final projected = _projectPoints(size);
+    if (projected.pinPoints.isEmpty) {
       _drawEmptyPath(canvas, size);
       return;
     }
 
-    _drawRouteLine(canvas, points);
-    _drawPins(canvas, points);
+    _drawRouteLine(canvas, projected.routePoints);
+    _drawPins(canvas, projected.pinPoints);
   }
 
   void _drawBackground(Canvas canvas, Size size) {
@@ -144,25 +201,40 @@ class _RoutePreviewPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
 
-    final streetPaint = Paint()
+    final minorRoadPaint = Paint()
       ..color = const Color(0xFFF5EDD8).withValues(alpha: 0.08)
-      ..strokeWidth = 4
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    for (var y = size.height * 0.22; y < size.height; y += 24) {
+      canvas.drawLine(
+        Offset(-20, y),
+        Offset(size.width + 18, y - size.height * 0.12),
+        minorRoadPaint,
+      );
+    }
+    for (var x = size.width * 0.12; x < size.width; x += 46) {
+      canvas.drawLine(
+        Offset(x, -18),
+        Offset(x + size.width * 0.12, size.height + 18),
+        minorRoadPaint,
+      );
+    }
+
+    final mainRoadPaint = Paint()
+      ..color = const Color(0xFFC8A97A).withValues(alpha: 0.13)
+      ..strokeWidth = 5
       ..strokeCap = StrokeCap.round;
 
     canvas.drawLine(
-      Offset(-20, size.height * 0.28),
-      Offset(size.width * 0.74, -12),
-      streetPaint,
+      Offset(-16, size.height * 0.72),
+      Offset(size.width + 16, size.height * 0.44),
+      mainRoadPaint,
     );
     canvas.drawLine(
-      Offset(size.width * 0.18, size.height + 18),
-      Offset(size.width + 24, size.height * 0.38),
-      streetPaint,
-    );
-    canvas.drawLine(
-      Offset(-16, size.height * 0.76),
-      Offset(size.width + 16, size.height * 0.58),
-      streetPaint,
+      Offset(size.width * 0.22, size.height + 18),
+      Offset(size.width * 0.72, -12),
+      mainRoadPaint,
     );
   }
 
@@ -186,6 +258,7 @@ class _RoutePreviewPainter extends CustomPainter {
   }
 
   void _drawRouteLine(Canvas canvas, List<Offset> points) {
+    if (points.isEmpty) return;
     if (points.length == 1) {
       _drawPulse(canvas, points.first);
       return;
@@ -204,9 +277,9 @@ class _RoutePreviewPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
 
     final routePaint = Paint()
-      ..color = isSelected ? const Color(0xFF57D6C9) : const Color(0xFFC8A97A)
+      ..color = const Color(0xFF34F26A)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
+      ..strokeWidth = 5
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
@@ -285,44 +358,94 @@ class _RoutePreviewPainter extends CustomPainter {
     }
   }
 
-  List<Offset> _projectSpots(Size size) {
-    if (spots.isEmpty) return const [];
+  _ProjectedRoute _projectPoints(Size size) {
+    if (spots.isEmpty) {
+      return const _ProjectedRoute(routePoints: [], pinPoints: []);
+    }
     if (spots.length == 1) {
-      return [Offset(size.width / 2, size.height / 2)];
+      final center = Offset(size.width / 2, size.height / 2);
+      return _ProjectedRoute(routePoints: [center], pinPoints: [center]);
     }
 
-    final minLat = spots.map((spot) => spot.lat).reduce(math.min);
-    final maxLat = spots.map((spot) => spot.lat).reduce(math.max);
-    final minLng = spots.map((spot) => spot.lng).reduce(math.min);
-    final maxLng = spots.map((spot) => spot.lng).reduce(math.max);
+    final allPoints = <LatLng>[
+      ...spots.map((spot) => LatLng(spot.lat, spot.lng)),
+      ...routeLine,
+    ];
 
-    final latRange = maxLat - minLat;
-    final lngRange = maxLng - minLng;
-    const padding = 30.0;
-    final drawableWidth = math.max(1.0, size.width - padding * 2);
-    final drawableHeight = math.max(1.0, size.height - padding * 2 - 24);
+    final centerLat =
+        allPoints.map((point) => point.latitude).reduce((a, b) => a + b) /
+        allPoints.length;
+    final centerLng =
+        allPoints.map((point) => point.longitude).reduce((a, b) => a + b) /
+        allPoints.length;
+    const metersPerLat = 111320.0;
+    final metersPerLng =
+        111320.0 * math.cos(centerLat * math.pi / 180).abs().clamp(0.2, 1.0);
 
-    return spots
-        .map((spot) {
-          final normalizedX = lngRange == 0
-              ? 0.5
-              : (spot.lng - minLng) / lngRange;
-          final normalizedY = latRange == 0
-              ? 0.5
-              : 1 - (spot.lat - minLat) / latRange;
-
+    final meterPoints = allPoints
+        .map((point) {
           return Offset(
-            padding + normalizedX * drawableWidth,
-            padding + normalizedY * drawableHeight,
+            (point.longitude - centerLng) * metersPerLng,
+            -(point.latitude - centerLat) * metersPerLat,
           );
         })
         .toList(growable: false);
+
+    final minX = meterPoints.map((point) => point.dx).reduce(math.min);
+    final maxX = meterPoints.map((point) => point.dx).reduce(math.max);
+    final minY = meterPoints.map((point) => point.dy).reduce(math.min);
+    final maxY = meterPoints.map((point) => point.dy).reduce(math.max);
+
+    const padding = 24.0;
+    final drawableWidth = math.max(1.0, size.width - padding * 2);
+    final drawableHeight = math.max(1.0, size.height - padding * 2 - 12);
+    final meterWidth = math.max(1.0, maxX - minX);
+    final meterHeight = math.max(1.0, maxY - minY);
+    final scale = math.min(
+      drawableWidth / meterWidth,
+      drawableHeight / meterHeight,
+    );
+    final usedWidth = meterWidth * scale;
+    final usedHeight = meterHeight * scale;
+    final offsetX = (size.width - usedWidth) / 2;
+    final offsetY = (size.height - usedHeight) / 2;
+
+    Offset project(LatLng point) {
+      final meterX = (point.longitude - centerLng) * metersPerLng;
+      final meterY = -(point.latitude - centerLat) * metersPerLat;
+
+      return Offset(
+        offsetX + (meterX - minX) * scale,
+        offsetY + (meterY - minY) * scale,
+      );
+    }
+
+    final pinPoints = spots
+        .map((spot) => project(LatLng(spot.lat, spot.lng)))
+        .toList(growable: false);
+    final routePoints =
+        (routeLine.length >= 2
+                ? routeLine
+                : spots.map((spot) => LatLng(spot.lat, spot.lng)))
+            .map(project)
+            .toList(growable: false);
+
+    return _ProjectedRoute(routePoints: routePoints, pinPoints: pinPoints);
   }
 
   @override
   bool shouldRepaint(covariant _RoutePreviewPainter oldDelegate) {
-    return oldDelegate.spots != spots || oldDelegate.isSelected != isSelected;
+    return oldDelegate.spots != spots ||
+        oldDelegate.routeLine != routeLine ||
+        oldDelegate.isSelected != isSelected;
   }
+}
+
+class _ProjectedRoute {
+  final List<Offset> routePoints;
+  final List<Offset> pinPoints;
+
+  const _ProjectedRoute({required this.routePoints, required this.pinPoints});
 }
 
 class _MapBadge extends StatelessWidget {
