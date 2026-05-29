@@ -204,11 +204,23 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
             padding: const EdgeInsets.only(top: AppSizes.p12),
             child: _SuggestionBox(
               state: placeState,
-              onSelect: (placeName) {
-                _controller.text = placeName;
-                ref.read(adventureProvider.notifier).setDestination(placeName);
+              onSelect: (placeItem) async {
+                _controller.text = placeItem.name;
                 ref.read(placesProvider.notifier).clear();
                 FocusScope.of(context).unfocus();
+
+                try {
+                  // 📍 Google Places API から座標などの詳細情報を取得
+                  final detail = await ref.read(placesRepositoryProvider).getPlaceDetail(placeItem.placeId);
+                  ref.read(adventureProvider.notifier).setDestinationWithCoordinates(
+                        name: detail.name,
+                        lat: detail.lat,
+                        lng: detail.lng,
+                      );
+                } catch (e) {
+                  // 取得失敗時は文字情報のみを保存 (フォールバック)
+                  ref.read(adventureProvider.notifier).setDestination(placeItem.name);
+                }
               },
             ),
           ),
@@ -223,7 +235,7 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
 
 class _SuggestionBox extends StatelessWidget {
   final PlacesState state;
-  final void Function(String) onSelect;
+  final void Function(PlaceItem) onSelect;
 
   const _SuggestionBox({required this.state, required this.onSelect});
 
@@ -265,7 +277,7 @@ class _SuggestionBox extends StatelessWidget {
           return Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () => onSelect(place.name),
+              onTap: () => onSelect(place),
               borderRadius: BorderRadius.circular(AppSizes.radiusL),
               child: Padding(
                 padding: const EdgeInsets.symmetric(

@@ -30,8 +30,13 @@ class AdventureState {
   // 難易度
   final AdventureMode mode;
 
-  // 目的地
+  // 目的地 (下位互換用)
   final String destination;
+
+  // 目的地の詳細情報
+  final String destinationName;
+  final double? destinationLat;
+  final double? destinationLng;
 
   // おまかせモード
   final bool isRandomMode;
@@ -52,6 +57,9 @@ class AdventureState {
     this.mood = AdventureMood.relaxed,
     this.mode = AdventureMode.walk,
     this.destination = '',
+    this.destinationName = '',
+    this.destinationLat,
+    this.destinationLng,
     this.isRandomMode = true,
     this.freeTimeMinutes = 60,
     this.hobbyTags = const [],
@@ -67,6 +75,9 @@ class AdventureState {
     AdventureMood? mood,
     AdventureMode? mode,
     String? destination,
+    String? destinationName,
+    double? destinationLat,
+    double? destinationLng,
     bool? isRandomMode,
     int? freeTimeMinutes,
     List<String>? hobbyTags,
@@ -77,6 +88,9 @@ class AdventureState {
       mood: mood ?? this.mood,
       mode: mode ?? this.mode,
       destination: destination ?? this.destination,
+      destinationName: destinationName ?? this.destinationName,
+      destinationLat: destinationLat ?? this.destinationLat,
+      destinationLng: destinationLng ?? this.destinationLng,
       isRandomMode: isRandomMode ?? this.isRandomMode,
       freeTimeMinutes: freeTimeMinutes ?? this.freeTimeMinutes,
       hobbyTags: hobbyTags ?? this.hobbyTags,
@@ -113,11 +127,35 @@ class AdventureNotifier extends Notifier<AdventureState> {
   }
 
   // ─────────────────────────────
-  // 📍 目的地入力
+  // 📍 目的地入力 (座標なし)
   // ─────────────────────────────
 
   void setDestination(String destination) {
-    state = state.copyWith(destination: destination, isRandomMode: false);
+    state = state.copyWith(
+      destination: destination,
+      destinationName: destination,
+      destinationLat: null,
+      destinationLng: null,
+      isRandomMode: false,
+    );
+  }
+
+  // ─────────────────────────────
+  // 📍 目的地入力 (座標あり)
+  // ─────────────────────────────
+
+  void setDestinationWithCoordinates({
+    required String name,
+    required double lat,
+    required double lng,
+  }) {
+    state = state.copyWith(
+      destination: name,
+      destinationName: name,
+      destinationLat: lat,
+      destinationLng: lng,
+      isRandomMode: false,
+    );
   }
 
   // ─────────────────────────────
@@ -125,13 +163,22 @@ class AdventureNotifier extends Notifier<AdventureState> {
   // ─────────────────────────────
 
   void enableRandomMode() {
-    state = state.copyWith(isRandomMode: true, destination: '');
+    state = state.copyWith(
+      isRandomMode: true,
+      destination: '',
+      destinationName: '',
+      destinationLat: null,
+      destinationLng: null,
+    );
   }
 
   void setRandomMode(bool enabled) {
     state = state.copyWith(
       isRandomMode: enabled,
       destination: enabled ? '' : state.destination,
+      destinationName: enabled ? '' : state.destinationName,
+      destinationLat: enabled ? null : state.destinationLat,
+      destinationLng: enabled ? null : state.destinationLng,
     );
   }
 

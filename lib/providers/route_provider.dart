@@ -7,6 +7,7 @@ import '../models/spot_model.dart';
 
 import '../repositories/route_repository.dart';
 import '../services/gemini_service.dart';
+import '../services/route_builder_service.dart';
 
 import 'adventure_provider.dart';
 import 'location_provider.dart';
@@ -129,7 +130,7 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
       // ✨ AI生成
       // ───────────────────
 
-      final routes = await repository.generateRoutes(
+      final rawRoutes = await repository.generateRoutes(
         lat: position.latitude,
         lng: position.longitude,
 
@@ -139,25 +140,44 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
 
         hobbyTags: adventure.hobbyTags,
 
-        destination: adventure.isRandomMode ? '' : adventure.destination,
+        destination: adventure.isRandomMode ? '' : adventure.destinationName,
       );
 
       // ───────────────────
       // ❌ 空チェック
       // ───────────────────
 
-      if (routes.isEmpty) {
+      if (rawRoutes.isEmpty) {
         throw Exception('ルートが生成されませんでした');
       }
+
+      // ───────────────────
+      // 🛠️ クライアントサイドでのルート再構築 (現在地 ➡ 経由地 ➡ 目的地)
+      // ───────────────────
+      final routeBuilder = ref.read(routeBuilderServiceProvider);
+      final builtRoutes = rawRoutes.map((rawRoute) {
+        return routeBuilder.buildRoute(
+          id: rawRoute.id,
+          startLat: position.latitude,
+          startLng: position.longitude,
+          themeName: rawRoute.themeName,
+          themeDescription: rawRoute.themeDescription,
+          tags: rawRoute.tags,
+          geminiSpots: rawRoute.generatedSpots,
+          destinationName: adventure.isRandomMode ? null : adventure.destinationName,
+          destinationLat: adventure.isRandomMode ? null : adventure.destinationLat,
+          destinationLng: adventure.isRandomMode ? null : adventure.destinationLng,
+        );
+      }).toList();
 
       // ───────────────────
       // ✅ 成功
       // ───────────────────
 
       state = state.copyWith(
-        routes: routes,
+        routes: builtRoutes,
 
-        selectedRouteId: routes.first.id,
+        selectedRouteId: builtRoutes.first.id,
 
         isLoading: false,
       );
