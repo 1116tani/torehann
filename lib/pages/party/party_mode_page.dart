@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../router/route_names.dart';
 import '../../widgets/party/party_action_button.dart';
+import '../../widgets/common/custom_header.dart';
 
 class PartyModePage extends StatelessWidget {
   const PartyModePage({super.key});
@@ -15,46 +16,53 @@ class PartyModePage extends StatelessWidget {
       backgroundColor: const Color(0xFF1C1610),
 
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const CustomHeader(
+              title: 'パーティ冒険',
+              subtitle: 'PARTY ADVENTURE',
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 20),
 
-              // ── タイトル ──
-              const Icon(
-                Icons.groups_rounded,
-                size: 72,
-                color: Color(0xFFB8860B),
-              ),
+                    // ── タイトル ──
+                    const Icon(
+                      Icons.groups_rounded,
+                      size: 64,
+                      color: Color(0xFFC8A97A),
+                    ),
 
-              const SizedBox(height: 18),
+                    const SizedBox(height: 12),
 
-              const Text(
-                'パーティ冒険',
-                style: TextStyle(
-                  color: Color(0xFFF5EDD8),
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                ),
-              ),
+                    const Text(
+                      'パーティ冒険',
+                      style: TextStyle(
+                        color: Color(0xFFF5EDD8),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
 
-              const SizedBox(height: 10),
+                    const SizedBox(height: 8),
 
-              const Text(
-                '仲間と一緒に、\n物語の続きを歩こう。',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFFC8A97A),
-                  fontSize: 14,
-                  height: 1.7,
-                ),
-              ),
+                    const Text(
+                      '仲間と一緒に、\n物語の続きを歩こう。',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFFC8A97A),
+                        fontSize: 13,
+                        height: 1.6,
+                      ),
+                    ),
 
-              const SizedBox(height: 48),
+                    const SizedBox(height: 32),
 
               // ── ルーム作成 ──
               Container(
@@ -187,6 +195,9 @@ class PartyModePage extends StatelessWidget {
               const SizedBox(height: 12),
             ],
           ),
+        ),
+      ),
+          ],
         ),
       ),
     );

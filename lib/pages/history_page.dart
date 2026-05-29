@@ -10,6 +10,7 @@ import '../router/route_names.dart';
 import '../widgets/history/history_card.dart';
 import '../widgets/history/history_filter_bar.dart';
 import '../widgets/history/history_summary.dart';
+import '../widgets/common/custom_header.dart';
 
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
@@ -37,11 +38,10 @@ class HistoryPage extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // ─────────────────────
-            // ヘッダー
-            // ─────────────────────
-
-            _buildHeader(context),
+            const CustomHeader(
+              title: '冒険履歴',
+              subtitle: 'ADVENTURE LOG',
+            ),
 
             // ─────────────────────
             // サマリー
@@ -120,153 +120,7 @@ class HistoryPage extends ConsumerWidget {
     );
   }
 
-  // ─────────────────────────────
-  // ヘッダー
-  // ─────────────────────────────
 
-  Widget _buildHeader(
-    BuildContext context,
-  ) {
-    return Container(
-      width: double.infinity,
-
-      padding:
-          const EdgeInsets.fromLTRB(
-        18,
-        20,
-        18,
-        18,
-      ),
-
-      decoration: BoxDecoration(
-        color: const Color(
-          0xFF2C2318,
-        ),
-
-        border: Border(
-          bottom: BorderSide(
-            color:
-                const Color(
-              0xFFC8A97A,
-            ).withValues(alpha: 0.25),
-
-            width: 0.6,
-          ),
-        ),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black
-                .withValues(alpha: 0.18),
-
-            blurRadius: 8,
-
-            offset:
-                const Offset(
-              0,
-              3,
-            ),
-          ),
-        ],
-      ),
-
-      child: Stack(
-        alignment:
-            Alignment.center,
-
-        children: [
-          // 戻るボタン
-          Positioned(
-            left: 0,
-
-            child: GestureDetector(
-              onTap: () =>
-                  context.pop(),
-
-              child: Container(
-                width: 38,
-                height: 38,
-
-                decoration:
-                    BoxDecoration(
-                  color:
-                      const Color(
-                    0xFF3D2B1F,
-                  ),
-
-                  shape:
-                      BoxShape.circle,
-
-                  border:
-                      Border.all(
-                    color:
-                        const Color(
-                      0xFF5C4033,
-                    ),
-                    width: 0.6,
-                  ),
-                ),
-
-                child: const Icon(
-                  Icons
-                      .arrow_back_ios_new_rounded,
-
-                  size: 16,
-
-                  color: Color(
-                    0xFFC8A97A,
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // タイトル
-          const Column(
-            mainAxisSize:
-                MainAxisSize.min,
-
-            children: [
-              Text(
-                '冒険履歴',
-
-                style: TextStyle(
-                  fontSize: 24,
-
-                  fontWeight:
-                      FontWeight.bold,
-
-                  color: Color(
-                    0xFFF5EDD8,
-                  ),
-
-                  letterSpacing:
-                      1.2,
-                ),
-              ),
-
-              SizedBox(height: 4),
-
-              Text(
-                'ADVENTURE LOG',
-
-                style: TextStyle(
-                  fontSize: 11,
-
-                  color: Color(
-                    0xFFC8A97A,
-                  ),
-
-                  letterSpacing:
-                      3,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   // ─────────────────────────────
   // 空状態

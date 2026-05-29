@@ -8,6 +8,7 @@ import '../providers/mission_provider.dart';
 
 import '../widgets/mission/mission_list_item.dart';
 import '../widgets/mission/mission_tab_switch.dart';
+import '../widgets/common/custom_header.dart';
 
 class MissionPage extends ConsumerWidget {
   const MissionPage({super.key});
@@ -34,6 +35,11 @@ class MissionPage extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
+            const CustomHeader(
+              title: '依頼掲示板',
+              subtitle: 'MISSION BOARD',
+            ),
+
             // ── ヘッダー ───────────────────
             _MissionHeader(
               completedCount: completedCount,
@@ -141,67 +147,50 @@ class _MissionHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
 
       decoration: const BoxDecoration(
         color: Color(0xFF2C2318),
-
-        border: Border(
-          bottom: BorderSide(
-            color: Color(0xFF4A3728),
-            width: 0.5,
-          ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black54,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
 
       child: Column(
         children: [
-          const Text(
-            '✦ ギルド依頼掲示板 ✦',
-            style: TextStyle(
-              color: Color(0xFFF5EDD8),
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          const Text(
-            'MISSION BOARD',
-            style: TextStyle(
-              color: Color(0xFFC8A97A),
-              fontSize: 10,
-              letterSpacing: 3,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 '本日の達成状況',
                 style: TextStyle(
-                  color: Color(0xFF7A5C3A),
-                  fontSize: 12,
+                  color: Color(0xFFC8A97A),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
                 ),
               ),
 
               Text(
                 '$completedCount / $totalCount',
                 style: const TextStyle(
-                  color: Color(0xFFF5EDD8),
-                  fontSize: 15,
+                  color: Color(0xFFE5A93C),
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           ClipRRect(
             borderRadius: BorderRadius.circular(999),

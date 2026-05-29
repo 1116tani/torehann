@@ -74,8 +74,12 @@ class _FriendPageState extends ConsumerState<FriendPage>
                   controller: _tabController,
 
                   indicator: BoxDecoration(
-                    color: const Color(0xFFB8860B),
-                    borderRadius: BorderRadius.circular(14),
+                    color: const Color(0xFFC8A97A).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFC8A97A).withValues(alpha: 0.55),
+                      width: 1,
+                    ),
                   ),
 
                   dividerColor: Colors.transparent,

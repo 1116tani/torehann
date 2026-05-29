@@ -6,6 +6,7 @@ import '../providers/user_provider.dart';
 import '../providers/auth_provider.dart';
 import '../constants/app_sizes.dart';
 import '../widgets/settings/hobby_tag_selector.dart';
+import '../widgets/common/custom_header.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -20,7 +21,10 @@ class SettingsPage extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(context),
+            const CustomHeader(
+              title: '設定',
+              subtitle: 'SETTINGS',
+            ),
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -259,18 +263,7 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSizes.p16),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2C2318),
-        border: Border(bottom: BorderSide(color: Color(0xFF4A3728), width: 1)),
-      ),
-      child: const Center(
-        child: Text('設定', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF5EDD8), letterSpacing: 1.0)),
-      ),
-    );
-  }
+
 
   Widget _buildSaveButton(BuildContext context, UserState state, UserNotifier notifier) {
     return Container(
