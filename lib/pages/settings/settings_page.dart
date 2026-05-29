@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/user_provider.dart';
-import '../providers/auth_provider.dart';
-import '../constants/app_sizes.dart';
-import '../widgets/settings/hobby_tag_selector.dart';
-import '../widgets/common/custom_header.dart';
+import '../../providers/user_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../constants/app_sizes.dart';
+import '../../widgets/settings/hobby_tag_selector.dart';
+import '../../widgets/common/custom_header.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -21,10 +21,7 @@ class SettingsPage extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const CustomHeader(
-              title: '設定',
-              subtitle: 'SETTINGS',
-            ),
+            const CustomHeader(title: '設定', subtitle: 'SETTINGS'),
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -37,7 +34,8 @@ class SettingsPage extends ConsumerWidget {
                     _buildMenuTile(
                       icon: Icons.person_outline,
                       title: '冒険者名 / 年齢 / 職業 / 自宅エリア',
-                      subtitle: "名: ${state.name.isEmpty ? '未設定' : state.name} / ${state.age.isEmpty ? '年齢未設定' : '${state.age}歳'} / 職業: ${state.occupation.isEmpty ? '未設定' : state.occupation} / 自宅: ${state.homeLocation.isEmpty ? '未設定' : state.homeLocation}",
+                      subtitle:
+                          "名: ${state.name.isEmpty ? '未設定' : state.name} / ${state.age.isEmpty ? '年齢未設定' : '${state.age}歳'} / 職業: ${state.occupation.isEmpty ? '未設定' : state.occupation} / 自宅: ${state.homeLocation.isEmpty ? '未設定' : state.homeLocation}",
                       onTap: () => _showProfileDialog(context),
                     ),
                     const SizedBox(height: AppSizes.p16),
@@ -47,7 +45,9 @@ class SettingsPage extends ConsumerWidget {
                     _buildMenuTile(
                       icon: Icons.favorite_border,
                       title: '好きな場所タグ (AIに連携)',
-                      subtitle: state.hobbyTags.isEmpty ? '未選択 (カフェ・神社など)' : state.hobbyTags.join('・'),
+                      subtitle: state.hobbyTags.isEmpty
+                          ? '未選択 (カフェ・神社など)'
+                          : state.hobbyTags.join('・'),
                       onTap: () => _showHobbyTagsDialog(context),
                     ),
                     const SizedBox(height: AppSizes.p16),
@@ -63,7 +63,8 @@ class SettingsPage extends ConsumerWidget {
                     _buildMenuTile(
                       icon: Icons.timeline,
                       title: '1日の距離目標',
-                      subtitle: '目標: ${state.dailyDistanceGoal.toStringAsFixed(1)} km',
+                      subtitle:
+                          '目標: ${state.dailyDistanceGoal.toStringAsFixed(1)} km',
                       onTap: () => _showDistanceGoalDialog(context),
                     ),
                     const SizedBox(height: AppSizes.p16),
@@ -73,13 +74,23 @@ class SettingsPage extends ConsumerWidget {
                     _buildMenuTile(
                       icon: Icons.palette_outlined,
                       title: 'マップスタイル',
-                      subtitle: "現在のスタイル: ${state.mapStyle == 'game' ? 'ゲーム風' : state.mapStyle == 'white' ? 'ホワイト' : 'ブラック'}",
+                      subtitle:
+                          "現在のスタイル: ${state.mapStyle == 'game'
+                              ? 'ゲーム風'
+                              : state.mapStyle == 'white'
+                              ? 'ホワイト'
+                              : 'ブラック'}",
                       onTap: () => _showMapStyleDialog(context),
                     ),
                     _buildMenuTile(
                       icon: Icons.format_size,
                       title: '文字サイズ',
-                      subtitle: '現在のサイズ: ${state.fontSize == 'small' ? '小' : state.fontSize == 'medium' ? '標準' : '大'}',
+                      subtitle:
+                          '現在のサイズ: ${state.fontSize == 'small'
+                              ? '小'
+                              : state.fontSize == 'medium'
+                              ? '標準'
+                              : '大'}',
                       onTap: () => _showFontSizeDialog(context),
                     ),
                     const SizedBox(height: AppSizes.p16),
@@ -185,7 +196,10 @@ class SettingsPage extends ConsumerWidget {
                     const Center(
                       child: Text(
                         'アプリのバージョン v1.0.0',
-                        style: TextStyle(color: Color(0xFF5C4033), fontSize: 12),
+                        style: TextStyle(
+                          color: Color(0xFF5C4033),
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppSizes.p32),
@@ -206,7 +220,12 @@ class SettingsPage extends ConsumerWidget {
       padding: const EdgeInsets.only(left: 8, bottom: 8, top: 8),
       child: Text(
         title,
-        style: const TextStyle(color: Color(0xFF7A5C3A), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+        style: const TextStyle(
+          color: Color(0xFF7A5C3A),
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
@@ -227,9 +246,23 @@ class SettingsPage extends ConsumerWidget {
       ),
       child: ListTile(
         leading: Icon(icon, color: const Color(0xFFC8A97A), size: 20),
-        title: Text(title, style: TextStyle(color: titleColor, fontSize: 14, fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle, style: const TextStyle(color: Color(0xFF7A5C3A), fontSize: 11)),
-        trailing: const Icon(Icons.chevron_right, color: Color(0xFF4A3728), size: 18),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: titleColor,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(color: Color(0xFF7A5C3A), fontSize: 11),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: Color(0xFF4A3728),
+          size: 18,
+        ),
         onTap: onTap,
       ),
     );
@@ -255,17 +288,29 @@ class SettingsPage extends ConsumerWidget {
         inactiveThumbColor: const Color(0xFF7A5C3A),
         inactiveTrackColor: const Color(0xFF1C1610),
         secondary: Icon(icon, color: const Color(0xFFC8A97A), size: 20),
-        title: Text(title, style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 14, fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle, style: const TextStyle(color: Color(0xFF7A5C3A), fontSize: 11)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xFFF5EDD8),
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(color: Color(0xFF7A5C3A), fontSize: 11),
+        ),
         value: value,
         onChanged: onChanged,
       ),
     );
   }
 
-
-
-  Widget _buildSaveButton(BuildContext context, UserState state, UserNotifier notifier) {
+  Widget _buildSaveButton(
+    BuildContext context,
+    UserState state,
+    UserNotifier notifier,
+  ) {
     return Container(
       padding: const EdgeInsets.all(AppSizes.p16),
       color: const Color(0xFF2C2318),
@@ -276,19 +321,36 @@ class SettingsPage extends ConsumerWidget {
             backgroundColor: const Color(0xFFC8A97A),
             foregroundColor: const Color(0xFF1C1610),
             padding: const EdgeInsets.all(AppSizes.p16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-          onPressed: state.isSaving ? null : () async {
-            await notifier.saveSettings();
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('設定を保存しました！'), backgroundColor: Color(0xFF4A3728)),
-              );
-            }
-          },
+          onPressed: state.isSaving
+              ? null
+              : () async {
+                  await notifier.saveSettings();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('設定を保存しました！'),
+                        backgroundColor: Color(0xFF4A3728),
+                      ),
+                    );
+                  }
+                },
           child: state.isSaving
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Color(0xFF1C1610), strokeWidth: 2))
-              : const Text('変更を保存する', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF1C1610),
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Text(
+                  '変更を保存する',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
         ),
       ),
     );
@@ -309,13 +371,34 @@ class SettingsPage extends ConsumerWidget {
             final notifier = ref.read(userProvider.notifier);
             return Column(
               children: [
-                _InputField(label: '冒険者名', hint: 'アプリ内で表示される名前', value: state.name, onChanged: notifier.setName),
+                _InputField(
+                  label: '冒険者名',
+                  hint: 'アプリ内で表示される名前',
+                  value: state.name,
+                  onChanged: notifier.setName,
+                ),
                 const SizedBox(height: 12),
-                _InputField(label: '年齢', hint: '例：21 (AIルート生成に使用)', value: state.age, keyboardType: TextInputType.number, onChanged: notifier.setAge),
+                _InputField(
+                  label: '年齢',
+                  hint: '例：21 (AIルート生成に使用)',
+                  value: state.age,
+                  keyboardType: TextInputType.number,
+                  onChanged: notifier.setAge,
+                ),
                 const SizedBox(height: 12),
-                _InputField(label: '職業', hint: '例：学生・社会人', value: state.occupation, onChanged: notifier.setOccupation),
+                _InputField(
+                  label: '職業',
+                  hint: '例：学生・社会人',
+                  value: state.occupation,
+                  onChanged: notifier.setOccupation,
+                ),
                 const SizedBox(height: 12),
-                _InputField(label: '自宅エリア', hint: '例：渋谷・目黒', value: state.homeLocation, onChanged: notifier.setHomeLocation),
+                _InputField(
+                  label: '自宅エリア',
+                  hint: '例：渋谷・目黒',
+                  value: state.homeLocation,
+                  onChanged: notifier.setHomeLocation,
+                ),
               ],
             );
           },
@@ -362,7 +445,13 @@ class SettingsPage extends ConsumerWidget {
                 children: distances.map((distance) {
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text('${distance.toStringAsFixed(1)} km', style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 14)),
+                    title: Text(
+                      '${distance.toStringAsFixed(1)} km',
+                      style: const TextStyle(
+                        color: Color(0xFFF5EDD8),
+                        fontSize: 14,
+                      ),
+                    ),
                     leading: Radio<double>(
                       value: distance,
                       activeColor: const Color(0xFFC8A97A),
@@ -388,7 +477,7 @@ class SettingsPage extends ConsumerWidget {
           builder: (context, ref, _) {
             final state = ref.watch(userProvider);
             final notifier = ref.read(userProvider.notifier);
-            
+
             return StatefulBuilder(
               builder: (context, setState) {
                 return Column(
@@ -401,19 +490,29 @@ class SettingsPage extends ConsumerWidget {
                           child: _InputField(
                             label: '',
                             hint: '${state.dailyStepGoal}',
-                            value: textInput.isEmpty ? state.dailyStepGoal.toString() : textInput,
+                            value: textInput.isEmpty
+                                ? state.dailyStepGoal.toString()
+                                : textInput,
                             keyboardType: TextInputType.number,
                             onChanged: (v) {
                               setState(() => textInput = v);
                               final parsed = int.tryParse(v);
-                              if (parsed != null && parsed >= 1000 && parsed <= 30000) {
+                              if (parsed != null &&
+                                  parsed >= 1000 &&
+                                  parsed <= 30000) {
                                 notifier.setDailyStepGoal(parsed);
                               }
                             },
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Text('歩', style: TextStyle(color: Color(0xFFF5EDD8), fontSize: 16)),
+                        const Text(
+                          '歩',
+                          style: TextStyle(
+                            color: Color(0xFFF5EDD8),
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -429,10 +528,13 @@ class SettingsPage extends ConsumerWidget {
                         notifier.setDailyStepGoal(v.toInt());
                       },
                     ),
-                    const Text('スライダーか直接入力で設定してね！(1000〜30000歩)', style: TextStyle(color: Color(0xFF7A5C3A), fontSize: 10)),
+                    const Text(
+                      'スライダーか直接入力で設定してね！(1000〜30000歩)',
+                      style: TextStyle(color: Color(0xFF7A5C3A), fontSize: 10),
+                    ),
                   ],
                 );
-              }
+              },
             );
           },
         ),
@@ -462,16 +564,32 @@ class SettingsPage extends ConsumerWidget {
                     onTap: () => notifier.setMapStyle(s['key'] as String),
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(vertical: AppSizes.p12),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSizes.p12,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFF3D2B1F),
+                        color: isSelected
+                            ? const Color(0xFFC8A97A)
+                            : const Color(0xFF3D2B1F),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
                         children: [
-                          Text(s['icon'] as String, style: const TextStyle(fontSize: 20)),
+                          Text(
+                            s['icon'] as String,
+                            style: const TextStyle(fontSize: 20),
+                          ),
                           const SizedBox(height: 4),
-                          Text(s['label'] as String, style: TextStyle(color: isSelected ? const Color(0xFF1C1610) : const Color(0xFFF5EDD8), fontSize: 12, fontWeight: FontWeight.bold)),
+                          Text(
+                            s['label'] as String,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFF1C1610)
+                                  : const Color(0xFFF5EDD8),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -507,13 +625,26 @@ class SettingsPage extends ConsumerWidget {
                     onTap: () => notifier.setFontSize(opt['key'] as String),
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(vertical: AppSizes.p12),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSizes.p12,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFF3D2B1F),
+                        color: isSelected
+                            ? const Color(0xFFC8A97A)
+                            : const Color(0xFF3D2B1F),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
-                        child: Text(opt['label'] as String, style: TextStyle(color: isSelected ? const Color(0xFF1C1610) : const Color(0xFFF5EDD8), fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: Text(
+                          opt['label'] as String,
+                          style: TextStyle(
+                            color: isSelected
+                                ? const Color(0xFF1C1610)
+                                : const Color(0xFFF5EDD8),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -545,7 +676,13 @@ class SettingsPage extends ConsumerWidget {
                 children: times.map((time) {
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(time, style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 14)),
+                    title: Text(
+                      time,
+                      style: const TextStyle(
+                        color: Color(0xFFF5EDD8),
+                        fontSize: 14,
+                      ),
+                    ),
                     leading: Radio<String>(
                       value: time,
                       activeColor: const Color(0xFFC8A97A),
@@ -584,12 +721,19 @@ class SettingsPage extends ConsumerWidget {
                 children: options.map((option) {
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(option['label'] as String, style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 14)),
+                    title: Text(
+                      option['label'] as String,
+                      style: const TextStyle(
+                        color: Color(0xFFF5EDD8),
+                        fontSize: 14,
+                      ),
+                    ),
                     leading: Radio<String>(
                       value: option['key'] as String,
                       activeColor: const Color(0xFFC8A97A),
                     ),
-                    onTap: () => notifier.setLocationPermission(option['key'] as String),
+                    onTap: () =>
+                        notifier.setLocationPermission(option['key'] as String),
                   );
                 }).toList(),
               ),
@@ -609,14 +753,24 @@ class SettingsPage extends ConsumerWidget {
           children: [
             const Text(
               '現在は「匿名アカウント」でのログイン状態になっています。\n\nこのままだと、アプリを誤って削除したり、スマホを機種変更した時に、これまでのすべての冒険記録・コレクションデータが完全に消えてしまい、復旧できなくなります！',
-              style: TextStyle(color: Color(0xFFF5EDD8), fontSize: 13, height: 1.5),
+              style: TextStyle(
+                color: Color(0xFFF5EDD8),
+                fontSize: 13,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC8A97A), foregroundColor: const Color(0xFF1C1610)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFC8A97A),
+                foregroundColor: const Color(0xFF1C1610),
+              ),
               onPressed: () => Navigator.pop(context),
-              child: const Text('メールアドレスで正式登録する', style: TextStyle(fontWeight: FontWeight.bold)),
-            )
+              child: const Text(
+                'メールアドレスで正式登録する',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
         ),
       ),
@@ -629,15 +783,27 @@ class SettingsPage extends ConsumerWidget {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2C2318),
         title: const Text('ログアウト', style: TextStyle(color: Color(0xFFF5EDD8))),
-        content: const Text('本当にログアウトしますか？', style: TextStyle(color: Color(0xFFC8A97A))),
+        content: const Text(
+          '本当にログアウトしますか？',
+          style: TextStyle(color: Color(0xFFC8A97A)),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('キャンセル', style: TextStyle(color: Color(0xFF7A5C3A)))),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: Color(0xFF7A5C3A)),
+            ),
+          ),
           TextButton(
             onPressed: () async {
               await ref.read(authControllerProvider).signOut();
               if (context.mounted) Navigator.pop(context);
             },
-            child: const Text('ログアウト', style: TextStyle(color: Color(0xFF8B3A1F))),
+            child: const Text(
+              'ログアウト',
+              style: TextStyle(color: Color(0xFF8B3A1F)),
+            ),
           ),
         ],
       ),
@@ -649,16 +815,37 @@ class SettingsPage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2C2318),
-        title: const Text('アカウントの削除', style: TextStyle(color: Color(0xFF8B3A1F), fontWeight: FontWeight.bold)),
-        content: const Text('すべてのアカウントデータ、冒険の記録、コレクションが完全に消去されます。この操作は取り消せません。\n\n本当に削除しますか？', style: TextStyle(color: Color(0xFFC8A97A))),
+        title: const Text(
+          'アカウントの削除',
+          style: TextStyle(
+            color: Color(0xFF8B3A1F),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: const Text(
+          'すべてのアカウントデータ、冒険の記録、コレクションが完全に消去されます。この操作は取り消せません。\n\n本当に削除しますか？',
+          style: TextStyle(color: Color(0xFFC8A97A)),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('キャンセル', style: TextStyle(color: Color(0xFF7A5C3A)))),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: Color(0xFF7A5C3A)),
+            ),
+          ),
           TextButton(
             onPressed: () async {
               await notifier.deleteAccount();
               if (context.mounted) Navigator.pop(context);
             },
-            child: const Text('削除する', style: TextStyle(color: Color(0xFF8B3A1F), fontWeight: FontWeight.bold)),
+            child: const Text(
+              '削除する',
+              style: TextStyle(
+                color: Color(0xFF8B3A1F),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -681,7 +868,8 @@ class _BaseDialog extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
         padding: const EdgeInsets.all(AppSizes.p24),
-        child: SingleChildScrollView( // 💡 これで中身が増えてもスクロールできて安心！
+        child: SingleChildScrollView(
+          // 💡 これで中身が増えてもスクロールできて安心！
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -689,13 +877,24 @@ class _BaseDialog extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(title, style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Color(0xFFF5EDD8),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Color(0xFF7A5C3A), size: 20),
+                    icon: const Icon(
+                      Icons.close,
+                      color: Color(0xFF7A5C3A),
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.pop(context),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                  )
+                  ),
                 ],
               ),
               const Divider(color: Color(0xFF4A3728), height: 24),
@@ -765,9 +964,18 @@ class _InputFieldState extends State<_InputField> {
         hintStyle: const TextStyle(color: Color(0xFF4A3728)),
         filled: true,
         fillColor: const Color(0xFF3D2B1F),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSizes.radiusM), borderSide: const BorderSide(color: Color(0xFFC8A97A), width: 0.5)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSizes.radiusM), borderSide: const BorderSide(color: Color(0xFFC8A97A), width: 0.5)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSizes.radiusM), borderSide: const BorderSide(color: Color(0xFFB8860B), width: 1.5)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusM),
+          borderSide: const BorderSide(color: Color(0xFFC8A97A), width: 0.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusM),
+          borderSide: const BorderSide(color: Color(0xFFC8A97A), width: 0.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusM),
+          borderSide: const BorderSide(color: Color(0xFFB8860B), width: 1.5),
+        ),
       ),
     );
   }
