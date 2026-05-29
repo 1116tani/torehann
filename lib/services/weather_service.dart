@@ -4,6 +4,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../constants/api_constants.dart';
+
 class WeatherInfo {
   final String locationName;
 
@@ -107,10 +109,25 @@ class WeatherService {
   // ─────────────────────────────
   // 🔑 OpenWeatherMap API Key
   // ─────────────────────────────
-  //
-  // ↓ 必ず自分のAPIキーに変更してね！
-  //
-  static const String _apiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
+
+  static const _dartDefineApiKey = String.fromEnvironment(
+    'OPEN_WEATHER_MAP_API_KEY',
+  );
+  static const _dartDefineApiKeyAlias = String.fromEnvironment(
+    'Weather_API_Key',
+  );
+
+  static String get _apiKey {
+    if (_dartDefineApiKey.isNotEmpty) {
+      return _dartDefineApiKey;
+    }
+
+    if (_dartDefineApiKeyAlias.isNotEmpty) {
+      return _dartDefineApiKeyAlias;
+    }
+
+    return ApiConstants.openWeatherMapApiKey;
+  }
 
   static const String _baseUrl =
       'https://api.openweathermap.org/data/2.5/weather';

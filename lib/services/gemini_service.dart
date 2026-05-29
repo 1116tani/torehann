@@ -4,7 +4,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import '../constants/api_constants.dart';
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
 
@@ -13,10 +15,16 @@ class GeminiService {
 
   // ─────────────────────────────
   // 🔑 API設定
-  // flutter run --dart-define=GEMINI_API_KEY=xxxx
   // ─────────────────────────────
 
-  static const _apiKey = String.fromEnvironment('GEMINI_API_KEY');
+  static String get _apiKey {
+    final envKey =
+        dotenv.env['GEMINI_API_KEY'] ?? dotenv.env['Gemini_API_Key'] ?? '';
+    if (envKey.isNotEmpty) {
+      return envKey;
+    }
+    return ApiConstants.geminiApiKey;
+  }
 
   static const _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -44,10 +52,7 @@ class GeminiService {
     String destination = '',
   }) async {
     if (_apiKey.isEmpty) {
-      throw Exception(
-        'Gemini APIキーが設定されていません。\n'
-        '--dart-define=GEMINI_API_KEY=xxxx を設定してください。',
-      );
+      throw Exception('Gemini APIキーが設定されていません。');
     }
 
     final prompt = _buildPrompt(
@@ -60,8 +65,10 @@ class GeminiService {
     );
 
     try {
+      final url = '$_baseUrl?key=$_apiKey';
+
       final response = await _dio.post(
-        '$_baseUrl?key=$_apiKey',
+        url,
         data: {
           'contents': [
             {
@@ -71,20 +78,16 @@ class GeminiService {
             },
           ],
 
-          // Gemini設定
+          // ── generationConfig ──
           'generationConfig': {
             'temperature': 0.85,
             'topP': 0.95,
             'maxOutputTokens': 4096,
 
-            // JSON固定
             'responseMimeType': 'application/json',
-
-            // JSON schema
-            'responseSchema': _buildRouteResponseSchema(),
           },
 
-          // 安全設定
+          // ── safety ──
           'safetySettings': [
             {
               'category': 'HARM_CATEGORY_HATE_SPEECH',
@@ -164,8 +167,10 @@ $durationMinutes分
 ''';
 
     try {
+      final url = '$_baseUrl?key=$_apiKey';
+
       final response = await _dio.post(
-        '$_baseUrl?key=$_apiKey',
+        url,
         data: {
           'contents': [
             {
@@ -182,6 +187,8 @@ $durationMinutes分
           response.data['candidates'][0]['content']['parts'][0]['text'];
 
       return text.toString().trim();
+    } on DioException catch (e) {
+      throw Exception('冒険レポート生成に失敗しました\n$e');
     } catch (e) {
       throw Exception('冒険レポート生成に失敗しました\n$e');
     }
@@ -211,10 +218,33 @@ $durationMinutes分
     final destinationText = destination.isEmpty ? '現在地周辺でおまかせ' : destination;
 
     return '''
-あなたは街歩き冒険ゲームのAIナビゲーターです。
+以下条件に合う、実在する場所を巡る徒歩ルートを3つ生成して、指定されたJSON形式のデータのみを出力してください。
+他の挨拶や説明、バッククォートなどのマークアップは一切含めないでください。
 
-以下条件に合う、
-実在する場所を巡る徒歩ルートを3つ生成してください。
+【形式】
+{
+  "routes": [
+    {
+      "id": "route_001",
+      "themeName": "黄昏の記憶巡礼",
+      "themeDescription": "静かな夕暮れを歩く探索路",
+      "totalDistance": 2.4,
+      "estimatedTime": 35,
+      "tags": ["#黄昏", "#静かな冒険"],
+      "spots": [
+        {
+          "id": "spot_001",
+          "name": "○○公園",
+          "lat": 35.0,
+          "lng": 139.0,
+          "category": "公園",
+          "aiStoryName": "記憶の庭園",
+          "aiFlavorText": "風が静かに記憶を運ぶ"
+        }
+      ]
+    }
+  ]
+}
 
 【現在地】
 緯度: $lat
@@ -239,57 +269,10 @@ $hobbies
 - 徒歩で巡れる範囲
 - 各ルート2〜4スポット
 - カフェ、公園、路地裏、史跡などを混ぜる
-- 幻想的・ゲーム的なタイトルにする
-- aiStoryName は物語風に
+- 幻想的・ゲーム的なタイトル
+- aiStoryName は物語風
 - aiFlavorText は30文字以内
 ''';
-  }
-
-  // ─────────────────────────────
-  // 📦 JSON Schema
-  // ─────────────────────────────
-
-  Map<String, dynamic> _buildRouteResponseSchema() {
-    return {
-      'type': 'OBJECT',
-      'properties': {
-        'routes': {
-          'type': 'ARRAY',
-          'items': {
-            'type': 'OBJECT',
-            'properties': {
-              'id': {'type': 'STRING'},
-              'themeName': {'type': 'STRING'},
-              'themeDescription': {'type': 'STRING'},
-              'totalDistance': {'type': 'NUMBER'},
-              'estimatedTime': {'type': 'INTEGER'},
-              'tags': {
-                'type': 'ARRAY',
-                'items': {'type': 'STRING'},
-              },
-              'spots': {
-                'type': 'ARRAY',
-                'items': {
-                  'type': 'OBJECT',
-                  'properties': {
-                    'id': {'type': 'STRING'},
-                    'name': {'type': 'STRING'},
-                    'lat': {'type': 'NUMBER'},
-                    'lng': {'type': 'NUMBER'},
-                    'category': {'type': 'STRING'},
-                    'aiStoryName': {'type': 'STRING'},
-                    'aiFlavorText': {'type': 'STRING'},
-                  },
-                  'required': ['id', 'name', 'lat', 'lng'],
-                },
-              },
-            },
-            'required': ['id', 'themeName', 'spots'],
-          },
-        },
-      },
-      'required': ['routes'],
-    };
   }
 
   // ─────────────────────────────
