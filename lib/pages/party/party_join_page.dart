@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/party_provider.dart';
 import '../../widgets/party/party_action_button.dart';
+import '../../widgets/common/custom_header.dart';
 
 class PartyJoinPage extends ConsumerStatefulWidget {
   const PartyJoinPage({super.key});
@@ -66,31 +67,21 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
     return Scaffold(
       backgroundColor: const Color(0xFF1C1610),
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1C1610),
-        elevation: 0,
-
-        title: const Text(
-          'パーティに参加',
-          style: TextStyle(
-            color: Color(0xFFF5EDD8),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-
-        iconTheme: const IconThemeData(
-          color: Color(0xFFC8A97A),
-        ),
-      ),
-
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const CustomHeader(
+              title: 'パーティに参加',
+              subtitle: 'JOIN PARTY',
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 12),
 
               const Text(
                 '仲間から受け取った\nルームコードを入力してね',
@@ -252,6 +243,9 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
               ),
             ],
           ),
+        ),
+      ),
+          ],
         ),
       ),
     );

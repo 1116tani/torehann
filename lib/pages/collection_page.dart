@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/fragment_model.dart'; // 👈 新しいレアリティ型を使うためにインポート
 import '../../providers/collection_provider.dart';
 import '../../widgets/collection/fragment_grid_item.dart';
+import '../widgets/common/custom_header.dart';
 
 class CollectionPage extends ConsumerWidget {
   const CollectionPage({super.key});
@@ -30,22 +31,15 @@ class CollectionPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF1C1610),
-      appBar: AppBar(
-        title: const Text(
-          '✦ 街の記憶図鑑 ✦', // アプリ名「Tale Trace」に合わせて少しエモくしてみたよ♡
-          style: TextStyle(
-            color: Color(0xFFF5EDD8),
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: const Color(0xFF2C2318),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFFC8A97A)),
-      ),
-      body: CustomScrollView(
+      body: SafeArea(
+        child: Column(
+          children: [
+            const CustomHeader(
+              title: '街の記憶図鑑',
+              subtitle: 'MEMORY DICTIONARY',
+            ),
+            Expanded(
+              child: CustomScrollView(
         slivers: [
           // ── ヘッダー：収集率 ──
           SliverToBoxAdapter(
@@ -84,6 +78,10 @@ class CollectionPage extends ConsumerWidget {
 
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
+      ),
+            ),
+          ],
+        ),
       ),
     );
   }

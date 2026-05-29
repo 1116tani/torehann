@@ -6,6 +6,7 @@ import '../../constants/app_colors.dart';
 import '../../models/achievement_model.dart';
 import '../../providers/achievement_provider.dart';
 import '../../widgets/achievement/achievement_card.dart';
+import '../widgets/common/custom_header.dart';
 
 class AchievementPage extends ConsumerWidget {
   const AchievementPage({super.key});
@@ -26,29 +27,13 @@ class AchievementPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
 
-      appBar: AppBar(
-        title: const Text(
-          '✦ 実績 ✦',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-        ),
-
-        centerTitle: true,
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-
-        iconTheme: const IconThemeData(
-          color: AppColors.primary,
-        ),
-      ),
-
       body: SafeArea(
         child: Column(
           children: [
+            const CustomHeader(
+              title: '実績',
+              subtitle: 'ACHIEVEMENTS',
+            ),
             // ── Header ──
             Container(
               width: double.infinity,

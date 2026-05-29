@@ -8,6 +8,7 @@ import '../../widgets/party/partner_status_board.dart';
 import '../../widgets/party/party_action_button.dart';
 import '../../widgets/party/qr_invite_card.dart';
 import '../../widgets/party/room_id_badge.dart';
+import '../../widgets/common/custom_header.dart';
 
 class PartyHostPage extends ConsumerWidget {
   const PartyHostPage({super.key});
@@ -28,31 +29,20 @@ class PartyHostPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF1C1610),
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1C1610),
-        elevation: 0,
-        centerTitle: true,
-
-        title: const Text(
-          'パーティルーム',
-          style: TextStyle(
-            color: Color(0xFFF5EDD8),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-
-        iconTheme: const IconThemeData(
-          color: Color(0xFFC8A97A),
-        ),
-      ),
-
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const CustomHeader(
+              title: 'パーティルーム',
+              subtitle: 'PARTY ROOM',
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
               // ── ルームコード ──
               RoomIdBadge(
                 roomId: state.roomId,
@@ -150,6 +140,9 @@ class PartyHostPage extends ConsumerWidget {
               const SizedBox(height: 28),
             ],
           ),
+        ),
+      ),
+          ],
         ),
       ),
     );

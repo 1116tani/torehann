@@ -5,16 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/health_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/health/health_widgets.dart';
+import '../widgets/common/custom_header.dart';
 
 class HealthPage extends ConsumerWidget {
   const HealthPage({super.key});
-
   static const _scaffoldBackground = Color(0xFF1C1610);
-  static const _cardBackground = Color(0xFF2C2318);
   static const _titleColor = Color(0xFFF5EDD8);
-  static const _defaultAppBarElevation = 0.0;
   static const _defaultPadding = EdgeInsets.all(16);
-
   static const _sectionTitleStyle = TextStyle(
     color: _titleColor,
     fontSize: 18,
@@ -55,24 +52,19 @@ class HealthPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: _scaffoldBackground,
-      appBar: AppBar(
-        backgroundColor: _cardBackground,
-        elevation: _defaultAppBarElevation,
-        centerTitle: true,
-        title: const Text(
-          '健康管理',
-          style: TextStyle(
-            color: _titleColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: _defaultPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Column(
+          children: [
+            const CustomHeader(
+              title: '健康管理',
+              subtitle: 'HEALTH MANAGEMENT',
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: _defaultPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
               HealthPeriodTab(
                 selectedPeriod: selectedPeriod,
                 onChanged: notifier.changePeriod,
@@ -140,6 +132,9 @@ class HealthPage extends ConsumerWidget {
               const SizedBox(height: 24),
             ],
           ),
+        ),
+      ),
+          ],
         ),
       ),
     );

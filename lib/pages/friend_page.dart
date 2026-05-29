@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/friend_provider.dart';
 import '../../widgets/friend/friend_card.dart';
 import '../../widgets/friend/friend_request_tile.dart';
+import '../widgets/common/custom_header.dart';
 
 class FriendPage extends ConsumerStatefulWidget {
   const FriendPage({super.key});
@@ -47,80 +48,55 @@ class _FriendPageState extends ConsumerState<FriendPage>
     return Scaffold(
       backgroundColor: const Color(0xFF1C1610),
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1C1610),
-        elevation: 0,
-        centerTitle: true,
-
-        title: const Column(
+      body: SafeArea(
+        child: Column(
           children: [
-            Text(
-              '冒険者ギルド',
-              style: TextStyle(
-                color: Color(0xFFF5EDD8),
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+            const CustomHeader(
+              title: '冒険者ギルド',
+              subtitle: 'ADVENTURERS GUILD',
             ),
 
-            SizedBox(height: 2),
-
-            Text(
-              'ADVENTURERS GUILD',
-              style: TextStyle(
-                color: Color(0xFFC8A97A),
-                fontSize: 9,
-                letterSpacing: 2,
-              ),
-            ),
-          ],
-        ),
-
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(52),
-
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-
-            child: Container(
-              height: 42,
-
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C2318),
-                borderRadius: BorderRadius.circular(16),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
               ),
 
-              child: TabBar(
-                controller: _tabController,
+              child: Container(
+                height: 42,
 
-                indicator: BoxDecoration(
-                  color: const Color(0xFFB8860B),
-                  borderRadius: BorderRadius.circular(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C2318),
+                  borderRadius: BorderRadius.circular(16),
                 ),
 
-                dividerColor: Colors.transparent,
+                child: TabBar(
+                  controller: _tabController,
 
-                labelColor: Colors.white,
-                unselectedLabelColor:
-                    const Color(0xFFC8A97A),
+                  indicator: BoxDecoration(
+                    color: const Color(0xFFB8860B),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
 
-                tabs: const [
-                  Tab(text: '仲間一覧'),
-                  Tab(text: '新たな出会い'),
-                ],
+                  dividerColor: Colors.transparent,
+
+                  labelColor: Colors.white,
+                  unselectedLabelColor:
+                      const Color(0xFFC8A97A),
+
+                  tabs: const [
+                    Tab(text: '仲間一覧'),
+                    Tab(text: '新たな出会い'),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
 
-      body: TabBarView(
-        controller: _tabController,
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
 
-        children: [
+                children: [
           // ─────────────────────────
           // 仲間一覧
           // ─────────────────────────
@@ -417,6 +393,10 @@ class _FriendPageState extends ConsumerState<FriendPage>
             ),
           ),
         ],
+      ),
+            ),
+          ],
+        ),
       ),
     );
   }
