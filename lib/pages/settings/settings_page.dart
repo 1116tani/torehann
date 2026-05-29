@@ -98,7 +98,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── 冒険者プロフィール ──
+                      // ── 冒メント者プロフィール ──
                       const SettingsSection(title: '冒険者プロフィール'),
                       SettingsTile(
                         icon: Icons.person_outline,
