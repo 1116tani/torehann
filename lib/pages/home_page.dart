@@ -35,6 +35,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   MapType _currentMapType = MapType.normal;
 
+  CameraPosition _currentCameraPosition = const CameraPosition(
+    target: _defaultPosition,
+    zoom: 16,
+    tilt: 45,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -91,14 +97,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.all(AppSizes.p20),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
 
           decoration: BoxDecoration(
             color: AppColors.surface,
 
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
 
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.border, width: 1.5),
           ),
 
           child: SafeArea(
@@ -109,7 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               children: [
                 Container(
-                  width: 48,
+                  width: 50,
                   height: 5,
 
                   decoration: BoxDecoration(
@@ -119,7 +125,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
 
-                const SizedBox(height: AppSizes.p20),
+                const SizedBox(height: 20),
+
+                // 🧭 ヘッダーを追加してリッチに見やすく
+                const Text(
+                  '🧭 地図スタイル切り替え',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
 
                 _MapStyleTile(
                   title: '通常地図',
@@ -248,6 +267,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onMapCreated: (controller) {
                 _mapController = controller;
               },
+
+              onCameraMove: (position) {
+                _currentCameraPosition = position;
+              },
             ),
 
             // ─────────────────────
@@ -291,13 +314,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onCompassPressed: () {
                     _mapController?.animateCamera(
                       CameraUpdate.newCameraPosition(
-                        const CameraPosition(
-                          target: _defaultPosition,
-
-                          zoom: 16,
-
+                        CameraPosition(
+                          target: _currentCameraPosition.target,
+                          zoom: _currentCameraPosition.zoom,
                           tilt: 0,
-
                           bearing: 0,
                         ),
                       ),
@@ -360,20 +380,21 @@ class _MapStyleTile extends StatelessWidget {
 
         child: Ink(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.p16,
+            horizontal: 20.0,
 
-            vertical: AppSizes.p16,
+            vertical: 18.0,
           ),
 
           decoration: BoxDecoration(
             color: selected
-                ? AppColors.primary.withValues(alpha: 0.14)
+                ? AppColors.primary.withValues(alpha: 0.16)
                 : AppColors.surfaceLight,
 
             borderRadius: BorderRadius.circular(18),
 
             border: Border.all(
               color: selected ? AppColors.primary : AppColors.border,
+              width: selected ? 2.0 : 1.0,
             ),
           ),
 
@@ -381,11 +402,12 @@ class _MapStyleTile extends StatelessWidget {
             children: [
               Icon(
                 icon,
+                size: 28.0, // アイコンを大きく表示
 
                 color: selected ? AppColors.primary : AppColors.textSecondary,
               ),
 
-              const SizedBox(width: AppSizes.p12),
+              const SizedBox(width: 16.0),
 
               Expanded(
                 child: Text(
@@ -393,14 +415,18 @@ class _MapStyleTile extends StatelessWidget {
 
                   style: TextStyle(
                     color: AppColors.textPrimary,
-
-                    fontWeight: FontWeight.w600,
+                    fontSize: 16.0, // フォントサイズを大きく表示
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
 
               if (selected)
-                const Icon(Icons.check_rounded, color: AppColors.primary),
+                const Icon(
+                  Icons.check_rounded,
+                  color: AppColors.primary,
+                  size: 24.0,
+                ),
             ],
           ),
         ),
