@@ -1,7 +1,6 @@
 // lib/pages/route_select_page.dart
 
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,7 +11,12 @@ import '../models/spot_model.dart';
 import '../providers/route_provider.dart';
 import '../providers/navigation_provider.dart';
 import '../router/route_names.dart';
-import '../widgets/route/route_card.dart'; // 👈 さっき共通化したRouteCardをインポート！
+import '../widgets/common/custom_header.dart';
+import '../widgets/route/ai_route_banner.dart';
+import '../widgets/route/route_card.dart';
+import '../widgets/route/route_empty_state.dart';
+import '../widgets/route/route_loading_overlay.dart';
+import '../widgets/route/route_select_button.dart';
 
 class RouteSelectPage extends ConsumerWidget {
   const RouteSelectPage({super.key});
@@ -26,11 +30,14 @@ class RouteSelectPage extends ConsumerWidget {
     final selectedRoute = _selectedRoute(state.routes, state.selectedRouteId);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2318),
+      backgroundColor: const Color(0xFF1C1610), // 統一感のある深いダークブラウン
       body: SafeArea(
         child: Column(
           children: [
-            _RouteSelectHeader(
+            // ── 共通ヘッダー ──
+            CustomHeader(
+              title: 'ルート選択',
+              subtitle: 'ROUTE SELECT',
               onBack: () {
                 if (context.canPop()) {
                   context.pop();
@@ -39,31 +46,34 @@ class RouteSelectPage extends ConsumerWidget {
                 }
               },
             ),
+
+            // ── メイン表示領域 ──
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 240),
                 child: state.isLoading
-                    ? const _GeneratingView()
+                    ? const RouteLoadingOverlay()
                     : state.routes.isEmpty
-                    ? _EmptyRoutesView(
-                        onGenerate: () => notifier.generateRoutes(),
-                      )
-                    : _RouteChoicesView(
-                        routes: state.routes,
-                        selectedRoute: selectedRoute,
-                        spots: spots,
-                        onSelect: notifier.selectRoute,
-                      ),
+                        ? RouteEmptyState(
+                            onGenerate: () => notifier.generateRoutes(),
+                          )
+                        : _buildRouteChoicesView(
+                            context,
+                            state.routes,
+                            selectedRoute,
+                            spots,
+                            notifier.selectRoute,
+                          ),
               ),
             ),
+
+            // ── 下部固定ボタン ──
             if (!state.isLoading && selectedRoute != null)
-              _StartNavigationBar(
+              RouteSelectButton(
                 onStart: () {
                   notifier.selectRoute(selectedRoute.id);
                   // 冒険を開始する
-                  ref
-                      .read(navigationProvider.notifier)
-                      .startAdventure(selectedRoute);
+                  ref.read(navigationProvider.notifier).startAdventure(selectedRoute);
                   context.go(AppRoutes.navigation);
                 },
               ),
@@ -82,195 +92,36 @@ class RouteSelectPage extends ConsumerWidget {
 
     return routes.first;
   }
-}
 
-class _RouteSelectHeader extends StatelessWidget {
-  final VoidCallback onBack;
-
-  const _RouteSelectHeader({required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSizes.p16),
-      decoration: const BoxDecoration(
-        color: Color(0xFF4A3728),
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFC8A97A), width: 0.5),
-        ),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'ルート選択',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFF5EDD8),
-                ),
-              ),
-              Text(
-                'ROUTE SELECT',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Color(0xFFC8A97A),
-                  letterSpacing: 2,
-                ),
-              ),
-            ],
-          ),
-          Positioned(
-            left: 0,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Color(0xFFC8A97A)),
-              onPressed: onBack,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GeneratingView extends StatelessWidget {
-  const _GeneratingView();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      key: const ValueKey('generating-routes'),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(
-            width: 56,
-            height: 56,
-            child: CircularProgressIndicator(color: Color(0xFFC8A97A)),
-          ),
-          const SizedBox(height: 32),
-          const Text(
-            '冒険の地図を編纂中...',
-            style: TextStyle(
-              color: Color(0xFFF5EDD8),
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'AIが\n最高の寄り道を探しています...',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFFC8A97A),
-              fontSize: 13,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyRoutesView extends StatelessWidget {
-  final VoidCallback onGenerate;
-
-  const _EmptyRoutesView({required this.onGenerate});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      key: const ValueKey('empty-routes'),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.p24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.auto_awesome,
-              color: Color(0xFFC8A97A),
-              size: AppSizes.iconL,
-            ),
-            const SizedBox(height: AppSizes.p16),
-            const Text(
-              'まだ候補がありません',
-              style: TextStyle(
-                color: Color(0xFFF5EDD8),
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: AppSizes.p8),
-            const Text(
-              'ルートを生成すると候補がここに並びます',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFC8A97A), fontSize: 12),
-            ),
-            const SizedBox(height: AppSizes.p24),
-            ElevatedButton.icon(
-              onPressed: onGenerate,
-              icon: const Icon(Icons.route),
-              label: const Text('ルートを生成する'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFB8860B),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.p24,
-                  vertical: AppSizes.p12,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RouteChoicesView extends StatelessWidget {
-  final List<RouteModel> routes;
-  final RouteModel? selectedRoute;
-  final Map<String, SpotModel> spots;
-  final ValueChanged<String> onSelect;
-
-  const _RouteChoicesView({
-    required this.routes,
-    required this.selectedRoute,
-    required this.spots,
-    required this.onSelect,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildRouteChoicesView(
+    BuildContext context,
+    List<RouteModel> routes,
+    RouteModel? selectedRoute,
+    Map<String, SpotModel> spots,
+    ValueChanged<String> onSelect,
+  ) {
     final selected = selectedRoute ?? routes.first;
-    final selectedSpots = _spotsForRoute(selected, spots);
 
-    return ListView(
+    return Column(
       key: const ValueKey('route-choices'),
-      padding: const EdgeInsets.symmetric(vertical: AppSizes.p16),
       children: [
+        // ── バナー ──
         const Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSizes.p16),
-          child: _RouteIntroPanel(),
+          padding: EdgeInsets.fromLTRB(AppSizes.p16, AppSizes.p16, AppSizes.p16, 0),
+          child: AiRouteBanner(),
         ),
-        const SizedBox(height: AppSizes.p16),
-        SizedBox(
-          height: 380, // カード内の要素増加に合わせて高さを少しだけ（372→380）広げたよ♡
+        
+        // ── カードリスト (横スクロール) ──
+        Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final cardWidth = math.min(340.0, constraints.maxWidth * 0.84);
 
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
+                padding: const EdgeInsets.all(AppSizes.p16),
                 itemCount: routes.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(width: AppSizes.p12),
+                separatorBuilder: (context, index) => const SizedBox(width: AppSizes.p12),
                 itemBuilder: (context, index) {
                   final route = routes[index];
                   final isSelected = route.id == selected.id;
@@ -278,9 +129,8 @@ class _RouteChoicesView extends StatelessWidget {
                   return SizedBox(
                     width: cardWidth,
                     child: RouteCard(
-                      // 👈 共通化したカードをここで綺麗に召喚！
                       route: route,
-                      spots: _spotsForRoute(route, spots),
+                      spots: spots,
                       isSelected: isSelected,
                       onTap: () => onSelect(route.id),
                     ),
@@ -290,269 +140,7 @@ class _RouteChoicesView extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(height: AppSizes.p16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSizes.p16),
-          child: _SelectedRouteDetail(route: selected, spots: selectedSpots),
-        ),
       ],
     );
   }
-}
-
-class _RouteIntroPanel extends StatelessWidget {
-  const _RouteIntroPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: const Color(0xFF3D2B1F),
-        borderRadius: BorderRadius.circular(AppSizes.radiusM),
-        border: Border.all(color: const Color(0xFFC8A97A), width: 0.5),
-      ),
-      child: const Padding(
-        padding: EdgeInsets.all(AppSizes.p16),
-        child: Row(
-          children: [
-            Icon(Icons.travel_explore, color: Color(0xFFC8A97A)),
-            SizedBox(width: AppSizes.p12),
-            Expanded(
-              child: Text(
-                'AIが今日の冒険候補を用意しました',
-                style: TextStyle(
-                  color: Color(0xFFF5EDD8),
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ⚠️ 元々あった重複用の `_RouteChoiceCard` クラスは綺麗に削除したよ！
-
-class _SelectedRouteDetail extends StatelessWidget {
-  final RouteModel route;
-  final Map<String, SpotModel> spots;
-
-  const _SelectedRouteDetail({required this.route, required this.spots});
-
-  @override
-  Widget build(BuildContext context) {
-    final routeSpots = route.spotIds
-        .map((spotId) => spots[spotId])
-        .whereType<SpotModel>()
-        .toList(growable: false);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: const Color(0xFF3D2B1F),
-        borderRadius: BorderRadius.circular(AppSizes.radiusM),
-        border: Border.all(color: const Color(0xFFC8A97A), width: 0.5),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.p16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.flag_circle,
-                  color: Color(0xFFC8A97A),
-                  size: AppSizes.iconS,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    route.themeName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFFF5EDD8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSizes.p12),
-            Wrap(
-              spacing: AppSizes.p8,
-              runSpacing: AppSizes.p8,
-              children: [
-                _RouteMetric(
-                  icon: Icons.schedule,
-                  label: '約${route.estimatedTime}分',
-                ),
-                _RouteMetric(
-                  icon: Icons.route,
-                  label: '${route.totalDistance.toStringAsFixed(1)}km',
-                ),
-                _RouteMetric(
-                  icon: Icons.place_outlined,
-                  label: '${route.spotIds.length}スポット',
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSizes.p16),
-            ...routeSpots.take(3).map((spot) => _SpotRow(spot: spot)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RouteMetric extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _RouteMetric({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFF7A5C3A), width: 0.5),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: const Color(0xFFC8A97A), size: 13),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFFC8A97A),
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SpotRow extends StatelessWidget {
-  final SpotModel spot;
-
-  const _SpotRow({required this.spot});
-
-  @override
-  Widget build(BuildContext context) {
-    final title = spot.aiStoryName.isEmpty ? spot.name : spot.aiStoryName;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.p8),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: Color(0xFFB8860B),
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: AppSizes.p8),
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 12),
-            ),
-          ),
-          if (spot.category.isNotEmpty)
-            Text(
-              spot.category,
-              style: const TextStyle(color: Color(0xFF7A5C3A), fontSize: 11),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StartNavigationBar extends StatelessWidget {
-  final VoidCallback onStart;
-
-  const _StartNavigationBar({required this.onStart});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSizes.p16),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2C2318),
-        border: Border(top: BorderSide(color: Color(0xFFC8A97A), width: 0.5)),
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton.icon(
-          onPressed: onStart,
-          icon: const Icon(Icons.navigation),
-          label: const Text('このルートで出発する'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFB8860B),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.all(AppSizes.p16),
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSizes.radiusM),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-Map<String, SpotModel> _spotsForRoute(
-  RouteModel route,
-  Map<String, SpotModel> sourceSpots,
-) {
-  final routeSpots = <String, SpotModel>{};
-  final baseLat = sourceSpots.values.isEmpty
-      ? 35.6812
-      : sourceSpots.values.first.lat;
-  final baseLng = sourceSpots.values.isEmpty
-      ? 139.7671
-      : sourceSpots.values.first.lng;
-
-  for (var i = 0; i < route.spotIds.length; i++) {
-    final spotId = route.spotIds[i];
-    final existingSpot = sourceSpots[spotId];
-    if (existingSpot != null) {
-      routeSpots[spotId] = existingSpot;
-      continue;
-    }
-
-    final offset = i - (route.spotIds.length - 1) / 2;
-    routeSpots[spotId] = SpotModel(
-      id: spotId,
-      lat: baseLat + offset * 0.0012,
-      lng: baseLng + math.sin(i + route.id.length) * 0.0014,
-      name: '候補スポット${i + 1}',
-      category: '探索',
-      aiStoryName: '未踏の気配 ${i + 1}',
-      aiFlavorText: 'AIが選んだ寄り道候補',
-    );
-  }
-
-  return routeSpots;
 }

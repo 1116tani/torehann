@@ -13,13 +13,15 @@ class RoutePreviewMap extends StatelessWidget {
   final Map<String, SpotModel> spots;
   final bool isSelected;
   final double height;
+  final bool showDetails;
 
   const RoutePreviewMap({
     super.key,
     required this.route,
     required this.spots,
     this.isSelected = false,
-    this.height = 160,
+    this.height = 110,
+    this.showDetails = false,
   });
 
   List<SpotModel> get _routeSpots {
@@ -59,36 +61,39 @@ class RoutePreviewMap extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              top: AppSizes.p8,
-              left: AppSizes.p8,
-              child: _MapBadge(
-                icon: Icons.explore,
-                label: 'ROUTE PREVIEW',
-                isActive: isSelected,
+            if (showDetails) ...[
+              Positioned(
+                top: AppSizes.p8,
+                left: AppSizes.p8,
+                child: _MapBadge(
+                  icon: Icons.explore,
+                  label: 'ROUTE PREVIEW',
+                  isActive: isSelected,
+                ),
               ),
-            ),
-            Positioned(
-              top: AppSizes.p8,
-              right: AppSizes.p8,
-              child: _MapBadge(
-                icon: Icons.place,
-                label: '${routeSpots.length} SPOTS',
-                isActive: isSelected,
+              Positioned(
+                top: AppSizes.p8,
+                right: AppSizes.p8,
+                child: _MapBadge(
+                  icon: Icons.place,
+                  label: '${routeSpots.length} SPOTS',
+                  isActive: isSelected,
+                ),
               ),
-            ),
+            ],
             if (routeSpots.isEmpty) const _EmptyPreviewMessage(),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _RouteSummaryStrip(
-                distance: route.totalDistance,
-                estimatedTime: route.estimatedTime,
-                startName: startSpot?.name,
-                goalName: goalSpot?.name,
+            if (showDetails)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _RouteSummaryStrip(
+                  distance: route.totalDistance,
+                  estimatedTime: route.estimatedTime,
+                  startName: startSpot?.name,
+                  goalName: goalSpot?.name,
+                ),
               ),
-            ),
           ],
         ),
       ),
