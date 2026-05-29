@@ -12,7 +12,7 @@ import '../constants/app_durations.dart';
 import '../constants/app_sizes.dart';
 
 import '../providers/location_provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/settings_provider.dart';
 
 import '../widgets/home/home_widgets.dart';
 
@@ -183,7 +183,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final locationAsync = ref.watch(locationProvider);
-    final mapStyleSetting = ref.watch(userProvider.select((s) => s.mapStyle));
+    final mapStyleSetting = ref.watch(settingsProvider.select((s) => s.mapStyle));
 
     // ─────────────────────────────
     // 📍 初回位置取得

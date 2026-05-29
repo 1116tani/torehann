@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/health_provider.dart';
-import '../../providers/user_provider.dart';
+import '../providers/settings_provider.dart';
 import '../../widgets/health/health_widgets.dart';
 import '../widgets/common/custom_header.dart';
 
@@ -27,8 +27,8 @@ class HealthPage extends ConsumerWidget {
     final topics = ref.watch(healthProvider.select((value) => value.topics));
     final notifier = ref.read(healthProvider.notifier);
 
-    final dailyStepGoal = ref.watch(userProvider.select((value) => value.dailyStepGoal));
-    final dailyDistanceGoal = ref.watch(userProvider.select((value) => value.dailyDistanceGoal));
+    final dailyStepGoal = ref.watch(settingsProvider.select((value) => value.dailyStepGoal));
+    final dailyDistanceGoal = ref.watch(settingsProvider.select((value) => value.dailyGoalKm));
     final stepGoal = dailyStepGoal > 0 ? dailyStepGoal : 10000;
     final distanceGoal = dailyDistanceGoal > 0 ? dailyDistanceGoal : 8.0;
     const calorieGoal = 500.0;

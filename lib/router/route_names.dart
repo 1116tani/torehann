@@ -7,6 +7,7 @@ class AppRoutes {
   // Home
   static const home = '/home';
   static const settings = '/settings';
+  static const account = '/settings/account';
   static const history = '/history';
   static const achievement = '/achievement';
   static const collection = '/collection';

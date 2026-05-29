@@ -14,6 +14,9 @@ class CustomHeader extends StatelessWidget {
   /// true のとき戻るボタン表示
   final bool showBackButton;
 
+  /// 戻るボタン押下時のカスタムコールバック
+  final VoidCallback? onBack;
+
   /// 右側にwidget置きたい時用
   final Widget? trailing;
 
@@ -22,6 +25,7 @@ class CustomHeader extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.showBackButton = true,
+    this.onBack,
     this.trailing,
   });
 
@@ -62,7 +66,7 @@ class CustomHeader extends StatelessWidget {
           if (showBackButton)
             _HeaderIconButton(
               icon: Icons.arrow_back_ios_new_rounded,
-              onTap: () => context.pop(),
+              onTap: onBack ?? () => context.pop(),
             )
           else
             const SizedBox(width: 44),

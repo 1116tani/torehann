@@ -8,7 +8,7 @@ import '../../constants/app_radius.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_text_styles.dart';
 import '../../constants/app_ranks.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/settings_provider.dart';
 
 import '../common/glass_card.dart';
 
@@ -17,8 +17,8 @@ class HomeGlassHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userState = ref.watch(userProvider);
-    final name = userState.name.isEmpty ? '無名の旅人' : userState.name;
+    final settings = ref.watch(settingsProvider);
+    final name = settings.userName.isEmpty ? '無名の旅人' : settings.userName;
 
     // 現在のレベル設定（実データ導入まではモックレベルとして24を使用します）
     const level = 24;

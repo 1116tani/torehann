@@ -2,7 +2,8 @@
 import 'package:go_router/go_router.dart';
 
 import '../pages/home_page.dart';
-import '../pages/settings_page.dart';
+import '../pages/settings/settings_page.dart';
+import '../pages/settings/account_page.dart';
 import '../pages/history_page.dart';
 import '../pages/achievement_page.dart';
 import '../pages/collection_page.dart';
@@ -21,6 +22,11 @@ final homeRoutes = [
   GoRoute(
     path: AppRoutes.settings,
     builder: (context, state) => const SettingsPage(),
+  ),
+
+  GoRoute(
+    path: AppRoutes.account,
+    builder: (context, state) => const AccountPage(),
   ),
 
   GoRoute(
