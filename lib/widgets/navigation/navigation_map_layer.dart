@@ -1,10 +1,12 @@
 // lib/widgets/navigation/navigation_map_layer.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../models/spot_model.dart';
+import '../../services/directions_service.dart';
 import 'retro_mock_map.dart';
 
 class NavigationMapLayer extends StatelessWidget {
@@ -80,7 +82,7 @@ class NavigationMapLayer extends StatelessWidget {
 // 🛰️ Google Map
 // ─────────────────────────────
 
-class _GoogleMapLayer extends StatelessWidget {
+class _GoogleMapLayer extends ConsumerStatefulWidget {
   final Position? currentPosition;
 
   final List<SpotModel> spots;
@@ -104,7 +106,80 @@ class _GoogleMapLayer extends StatelessWidget {
   });
 
   @override
+  ConsumerState<_GoogleMapLayer> createState() => _GoogleMapLayerState();
+}
+
+class _GoogleMapLayerState extends ConsumerState<_GoogleMapLayer> {
+  List<LatLng> _polylinePoints = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRoute();
+  }
+
+  @override
+  void didUpdateWidget(covariant _GoogleMapLayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_hasSpotsChanged(oldWidget.spots, widget.spots)) {
+      _fetchRoute();
+    }
+  }
+
+  bool _hasSpotsChanged(List<SpotModel> oldSpots, List<SpotModel> newSpots) {
+    if (oldSpots.length != newSpots.length) return true;
+    for (int i = 0; i < oldSpots.length; i++) {
+      if (oldSpots[i].lat != newSpots[i].lat || oldSpots[i].lng != newSpots[i].lng) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<void> _fetchRoute() async {
+    if (widget.spots.length < 2) {
+      if (mounted) {
+        setState(() {
+          _polylinePoints = widget.spots.map((s) => LatLng(s.lat, s.lng)).toList();
+        });
+      }
+      return;
+    }
+
+    try {
+      final origin = LatLng(widget.spots.first.lat, widget.spots.first.lng);
+      final destination = LatLng(widget.spots.last.lat, widget.spots.last.lng);
+      final waypoints = widget.spots
+          .sublist(1, widget.spots.length - 1)
+          .map((s) => LatLng(s.lat, s.lng))
+          .toList();
+
+      final points = await ref.read(directionsServiceProvider).getDirectionsRoute(
+        origin: origin,
+        destination: destination,
+        waypoints: waypoints,
+      );
+
+      if (mounted) {
+        setState(() {
+          _polylinePoints = points;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _polylinePoints = widget.spots.map((s) => LatLng(s.lat, s.lng)).toList();
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final routePoints = _polylinePoints.isNotEmpty
+        ? _polylinePoints
+        : widget.spots.map((spot) => LatLng(spot.lat, spot.lng)).toList();
+
     return GoogleMap(
       myLocationEnabled: true,
 
@@ -121,10 +196,10 @@ class _GoogleMapLayer extends StatelessWidget {
       trafficEnabled: false,
 
       initialCameraPosition: CameraPosition(
-        target: currentPosition != null
-            ? LatLng(currentPosition!.latitude, currentPosition!.longitude)
-            : (spots.isNotEmpty
-                  ? LatLng(spots.first.lat, spots.first.lng)
+        target: widget.currentPosition != null
+            ? LatLng(widget.currentPosition!.latitude, widget.currentPosition!.longitude)
+            : (widget.spots.isNotEmpty
+                  ? LatLng(widget.spots.first.lat, widget.spots.first.lng)
                   : const LatLng(35.6812, 139.7671)),
 
         zoom: 16,
@@ -132,16 +207,16 @@ class _GoogleMapLayer extends StatelessWidget {
         tilt: 45,
       ),
 
-      style: darkMapStyle,
+      style: widget.darkMapStyle,
 
       onMapCreated: (controller) {
-        onMapCreated?.call(controller);
+        widget.onMapCreated?.call(controller);
       },
 
-      markers: spots.map((spot) {
-        final isVisited = visitedSpotIds.contains(spot.id);
+      markers: widget.spots.map((spot) {
+        final isVisited = widget.visitedSpotIds.contains(spot.id);
 
-        final isNext = nextSpot?.id == spot.id;
+        final isNext = widget.nextSpot?.id == spot.id;
 
         return Marker(
           markerId: MarkerId(spot.id),
@@ -174,9 +249,7 @@ class _GoogleMapLayer extends StatelessWidget {
 
           geodesic: true,
 
-          patterns: [PatternItem.dot, PatternItem.gap(10)],
-
-          points: spots.map((spot) => LatLng(spot.lat, spot.lng)).toList(),
+          points: routePoints,
         ),
       },
     );

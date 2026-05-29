@@ -37,7 +37,8 @@ class RouteSpotList extends StatelessWidget {
           separatorBuilder: (context, index) => _buildConnector(),
           itemBuilder: (context, index) {
             final spot = spots[index];
-            final title = spot.aiStoryName.isEmpty ? spot.name : spot.aiStoryName;
+            final hasSubtitle = spot.aiStoryName.isNotEmpty && spot.aiStoryName != spot.name;
+            final title = spot.aiStoryName.isNotEmpty ? spot.aiStoryName : spot.name;
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -53,15 +54,33 @@ class RouteSpotList extends StatelessWidget {
                 const SizedBox(width: 14),
                 // スポット名
                 Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFFF5EDD8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFFF5EDD8),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (hasSubtitle) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          spot.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: const Color(0xFFF5EDD8).withValues(alpha: 0.6),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 if (spot.category.isNotEmpty) ...[
