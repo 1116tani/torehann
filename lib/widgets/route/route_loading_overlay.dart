@@ -1,26 +1,24 @@
 // lib/widgets/route/route_loading_overlay.dart
 
 import 'package:flutter/material.dart';
+import '../common/torenyan.dart';
 
 class RouteLoadingOverlay extends StatelessWidget {
   const RouteLoadingOverlay({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
-            width: 56,
-            height: 56,
-            child: CircularProgressIndicator(
-              color: Color(0xFFC8A97A),
-              strokeWidth: 3.5,
-            ),
+          Torenyan(
+            size: 110,
+            state: TorenyanState.loading,
+            enableTap: false,
           ),
-          const SizedBox(height: 32),
-          const Text(
+          SizedBox(height: 32),
+          Text(
             '冒険の地図を編纂中...',
             style: TextStyle(
               color: Color(0xFFF5EDD8),
@@ -29,14 +27,13 @@ class RouteLoadingOverlay extends StatelessWidget {
               letterSpacing: 1.0,
             ),
           ),
-          const SizedBox(height: 12),
-          const Text(
-            'AIが街の記憶を探しています\n最高の寄り道をご用意するまで、少々お待ちください...',
-            textAlign: TextAlign.center,
-            style: TextStyle(
+          SizedBox(height: 16),
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
               color: Color(0xFFC8A97A),
-              fontSize: 13,
-              height: 1.6,
+              strokeWidth: 2.0,
             ),
           ),
         ],

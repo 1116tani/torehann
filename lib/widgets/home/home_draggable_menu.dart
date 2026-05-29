@@ -5,6 +5,8 @@ import '../../router/route_names.dart';
 import '../../utils/colors.dart';
 import 'adventure_start_button.dart';
 
+import '../common/torenyan.dart';
+
 class HomeDraggableMenu extends StatelessWidget {
   const HomeDraggableMenu({super.key});
 
@@ -17,22 +19,25 @@ class HomeDraggableMenu extends StatelessWidget {
       minChildSize: 0.15,
       maxChildSize: 0.54,
       builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF1D150F).withValues(alpha: 0.97), // 💡 より暗い深セピア背景で視認性を強化
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.35), // 💡 金枠を少し明るくクッキリ
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 15,
-                spreadRadius: 2,
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1D150F).withValues(alpha: 0.97), // 💡 より暗い深セピア背景で視認性を強化
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.35), // 💡 金枠を少し明るくクッキリ
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
-            ],
-          ),
           child: ListView(
             controller: scrollController,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -94,9 +99,22 @@ class HomeDraggableMenu extends StatelessWidget {
               ),
             ],
           ),
-        );
-      },
+        ),
+        
+        // 🐱 ボトムシートの上に乗るトレにゃん
+        const Positioned(
+          top: -96, // 吹き出し(約40dp) + 猫本体(約48dp) がはみ出す位置
+          right: 24,
+          child: Torenyan(
+            size: 64, // ボトムシート上に綺麗に収まるサイズ
+            state: TorenyanState.idle,
+            enableTap: true,
+          ),
+        ),
+      ],
     );
+  },
+);
   }
 
   Widget _buildMenuItem(

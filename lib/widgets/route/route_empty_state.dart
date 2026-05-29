@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../constants/app_sizes.dart';
+import '../common/torenyan.dart';
 
 class RouteEmptyState extends StatelessWidget {
   final VoidCallback onGenerate;
@@ -16,12 +17,12 @@ class RouteEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.auto_awesome,
-              color: Color(0xFFC8A97A),
-              size: AppSizes.iconL,
+            const Torenyan(
+              size: 110,
+              state: TorenyanState.error,
+              enableTap: true,
             ),
-            const SizedBox(height: AppSizes.p16),
+            const SizedBox(height: AppSizes.p24),
             const Text(
               '街の記憶を見つけられませんでした',
               style: TextStyle(
@@ -29,12 +30,6 @@ class RouteEmptyState extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
-            ),
-            const SizedBox(height: AppSizes.p8),
-            const Text(
-              '気分や目的地などのセッティングを変えて、\nもう一度街の物語を探しにいきましょう。',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFC8A97A), fontSize: 13, height: 1.5),
             ),
             const SizedBox(height: AppSizes.p24),
             ElevatedButton.icon(
