@@ -72,6 +72,7 @@ class _FriendPageState extends ConsumerState<FriendPage>
 
                 child: TabBar(
                   controller: _tabController,
+                  indicatorSize: TabBarIndicatorSize.tab,
 
                   indicator: BoxDecoration(
                     color: const Color(0xFFC8A97A).withValues(alpha: 0.15),
@@ -87,6 +88,15 @@ class _FriendPageState extends ConsumerState<FriendPage>
                   labelColor: Colors.white,
                   unselectedLabelColor:
                       const Color(0xFFC8A97A),
+
+                  labelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
 
                   tabs: const [
                     Tab(text: '仲間一覧'),

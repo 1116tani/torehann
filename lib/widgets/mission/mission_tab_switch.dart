@@ -94,7 +94,7 @@ class _TabButton extends StatelessWidget {
                 color: isSelected
                     ? Colors.white
                     : const Color(0xFFC8A97A),
-                fontSize: 13,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -107,7 +107,7 @@ class _TabButton extends StatelessWidget {
                 color: isSelected
                     ? Colors.white70
                     : const Color(0xFF7A5C3A),
-                fontSize: 9,
+                fontSize: 11,
                 letterSpacing: 1.5,
               ),
             ),
