@@ -22,7 +22,7 @@ class HomeExpBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = currentExp / nextLevelExp;
+    final progress = nextLevelExp > 0 ? currentExp / nextLevelExp : 1.0;
     final rankData = RankData.getRankData(level);
 
     return Container(
@@ -53,7 +53,10 @@ class HomeExpBar extends StatelessWidget {
           // ─────────────────────
           Row(
             children: [
-              Icon(rankData.icon, color: rankData.color, size: AppSizes.iconM),
+              Text(
+                rankData.icon,
+                style: const TextStyle(fontSize: 24, height: 1),
+              ),
 
               const SizedBox(width: AppSizes.p8),
 
@@ -93,7 +96,7 @@ class HomeExpBar extends StatelessWidget {
           // RANK NAME
           // ─────────────────────
           Text(
-            rankData.title,
+            '${rankData.title} / ${rankData.englishTitle}',
             style: AppTextStyles.titleMedium.copyWith(color: rankData.color),
           ),
 
@@ -123,7 +126,7 @@ class HomeExpBar extends StatelessWidget {
               ),
 
               Text(
-                '$currentExp / $nextLevelExp EXP',
+                level >= 100 ? 'MAX' : '$currentExp / $nextLevelExp EXP',
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.bold,
@@ -149,17 +152,14 @@ class HomeExpBar extends StatelessWidget {
                 ),
 
                 FractionallySizedBox(
-                  widthFactor: progress.clamp(0, 1),
+                  widthFactor: progress.clamp(0.0, 1.0).toDouble(),
 
                   child: Container(
                     height: 14,
 
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          rankData.color.withValues(alpha: 0.6),
-                          rankData.color,
-                        ],
+                        colors: rankData.gradientColors,
                       ),
                     ),
                   ),

@@ -61,7 +61,12 @@ class HomeRankBadge extends StatelessWidget {
               color: rankData.color.withValues(alpha: 0.16),
             ),
 
-            child: Icon(rankData.icon, color: rankData.color, size: 22),
+            child: Center(
+              child: Text(
+                rankData.icon,
+                style: const TextStyle(fontSize: 22, height: 1),
+              ),
+            ),
           ),
 
           const SizedBox(width: AppSizes.p12),
