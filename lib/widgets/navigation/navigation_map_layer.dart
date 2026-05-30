@@ -182,10 +182,7 @@ class _GoogleMapLayerState extends ConsumerState<_GoogleMapLayer> {
     } catch (_) {
       if (mounted) {
         setState(() {
-          _polylinePoints = [
-            _currentOrigin(),
-            LatLng(widget.nextSpot!.lat, widget.nextSpot!.lng),
-          ];
+          _polylinePoints = const [];
         });
       }
     }
@@ -212,14 +209,7 @@ class _GoogleMapLayerState extends ConsumerState<_GoogleMapLayer> {
 
   @override
   Widget build(BuildContext context) {
-    final routePoints = _polylinePoints.isNotEmpty
-        ? _polylinePoints
-        : [
-            if (widget.nextSpot != null) ...[
-              _currentOrigin(),
-              LatLng(widget.nextSpot!.lat, widget.nextSpot!.lng),
-            ],
-          ];
+    final routePoints = _polylinePoints;
 
     return GoogleMap(
       myLocationEnabled: true,
@@ -275,19 +265,20 @@ class _GoogleMapLayerState extends ConsumerState<_GoogleMapLayer> {
       },
 
       polylines: {
-        Polyline(
-          polylineId: const PolylineId('adventure_route'),
+        if (routePoints.length >= 2)
+          Polyline(
+            polylineId: const PolylineId('adventure_route'),
 
-          width: 7,
+            width: 7,
 
-          color: const Color(0xFF34F26A),
+            color: const Color(0xFF34F26A),
 
-          geodesic: false,
+            geodesic: false,
 
-          zIndex: 10,
+            zIndex: 10,
 
-          points: routePoints,
-        ),
+            points: routePoints,
+          ),
       },
     );
   }

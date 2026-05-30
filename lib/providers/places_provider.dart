@@ -15,11 +15,13 @@ class PlaceItem {
   final String placeId;
   final String name;
   final String address;
+  final String fullText;
 
   const PlaceItem({
     required this.placeId,
     required this.name,
     required this.address,
+    required this.fullText,
   });
 
   factory PlaceItem.fromSuggestion(PlaceSuggestion s) {
@@ -27,6 +29,7 @@ class PlaceItem {
       placeId: s.placeId,
       name: s.mainText,
       address: s.secondaryText,
+      fullText: s.fullText,
     );
   }
 }
@@ -68,8 +71,13 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
 
   PlacesNotifier(this._repository) : super(const PlacesState());
 
-  Future<void> searchPlaces(String query) async {
-    if (query.trim().isEmpty) {
+  Future<void> searchPlaces(
+    String query, {
+    double? latitude,
+    double? longitude,
+  }) async {
+    final normalizedQuery = query.trim();
+    if (normalizedQuery.isEmpty) {
       clear();
       return;
     }
@@ -77,10 +85,15 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
     state = state.copyWith(isLoading: true, places: []);
 
     try {
-      final suggestions = await _repository.searchPlaces(query);
+      final suggestions = await _repository.searchPlaces(
+        normalizedQuery,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
       state = state.copyWith(
         isLoading: false,
-        places: suggestions.map(PlaceItem.fromSuggestion).toList(),
+        places: suggestions.map(PlaceItem.fromSuggestion).take(6).toList(),
       );
     } catch (e) {
       state = state.copyWith(
@@ -101,7 +114,9 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
 // StateNotifierProvider（メイン）
 // ─────────────────────────────
 
-final placesProvider = StateNotifierProvider<PlacesNotifier, PlacesState>((ref) {
+final placesProvider = StateNotifierProvider<PlacesNotifier, PlacesState>((
+  ref,
+) {
   final repository = ref.read(placesRepositoryProvider);
   return PlacesNotifier(repository);
 });

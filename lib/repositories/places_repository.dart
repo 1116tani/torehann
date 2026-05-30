@@ -16,7 +16,11 @@ class PlacesRepository {
   // 🔍 地名候補検索
   // ─────────────────────────────
 
-  Future<List<PlaceSuggestion>> searchPlaces(String query) async {
+  Future<List<PlaceSuggestion>> searchPlaces(
+    String query, {
+    double? latitude,
+    double? longitude,
+  }) async {
     if (query.trim().isEmpty) {
       return [];
     }
@@ -26,7 +30,11 @@ class PlacesRepository {
       // return _placesService
       //     .getDummySuggestions(query);
 
-      return _placesService.searchPlaces(query);
+      return _placesService.searchPlaces(
+        query,
+        latitude: latitude,
+        longitude: longitude,
+      );
     } catch (e) {
       throw Exception('場所候補の取得に失敗しました: $e');
     }

@@ -18,73 +18,73 @@ class DirectionsService {
 
   final _polylinePoints = PolylinePoints();
 
-  /// Google Routes APIから道路に沿った徒歩ルート座標を取得します。
-  /// APIキー未設定やAPIエラー時だけ、スポット同士の直線にフォールバックします。
   Future<List<LatLng>> getDirectionsRoute({
     required LatLng origin,
     required LatLng destination,
     List<LatLng> waypoints = const [],
   }) async {
-    final fallback = [origin, ...waypoints, destination];
-    final apiKey = ApiConstants.googleMapsApiKey;
+    final apiKeys = _candidateApiKeys();
 
-    if (apiKey.isEmpty) {
-      debugPrint('Routes API key is empty. Falling back to straight route.');
-      return fallback;
+    if (apiKeys.isEmpty) {
+      debugPrint('Routes API key is empty.');
+      return const [];
     }
 
-    try {
-      final response = await http.post(
-        _routesApiUri,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Goog-Api-Key': apiKey,
-          'X-Goog-FieldMask':
-              'routes.polyline.encodedPolyline,routes.legs.polyline.encodedPolyline,routes.legs.steps.polyline.encodedPolyline',
-        },
-        body: jsonEncode({
-          'origin': _waypoint(origin),
-          'destination': _waypoint(destination),
-          if (waypoints.isNotEmpty)
-            'intermediates': waypoints.map(_waypoint).toList(),
-          'travelMode': 'WALK',
-          'computeAlternativeRoutes': false,
-          'polylineQuality': 'HIGH_QUALITY',
-          'polylineEncoding': 'ENCODED_POLYLINE',
-          'languageCode': 'ja',
-          'units': 'METRIC',
-        }),
-      );
+    for (final apiKey in apiKeys) {
+      try {
+        final response = await http.post(
+          _routesApiUri,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': apiKey,
+            'X-Goog-FieldMask':
+                'routes.polyline.encodedPolyline,routes.legs.polyline.encodedPolyline,routes.legs.steps.polyline.encodedPolyline',
+          },
+          body: jsonEncode({
+            'origin': _waypoint(origin),
+            'destination': _waypoint(destination),
+            if (waypoints.isNotEmpty)
+              'intermediates': waypoints.map(_waypoint).toList(),
+            'travelMode': 'WALK',
+            'computeAlternativeRoutes': false,
+            'polylineQuality': 'HIGH_QUALITY',
+            'polylineEncoding': 'ENCODED_POLYLINE',
+            'languageCode': 'ja',
+            'units': 'METRIC',
+          }),
+        );
 
-      if (response.statusCode != 200) {
-        debugPrint('Routes API HTTP ${response.statusCode}: ${response.body}');
-        return fallback;
+        if (response.statusCode != 200) {
+          debugPrint(
+            'Routes API HTTP ${response.statusCode}: ${response.body}',
+          );
+          continue;
+        }
+
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final routes = data['routes'] as List<dynamic>? ?? const [];
+        if (routes.isEmpty) continue;
+
+        final route = routes.first as Map<String, dynamic>;
+        final stepPoints = _decodeStepPolylines(route);
+        if (stepPoints.length >= 2) return stepPoints;
+
+        final legPoints = _decodeLegPolylines(route);
+        if (legPoints.length >= 2) return legPoints;
+
+        final routePoints = _decodePolyline(
+          (route['polyline'] as Map<String, dynamic>?)?['encodedPolyline']
+              as String?,
+        );
+        if (routePoints.length >= 2) return routePoints;
+      } catch (e) {
+        debugPrint('Routes API fetch failed: $e');
       }
-
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final routes = data['routes'] as List<dynamic>? ?? const [];
-      if (routes.isEmpty) return fallback;
-
-      final route = routes.first as Map<String, dynamic>;
-      final stepPoints = _decodeStepPolylines(route);
-      if (stepPoints.length >= 2) return stepPoints;
-
-      final legPoints = _decodeLegPolylines(route);
-      if (legPoints.length >= 2) return legPoints;
-
-      final routePoints = _decodePolyline(
-        (route['polyline'] as Map<String, dynamic>?)?['encodedPolyline']
-            as String?,
-      );
-      if (routePoints.length >= 2) return routePoints;
-    } catch (e) {
-      debugPrint('Routes API fetch failed: $e');
     }
 
-    return fallback;
+    return const [];
   }
 
-  /// 複数スポットを順番に結ぶ徒歩ルート。各区間を道路に沿って取得して連結する。
   Future<List<LatLng>> getMultiStopWalkingRoute(List<LatLng> stops) async {
     if (stops.isEmpty) return const [];
     if (stops.length == 1) return stops;
@@ -99,6 +99,13 @@ class DirectionsService {
     }
 
     return merged;
+  }
+
+  List<String> _candidateApiKeys() {
+    return [
+      ApiConstants.googleMapsApiKey.trim(),
+      ApiConstants.googlePlacesApiKey.trim(),
+    ].where((key) => key.isNotEmpty).toSet().toList(growable: false);
   }
 
   Map<String, dynamic> _waypoint(LatLng point) {
