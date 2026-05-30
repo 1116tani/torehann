@@ -34,7 +34,14 @@ class ApiConstants {
     'Weather_API_Key',
   ]);
 
-  /// Google Maps API Key
+  /// Google Maps API Key（マップ表示）
   static String get googleMapsApiKey =>
       dotenv.get('GOOGLE_MAPS_API_KEY', fallback: '');
+
+  /// ルート線・Directions API 用（HTTP・Android制限なし推奨）
+  static String get googleDirectionsApiKey => _getFirstNonEmpty([
+    'GOOGLE_DIRECTIONS_API_KEY',
+    'GOOGLE_MAPS_API_KEY',
+    'MAPS_API_KEY',
+  ]);
 }

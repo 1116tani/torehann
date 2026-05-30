@@ -5,12 +5,11 @@ import 'package:geolocator/geolocator.dart';
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
 
-// ── 冒険中のナビゲーション状態 ──────────────────────
 class NavigationState {
   final RouteModel? currentRoute;
   final Set<String> visitedSpotIds;
   final bool isAdventureStarted;
-  final double progress; // 0.0 to 1.0
+  final double progress;
   final double? distanceToNextSpot;
   final SpotModel? nextSpot;
   final DateTime? adventureStartTime;
@@ -48,17 +47,18 @@ class NavigationState {
       adventureStartTime: adventureStartTime ?? this.adventureStartTime,
     );
   }
+
+  List<SpotModel> get routeSpots {
+    final route = currentRoute;
+    if (route == null) return const [];
+    return route.generatedSpots;
+  }
 }
 
-// ── Notifier ──────────────────────────────────
 class NavigationNotifier extends Notifier<NavigationState> {
   @override
-  NavigationState build() {
-    // 💡 修正ポイント：build() の中では何もリッスンせず、初期状態を返すだけにします！
-    return const NavigationState();
-  }
+  NavigationState build() => const NavigationState();
 
-  // 🚀 冒険を開始する
   void startAdventure(RouteModel route) {
     state = NavigationState(
       currentRoute: route,
@@ -67,77 +67,67 @@ class NavigationNotifier extends Notifier<NavigationState> {
       progress: 0.0,
       adventureStartTime: DateTime.now(),
     );
-    // 最初の目的地を安全にセット
     _initializeNextSpot();
   }
 
-  // 🛰️ 位置情報が更新されたら、画面側から自動で呼び出されるメソッド
   void updateLocation(Position position) {
-    if (!state.isAdventureStarted || state.currentRoute == null) {
+    if (!state.isAdventureStarted || state.currentRoute == null) return;
+
+    final next = state.nextSpot;
+    if (next == null) {
+      state = state.copyWith(clearDistance: true);
+      return;
+    }
+
+    final distance = Geolocator.distanceBetween(
+      position.latitude,
+      position.longitude,
+      next.lat,
+      next.lng,
+    );
+
+    state = state.copyWith(distanceToNextSpot: distance);
+  }
+
+  void checkInNextSpot() {
+    if (!state.isAdventureStarted ||
+        state.currentRoute == null ||
+        state.nextSpot == null) {
       return;
     }
 
     final route = state.currentRoute!;
-    final spots = {for (var s in route.generatedSpots) s.id: s};
-    final updatedVisitedSpots = Set<String>.from(state.visitedSpotIds);
+    final spots = {for (final s in route.generatedSpots) s.id: s};
+    final updatedVisited = Set<String>.from(state.visitedSpotIds)
+      ..add(state.nextSpot!.id);
 
-    bool reachedNewSpot = true;
-    double? distanceToNext;
     SpotModel? targetSpot;
-
-    // 「20m以内なら次々にスキップする」自動判定ループだよ！
-    while (reachedNewSpot) {
-      reachedNewSpot = false;
-      targetSpot = null;
-
-      // 未訪問の次のスポットを探索
-      for (final spotId in route.spotIds) {
-        if (!updatedVisitedSpots.contains(spotId)) {
-          targetSpot = spots[spotId];
-          break;
-        }
-      }
-
-      if (targetSpot != null) {
-        distanceToNext = Geolocator.distanceBetween(
-          position.latitude,
-          position.longitude,
-          targetSpot.lat,
-          targetSpot.lng,
-        );
-
-        // 📍 20メートル以内に近づいたら到達とみなして、次のスポットへ進む
-        if (distanceToNext < 20.0) {
-          updatedVisitedSpots.add(targetSpot.id);
-          reachedNewSpot = true;
-        }
-      } else {
-        distanceToNext = null;
+    for (final spotId in route.spotIds) {
+      if (!updatedVisited.contains(spotId)) {
+        targetSpot = spots[spotId];
+        break;
       }
     }
 
     final totalSpots = route.spotIds.length;
     final progress = totalSpots > 0
-        ? (updatedVisitedSpots.length / totalSpots).clamp(0.0, 1.0)
+        ? (updatedVisited.length / totalSpots).clamp(0.0, 1.0)
         : 1.0;
 
     state = state.copyWith(
-      visitedSpotIds: updatedVisitedSpots,
+      visitedSpotIds: updatedVisited,
       nextSpot: targetSpot,
       clearNextSpot: targetSpot == null,
-      distanceToNextSpot: distanceToNext,
-      clearDistance: distanceToNext == null,
+      distanceToNextSpot: null,
+      clearDistance: targetSpot == null,
       progress: progress,
     );
   }
 
-  // 💡 最初のスポットを初期化するメソッド
   void _initializeNextSpot() {
-    if (state.currentRoute == null) {
-      return;
-    }
+    if (state.currentRoute == null) return;
     final route = state.currentRoute!;
-    final spots = {for (var s in route.generatedSpots) s.id: s};
+    final spots = {for (final s in route.generatedSpots) s.id: s};
 
     for (final spotId in route.spotIds) {
       if (!state.visitedSpotIds.contains(spotId)) {
@@ -147,44 +137,8 @@ class NavigationNotifier extends Notifier<NavigationState> {
     }
   }
 
-  // 🧪 デバッグ・ハッカソン用：現在の目的地に強制チェックインする
-  void forceCheckInNextSpot() {
-    if (!state.isAdventureStarted ||
-        state.currentRoute == null ||
-        state.nextSpot == null) {
-      return;
-    }
+  void forceCheckInNextSpot() => checkInNextSpot();
 
-    final route = state.currentRoute!;
-    final spots = {for (var s in route.generatedSpots) s.id: s};
-    final updatedVisitedSpots = Set<String>.from(state.visitedSpotIds)
-      ..add(state.nextSpot!.id);
-
-    // 次のスポットを探す
-    SpotModel? targetSpot;
-    for (final spotId in route.spotIds) {
-      if (!updatedVisitedSpots.contains(spotId)) {
-        targetSpot = spots[spotId];
-        break;
-      }
-    }
-
-    final totalSpots = route.spotIds.length;
-    final progress = totalSpots > 0
-        ? (updatedVisitedSpots.length / totalSpots).clamp(0.0, 1.0)
-        : 1.0;
-
-    state = state.copyWith(
-      visitedSpotIds: updatedVisitedSpots,
-      nextSpot: targetSpot,
-      clearNextSpot: targetSpot == null,
-      distanceToNextSpot: null,
-      clearDistance: true,
-      progress: progress,
-    );
-  }
-
-  // 🏁 冒険を終了する
   void finishAdventure() {
     state = const NavigationState();
   }

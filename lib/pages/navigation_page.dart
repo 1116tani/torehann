@@ -1,28 +1,29 @@
 // lib/pages/navigation_page.dart
 
-import 'package:flutter/foundation.dart'; // 💡 kDebugMode用
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:vibration/vibration.dart';
 
-import '../constants/app_sizes.dart';
+import '../constants/navigation_ui_constants.dart';
 import '../models/spot_model.dart';
-
+import '../models/walking_leg_result.dart';
 import '../providers/location_provider.dart';
 import '../providers/navigation_provider.dart';
-import '../providers/route_provider.dart';
-
 import '../router/route_names.dart';
-
-import '../widgets/navigation/camera_button.dart';
-import '../widgets/navigation/destination_marker.dart';
-import '../widgets/navigation/fog_effect_overlay.dart';
-
-import '../widgets/navigation/navigation_map_layer.dart';
-import '../widgets/navigation/route_progress_bar.dart';
+import '../services/directions_service.dart';
+import '../services/location_service.dart';
+import '../utils/polyline_utils.dart';
+import '../widgets/navigation/arrival_dialog.dart';
+import '../widgets/navigation/navigation_draggable_sheet.dart';
+import '../widgets/navigation/navigation_map_controls.dart';
+import '../widgets/navigation/next_spot_header.dart';
+import '../widgets/navigation/torenyan_nav_bubble.dart';
 
 class NavigationPage extends ConsumerStatefulWidget {
   const NavigationPage({super.key});
@@ -32,328 +33,456 @@ class NavigationPage extends ConsumerStatefulWidget {
 }
 
 class _NavigationPageState extends ConsumerState<NavigationPage> {
-  final bool _useGoogleMap = true; // 💡 最初からマップ（Google Maps）を開いた状態に変更
   GoogleMapController? _mapController;
-  ProviderSubscription<AsyncValue<Position>>? _locationSubscription;
+  StreamSubscription<Position>? _locationSub;
+  StreamSubscription<CompassEvent>? _compassSub;
+  Timer? _arrivalTimer;
 
-  String? _darkMapStyle;
+  Position? _lastPosition;
+  double _compassHeading = 0;
+  bool _isFollowingUser = true;
+  bool _isCameraAnimating = false;
+  bool _arrivalDialogOpen = false;
+  String? _pendingArrivalSpotId;
+
+  List<LatLng> _routePolyline = const [];
+  WalkingLegResult? _currentLeg;
+  bool _isOffRoute = false;
+  LatLng? _lastRouteFetchOrigin;
+  String? _lastRouteFetchDestId;
+
+  static const _defaultPosition = LatLng(35.681236, 139.767125);
 
   @override
   void initState() {
     super.initState();
-
-    _loadMapStyle();
-    _locationSubscription = ref.listenManual(locationProvider, (
-      previous,
-      next,
-    ) {
-      final position = next.value;
-
-      if (position == null) return;
-
-      ref.read(navigationProvider.notifier).updateLocation(position);
-
-      if (_useGoogleMap && _mapController != null) {
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLng(LatLng(position.latitude, position.longitude)),
-        );
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startLocationStream();
+      _startCompassStream();
+      _startArrivalTimer();
     });
-  }
-
-  Future<void> _loadMapStyle() async {
-    try {
-      final style = await rootBundle.loadString(
-        'assets/map_styles/dark_fantasy_map.json',
-      );
-
-      if (!mounted) return;
-
-      setState(() {
-        _darkMapStyle = style;
-      });
-    } catch (_) {}
   }
 
   @override
   void dispose() {
-    _locationSubscription?.close();
+    _locationSub?.cancel();
+    _compassSub?.cancel();
+    _arrivalTimer?.cancel();
     _mapController?.dispose();
-
     super.dispose();
+  }
+
+  void _startLocationStream() {
+    final service = ref.read(locationServiceProvider);
+    _locationSub = service.getLocationStream().listen((position) {
+      if (!mounted) return;
+      setState(() => _lastPosition = position);
+      ref.read(navigationProvider.notifier).updateLocation(position);
+      _maybeFetchRoute(position);
+      if (_isFollowingUser) {
+        _animateToUser(position, bearing: _compassHeading);
+      }
+    });
+  }
+
+  void _startCompassStream() {
+    _compassSub = FlutterCompass.events?.listen((event) {
+      if (!mounted || event.heading == null) return;
+      final heading = event.heading!;
+      setState(() => _compassHeading = heading);
+      if (_isFollowingUser && _lastPosition != null) {
+        _animateToUser(_lastPosition!, bearing: heading);
+      }
+    });
+  }
+
+  void _startArrivalTimer() {
+    _arrivalTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _checkArrival();
+      _checkOffRoute();
+    });
+  }
+
+  Future<void> _maybeFetchRoute(Position position) async {
+    final nav = ref.read(navigationProvider);
+    final next = nav.nextSpot;
+    if (next == null) return;
+
+    final origin = LatLng(position.latitude, position.longitude);
+    if (_lastRouteFetchDestId == next.id &&
+        _lastRouteFetchOrigin != null &&
+        Geolocator.distanceBetween(
+              _lastRouteFetchOrigin!.latitude,
+              _lastRouteFetchOrigin!.longitude,
+              origin.latitude,
+              origin.longitude,
+            ) <
+            30) {
+      return;
+    }
+
+    _lastRouteFetchOrigin = origin;
+    _lastRouteFetchDestId = next.id;
+
+    final leg = await ref.read(directionsServiceProvider).getWalkingLeg(
+          origin: origin,
+          destination: LatLng(next.lat, next.lng),
+        );
+
+    if (!mounted) return;
+    setState(() {
+      _currentLeg = leg;
+      _routePolyline = leg?.points ?? const [];
+    });
+  }
+
+  void _checkArrival() {
+    if (_arrivalDialogOpen || _lastPosition == null) return;
+
+    final nav = ref.read(navigationProvider);
+    final next = nav.nextSpot;
+    if (next == null || _pendingArrivalSpotId == next.id) return;
+
+    final distance = Geolocator.distanceBetween(
+      _lastPosition!.latitude,
+      _lastPosition!.longitude,
+      next.lat,
+      next.lng,
+    );
+
+    if (distance <= NavigationUiConstants.arrivalRadiusMeters) {
+      _pendingArrivalSpotId = next.id;
+      _showArrivalDialog(next);
+    }
+  }
+
+  void _checkOffRoute() {
+    if (_lastPosition == null || _routePolyline.length < 2) {
+      if (_isOffRoute) setState(() => _isOffRoute = false);
+      return;
+    }
+
+    final dist = distanceToPolylineMeters(
+      LatLng(_lastPosition!.latitude, _lastPosition!.longitude),
+      _routePolyline,
+    );
+    final off = dist >= NavigationUiConstants.offRouteThresholdMeters;
+    if (off != _isOffRoute) {
+      setState(() => _isOffRoute = off);
+    }
+  }
+
+  Future<void> _showArrivalDialog(SpotModel spot) async {
+    _arrivalDialogOpen = true;
+
+    if (await Vibration.hasVibrator() == true) {
+      Vibration.vibrate(duration: 200);
+    }
+
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ArrivalDialog(
+        spot: spot,
+        onContinue: () => Navigator.of(context).pop(),
+      ),
+    );
+
+    if (!mounted) return;
+
+    _arrivalDialogOpen = false;
+    ref.read(navigationProvider.notifier).checkInNextSpot();
+    _pendingArrivalSpotId = null;
+    _lastRouteFetchDestId = null;
+
+    if (_lastPosition != null) {
+      _maybeFetchRoute(_lastPosition!);
+    }
+  }
+
+  Future<void> _animateToUser(Position position, {double? bearing}) async {
+    final controller = _mapController;
+    if (controller == null) return;
+
+    _isCameraAnimating = true;
+    try {
+      await controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: 17,
+            bearing: bearing ?? 0,
+            tilt: 45,
+          ),
+        ),
+      );
+    } finally {
+      _isCameraAnimating = false;
+    }
+  }
+
+  Future<void> _resetCompass() async {
+    final controller = _mapController;
+    if (controller == null || _lastPosition == null) return;
+
+    _isCameraAnimating = true;
+    try {
+      await controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(
+              _lastPosition!.latitude,
+              _lastPosition!.longitude,
+            ),
+            zoom: 17,
+            bearing: 0,
+            tilt: 0,
+          ),
+        ),
+      );
+    } finally {
+      _isCameraAnimating = false;
+    }
+  }
+
+  Future<void> _recenter() async {
+    if (_lastPosition == null) return;
+    setState(() => _isFollowingUser = true);
+    await _animateToUser(_lastPosition!, bearing: _compassHeading);
+  }
+
+  Future<void> _confirmQuit() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: NavigationUiConstants.cream,
+        title: Text('冒険をやめる', style: NavigationUiConstants.serifTitle),
+        content: Text(
+          'ナビゲーションを中断して戻ります。よろしいですか？',
+          style: NavigationUiConstants.serifBody,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'やめる',
+              style: TextStyle(color: NavigationUiConstants.sepia),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await _locationSub?.cancel();
+    _locationSub = null;
+    ref.read(navigationProvider.notifier).finishAdventure();
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.home);
+    }
+  }
+
+  Set<Marker> _buildMarkers(NavigationState nav) {
+    final markers = <Marker>{};
+
+    if (_lastPosition != null) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('user'),
+          position: LatLng(
+            _lastPosition!.latitude,
+            _lastPosition!.longitude,
+          ),
+          rotation: _compassHeading,
+          flat: true,
+          anchor: const Offset(0.5, 0.5),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueAzure,
+          ),
+          zIndex: 10,
+        ),
+      );
+    }
+
+    final next = nav.nextSpot;
+    if (next != null) {
+      markers.add(
+        Marker(
+          markerId: MarkerId('dest_${next.id}'),
+          position: LatLng(next.lat, next.lng),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueOrange,
+          ),
+          infoWindow: InfoWindow(
+            title: next.aiStoryName.isNotEmpty ? next.aiStoryName : next.name,
+          ),
+        ),
+      );
+    }
+
+    return markers;
+  }
+
+  Set<Polyline> _buildPolylines() {
+    if (_routePolyline.length < 2) return const {};
+
+    return {
+      Polyline(
+        polylineId: const PolylineId('walking_route'),
+        points: _routePolyline,
+        color: NavigationUiConstants.sepia,
+        width: NavigationUiConstants.routeLineWidth.toInt(),
+        geodesic: false,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+        jointType: JointType.round,
+      ),
+    };
+  }
+
+  TorenyanNavMode _torenyanMode(NavigationState nav) {
+    if (nav.nextSpot == null) return TorenyanNavMode.arrived;
+    if (_isOffRoute) return TorenyanNavMode.offRoute;
+    return TorenyanNavMode.moving;
   }
 
   @override
   Widget build(BuildContext context) {
-    final navState = ref.watch(navigationProvider);
+    final nav = ref.watch(navigationProvider);
 
-    final navNotifier = ref.read(navigationProvider.notifier);
-
-    final locationAsync = ref.watch(locationProvider);
-
-    final currentPosition = locationAsync.value;
-
-    // ─────────────────────────────
-    // 🚫 冒険未開始
-    // ─────────────────────────────
-
-    if (!navState.isAdventureStarted) {
+    if (!nav.isAdventureStarted) {
       return Scaffold(
-        backgroundColor: const Color(0xFF2C2318),
+        backgroundColor: NavigationUiConstants.cream,
         body: Center(
           child: ElevatedButton(
-            onPressed: () {
-              context.go(AppRoutes.home);
-            },
+            onPressed: () => context.go(AppRoutes.home),
             child: const Text('ホームへ戻る'),
           ),
         ),
       );
     }
 
-    // ─────────────────────────────
-    // 📍 スポット一覧
-    // ─────────────────────────────
+    final isCompleted = nav.nextSpot == null;
+    final leg = _currentLeg;
+    final distanceLabel = leg?.distanceLabel ??
+        (nav.distanceToNextSpot != null
+            ? formatDistance(nav.distanceToNextSpot!)
+            : '—');
+    final durationLabel = leg?.durationLabel ??
+        (nav.distanceToNextSpot != null
+            ? formatWalkingDuration((nav.distanceToNextSpot! / 1.25).round())
+            : '—');
 
-    final spotsMap = ref.watch(generatedSpotsProvider);
-
-    final routeSpots =
-        navState.currentRoute?.spotIds
-            .map((id) => spotsMap[id])
-            .whereType<SpotModel>()
-            .toList() ??
-        [];
-
-    final isCompleted = navState.nextSpot == null;
+    final initialTarget = _lastPosition != null
+        ? LatLng(_lastPosition!.latitude, _lastPosition!.longitude)
+        : (nav.nextSpot != null
+              ? LatLng(nav.nextSpot!.lat, nav.nextSpot!.lng)
+              : _defaultPosition);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2318), // ダークセピア
       body: Stack(
         children: [
-          // ─────────────────────────────
-          // 🗺️ マップ
-          // ─────────────────────────────
-          NavigationMapLayer(
-            useGoogleMap: _useGoogleMap,
+          GoogleMap(
+            myLocationEnabled: false,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            compassEnabled: false,
+            mapToolbarEnabled: false,
+            buildingsEnabled: true,
+            initialCameraPosition: CameraPosition(
+              target: initialTarget,
+              zoom: 16,
+              tilt: 45,
+            ),
+            onMapCreated: (controller) => _mapController = controller,
+            onCameraMoveStarted: () {
+              if (!_isCameraAnimating) {
+                setState(() => _isFollowingUser = false);
+              }
+            },
+            markers: _buildMarkers(nav),
+            polylines: _buildPolylines(),
+          ),
 
-            mapController: _mapController,
+          if (!isCompleted)
+            Positioned(
+              top: 0,
+              left: 16,
+              right: 16,
+              child: SafeArea(
+                bottom: false,
+                child: NextSpotHeader(
+                  nextSpot: nav.nextSpot,
+                  distanceLabel: distanceLabel,
+                  durationLabel: durationLabel,
+                ),
+              ),
+            ),
 
-            darkMapStyle: _darkMapStyle,
+          Positioned(
+            right: 16,
+            bottom: MediaQuery.sizeOf(context).height * 0.14 + 16,
+            child: NavigationMapControls(
+              onCompass: _resetCompass,
+              onRecenter: _recenter,
+            ),
+          ),
 
-            currentPosition: currentPosition,
+          Positioned(
+            left: 12,
+            bottom: MediaQuery.sizeOf(context).height * 0.14 + 8,
+            child: TorenyanNavBubble(mode: _torenyanMode(nav)),
+          ),
 
-            spots: routeSpots,
-
-            visitedSpotIds: navState.visitedSpotIds,
-
-            nextSpot: navState.nextSpot,
-
-            onMapCreated: (controller) {
-              _mapController = controller;
+          DraggableScrollableSheet(
+            initialChildSize: 0.12,
+            minChildSize: 0.12,
+            maxChildSize: 0.5,
+            builder: (context, scrollController) {
+              return NavigationDraggableSheet(
+                scrollController: scrollController,
+                nextSpot: nav.nextSpot,
+                distanceToNext: nav.distanceToNextSpot,
+                allSpots: nav.routeSpots,
+                visitedSpotIds: nav.visitedSpotIds,
+                onQuit: _confirmQuit,
+              );
             },
           ),
 
-          // 2️⃣ 謎の霧エフェクト（雰囲気を醸し出す）
-          const FogEffectOverlay(density: 0.5),
-
-          // 3️⃣ 上部ヘッダー（半透明グラデーションを効かせたAppBar ＋ 進行度プログレスバー）
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF2C2318).withValues(alpha: 0.95),
-                    const Color(0xFF2C2318).withValues(alpha: 0.80),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: SafeArea(
-                bottom: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // カスタム AppBar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0,
-                        vertical: 4.0,
-                      ),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.close,
-                              color: Color(0xFFF5EDD8),
-                            ),
-                            onPressed: () {
-                              navNotifier.finishAdventure();
-                              context.go(AppRoutes.home);
-                            },
-                          ),
-                          Expanded(
-                            child: Text(
-                              navState.currentRoute?.themeName ?? '未知の探索路',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Color(0xFFF5EDD8),
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                          // タイトルを中央に配置するためのダミー枠
-                          const SizedBox(width: 48),
-                        ],
-                      ),
-                    ),
-                    // 進行度プログレスバー
-                    RouteProgressBar(
-                      progress: navState.progress,
-                      visitedCount: navState.visitedSpotIds.length,
-                      totalCount: routeSpots.length,
-                      distanceToNext: navState.distanceToNextSpot,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 4️⃣ 中間〜下部フローティング操作ボタン群
-          // 📸 カメラ起動ボタン (未クリア時のみ、右下に浮かせる)
-          if (!isCompleted)
-            Positioned(
-              right: 16,
-              bottom: 146, // 目的地カードの上側
-              child: CameraButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('📷 パシャリ！街の断片を写真に収めた！'),
-                      backgroundColor: Color(0xFF3D2B1F),
-                      duration: Duration(seconds: 2),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-              ),
-            ),
-
-          // 現在地追従ボタン (右側、カメラボタンの上側)
-          if (currentPosition != null)
-            Positioned(
-              right: 28, // カメラボタンの中心軸と合わせるための微調整
-              bottom: isCompleted ? 100 : 252,
-              child: FloatingActionButton(
-                mini: true,
-                backgroundColor: const Color(
-                  0xFF3D2B1F,
-                ).withValues(alpha: 0.85),
-                foregroundColor: const Color(0xFFC8A97A),
-
-                onPressed: () {
-                  if (_useGoogleMap && _mapController != null) {
-                    _mapController!.animateCamera(
-                      CameraUpdate.newLatLngZoom(
-                        LatLng(
-                          currentPosition.latitude,
-                          currentPosition.longitude,
-                        ),
-                        16,
-                      ),
-                    );
-                  }
-                },
-
-                child: const Icon(Icons.my_location),
-              ),
-            ),
-
-          // 🧪 ハッカソン用：デバッグ到着判定ボタン (左下、カードの上側)
-          if (kDebugMode && !isCompleted)
+          if (isCompleted)
             Positioned(
               left: 16,
-              bottom: 146,
-              child: ActionChip(
-                backgroundColor: const Color(
-                  0xFFCC3333,
-                ).withValues(alpha: 0.85),
-                side: const BorderSide(color: Color(0xFFC8A97A), width: 1),
-                label: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt, size: 14, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text(
-                      '到着判定',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+              right: 16,
+              bottom: MediaQuery.paddingOf(context).bottom + 16,
+              child: ElevatedButton(
+                onPressed: () => context.go(AppRoutes.result),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: NavigationUiConstants.sepia,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
-                onPressed: () {
-                  ref.read(navigationProvider.notifier).forceCheckInNextSpot();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('⚡ デバッグ：次のスポットへ強制移動しました！'),
-                      backgroundColor: Color(0xFFCC3333),
-                      duration: Duration(seconds: 1),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
+                child: Text(
+                  '冒険の記録を報告する',
+                  style: NavigationUiConstants.serifBody.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
-
-          // 5️⃣ 最下部：次の目的地カード または 冒険報告ボタン
-          Positioned(
-            bottom: 24,
-            left: 16,
-            right: 16,
-            child: isCompleted
-                ? SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        context.go(AppRoutes.result);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC8A97A),
-                        foregroundColor: const Color(0xFF2C2318),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppSizes.radiusM),
-                        ),
-                        elevation: 4,
-                      ),
-                      child: const Text(
-                        '冒険の記録を報告する',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  )
-                : (navState.nextSpot != null
-                      ? DestinationMarker(
-                          spot: navState.nextSpot!,
-                          distanceToSpot: navState.distanceToNextSpot,
-                          isNearby:
-                              (navState.distanceToNextSpot ?? 999.0) < 20.0,
-                        )
-                      : const SizedBox.shrink()),
-          ),
         ],
       ),
     );
