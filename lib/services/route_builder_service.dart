@@ -38,7 +38,7 @@ class RouteBuilderService {
       final spot = geminiSpots[i];
       finalSpots.add(
         SpotModel(
-          id: spot.id.isNotEmpty ? spot.id : '${id}_spot_$i',
+          id: spot.id.isNotEmpty ? '${id}_${spot.id}' : '${id}_spot_$i',
           lat: spot.lat,
           lng: spot.lng,
           name: spot.name,
@@ -50,7 +50,10 @@ class RouteBuilderService {
     }
 
     // 3. 目的地（設定されている場合）を最後に追加
-    if (destinationLat != null && destinationLng != null && destinationName != null && destinationName.isNotEmpty) {
+    if (destinationLat != null &&
+        destinationLng != null &&
+        destinationName != null &&
+        destinationName.isNotEmpty) {
       finalSpots.add(
         SpotModel(
           id: '${id}_destination',
@@ -74,12 +77,15 @@ class RouteBuilderService {
         finalSpots[i + 1].lng,
       );
     }
-    
+
     // 小数点第1位までに丸める
-    final double totalDistanceKm = double.parse((totalDistanceMeters / 1000.0).toStringAsFixed(1));
+    final double totalDistanceKm = double.parse(
+      (totalDistanceMeters / 1000.0).toStringAsFixed(1),
+    );
 
     // 5. 所要時間をローカルで計算 (徒歩分速75m ＋ スポット滞在各3分)
-    final int estimatedTime = (totalDistanceMeters / 75.0).round() + (finalSpots.length * 3);
+    final int estimatedTime =
+        (totalDistanceMeters / 75.0).round() + (finalSpots.length * 3);
 
     return RouteModel(
       id: id,
