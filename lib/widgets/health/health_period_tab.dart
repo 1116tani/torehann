@@ -42,21 +42,15 @@ class HealthPeriodTab extends StatelessWidget {
 
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFFB8860B)
+                      ? const Color(0xFFC8A97A).withValues(alpha: 0.15)
                       : Colors.transparent,
-
                   borderRadius: BorderRadius.circular(12),
-
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: const Color(
-                              0xFFB8860B,
-                            ).withValues(alpha: 0.25),
-                            blurRadius: 8,
-                          ),
-                        ]
-                      : null,
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFFC8A97A).withValues(alpha: 0.55)
+                        : Colors.transparent,
+                    width: 1.0,
+                  ),
                 ),
 
                 child: Text(

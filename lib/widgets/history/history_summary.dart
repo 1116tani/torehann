@@ -1,6 +1,7 @@
 // lib/widgets/history/history_summary.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import '../../constants/app_sizes.dart';
 
 class HistorySummary extends StatelessWidget {
@@ -54,21 +55,22 @@ class HistorySummary extends StatelessWidget {
             'ADVENTURE LOG',
 
             style: TextStyle(
-              color: Color(0xFFB8860B),
-              fontSize: 12,
+              color: AppColors.primary,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               letterSpacing: 2.4,
             ),
           ),
 
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
 
           const Text(
             '冒険の軌跡',
 
             style: TextStyle(
-              color: Color(0xFF7A5C3A),
-              fontSize: 11,
+              color: AppColors.textPrimary,
+              fontSize: 13.5,
+              fontWeight: FontWeight.bold,
               letterSpacing: 1.0,
             ),
           ),
@@ -131,18 +133,19 @@ class _SummaryItem extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 22,
-          color: const Color(0xFFB8860B),
+          size: 24,
+          color: AppColors.primary,
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
         Text(
           label,
 
           style: const TextStyle(
-            color: Color(0xFF7A5C3A),
-            fontSize: 11,
+            color: AppColors.textPrimary,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
             letterSpacing: 0.8,
           ),
         ),
@@ -161,7 +164,7 @@ class _SummaryItem extends StatelessWidget {
               value,
 
               style: const TextStyle(
-                color: Color(0xFFF5EDD8),
+                color: AppColors.textPrimary,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 height: 1,
@@ -180,8 +183,8 @@ class _SummaryItem extends StatelessWidget {
                 unit,
 
                 style: const TextStyle(
-                  color: Color(0xFFC8A97A),
-                  fontSize: 12,
+                  color: AppColors.secondary,
+                  fontSize: 13,
                   fontWeight:
                       FontWeight.bold,
                 ),
