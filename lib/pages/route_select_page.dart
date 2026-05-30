@@ -1,145 +1,274 @@
 // lib/pages/route_select_page.dart
 
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../constants/app_sizes.dart';
+import '../constants/app_colors.dart';
 import '../models/route_model.dart';
-import '../models/spot_model.dart';
-import '../providers/route_provider.dart';
 import '../providers/navigation_provider.dart';
+import '../providers/route_provider.dart';
 import '../router/route_names.dart';
 import '../widgets/common/custom_header.dart';
-import '../widgets/route/ai_route_banner.dart';
 import '../widgets/route/route_card.dart';
 import '../widgets/route/route_empty_state.dart';
 import '../widgets/route/route_loading_overlay.dart';
 import '../widgets/route/route_select_button.dart';
+import '../widgets/route/route_select_map.dart';
 
-class RouteSelectPage extends ConsumerWidget {
+class RouteSelectPage extends ConsumerStatefulWidget {
   const RouteSelectPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RouteSelectPage> createState() => _RouteSelectPageState();
+}
+
+class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
+  String? _mapStyle;
+
+  static const _carouselHeight = 340.0;
+  static const _buttonAreaHeight = 92.0;
+  static const _headerHeight = 88.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMapStyle();
+  }
+
+  Future<void> _loadMapStyle() async {
+    try {
+      final style = await rootBundle.loadString(
+        'assets/map_styles/dark_fantasy_map.json',
+      );
+      if (mounted) setState(() => _mapStyle = style);
+    } catch (e) {
+      debugPrint('Error loading map style: $e');
+    }
+  }
+
+  RouteModel? _selectedRoute(List<RouteModel> routes, String? selectedRouteId) {
+    if (routes.isEmpty) return null;
+    for (final route in routes) {
+      if (route.id == selectedRouteId) return route;
+    }
+    return routes.first;
+  }
+
+  void _handleBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.adventureSetting);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(routeSelectProvider);
     final notifier = ref.read(routeSelectProvider.notifier);
     final spots = ref.watch(generatedSpotsProvider);
-
-    final selectedRoute = _selectedRoute(state.routes, state.selectedRouteId);
+    final routes = state.routes;
+    final hasRoutes = routes.isNotEmpty;
+    final selectedRoute = _selectedRoute(routes, state.selectedRouteId);
+    final bottomInset = _carouselHeight + _buttonAreaHeight;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610), // 統一感のある深いダークブラウン
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            // ── 共通ヘッダー ──
             CustomHeader(
               title: 'ルート選択',
               subtitle: 'ROUTE SELECT',
-              onBack: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go(AppRoutes.adventureSetting);
-                }
-              },
+              onBack: () => _handleBack(context),
             ),
-
-            // ── メイン表示領域 ──
             Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 240),
-                child: state.isLoading
-                    ? const RouteLoadingOverlay()
-                    : state.routes.isEmpty
-                        ? RouteEmptyState(
-                            onGenerate: () => notifier.generateRoutes(),
-                          )
-                        : _buildRouteChoicesView(
-                            context,
-                            state.routes,
-                            selectedRoute,
-                            spots,
-                            notifier.selectRoute,
-                          ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (hasRoutes)
+                    RouteSelectMap(
+                      key: ValueKey(routes.map((r) => r.id).join(',')),
+                      routes: routes,
+                      spots: spots,
+                      selectedRouteId: state.selectedRouteId ?? routes.first.id,
+                      mapStyle: _mapStyle,
+                      topInset: _headerHeight,
+                      bottomInset: bottomInset,
+                      onRouteTapped: notifier.selectRoute,
+                    )
+                  else
+                    const ColoredBox(color: AppColors.background),
+
+                  if (state.isLoading && !hasRoutes)
+                    ColoredBox(
+                      color: AppColors.background.withValues(alpha: 0.88),
+                      child: const RouteLoadingOverlay(),
+                    ),
+
+                  if (!state.isLoading && !hasRoutes)
+                    ColoredBox(
+                      color: AppColors.background.withValues(alpha: 0.92),
+                      child: RouteEmptyState(
+                        onGenerate: () => notifier.generateRoutes(),
+                      ),
+                    ),
+
+                  if (state.isLoading && hasRoutes)
+                    const Center(
+                      child: SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                          color: AppColors.secondary,
+                          strokeWidth: 2.5,
+                        ),
+                      ),
+                    ),
+
+                  if (hasRoutes)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: _RouteBottomCarousel(
+                        routes: routes,
+                        selectedRouteId:
+                            state.selectedRouteId ?? routes.first.id,
+                        onRouteSelected: notifier.selectRoute,
+                        onStart: selectedRoute == null
+                            ? null
+                            : () {
+                                notifier.selectRoute(selectedRoute.id);
+                                ref
+                                    .read(navigationProvider.notifier)
+                                    .startAdventure(selectedRoute);
+                                context.go(AppRoutes.navigation);
+                              },
+                      ),
+                    ),
+                ],
               ),
             ),
-
-            // ── 下部固定ボタン ──
-            if (!state.isLoading && selectedRoute != null)
-              RouteSelectButton(
-                onStart: () {
-                  notifier.selectRoute(selectedRoute.id);
-                  // 冒険を開始する
-                  ref.read(navigationProvider.notifier).startAdventure(selectedRoute);
-                  context.go(AppRoutes.navigation);
-                },
-              ),
           ],
         ),
       ),
     );
   }
+}
 
-  RouteModel? _selectedRoute(List<RouteModel> routes, String? selectedRouteId) {
-    if (routes.isEmpty) return null;
+class _RouteBottomCarousel extends StatefulWidget {
+  final List<RouteModel> routes;
+  final String selectedRouteId;
+  final ValueChanged<String> onRouteSelected;
+  final VoidCallback? onStart;
 
-    for (final route in routes) {
-      if (route.id == selectedRouteId) return route;
-    }
+  const _RouteBottomCarousel({
+    required this.routes,
+    required this.selectedRouteId,
+    required this.onRouteSelected,
+    required this.onStart,
+  });
 
-    return routes.first;
+  @override
+  State<_RouteBottomCarousel> createState() => _RouteBottomCarouselState();
+}
+
+class _RouteBottomCarouselState extends State<_RouteBottomCarousel> {
+  late PageController _pageController;
+  int _currentPage = 0;
+  bool _isAnimating = false;
+
+  static const _carouselHeight = 340.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = _indexForRoute(widget.selectedRouteId);
+    _pageController = PageController(
+      initialPage: _currentPage,
+      viewportFraction: 0.92,
+    );
   }
 
-  Widget _buildRouteChoicesView(
-    BuildContext context,
-    List<RouteModel> routes,
-    RouteModel? selectedRoute,
-    Map<String, SpotModel> spots,
-    ValueChanged<String> onSelect,
-  ) {
-    final selected = selectedRoute ?? routes.first;
+  @override
+  void didUpdateWidget(covariant _RouteBottomCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
+    if (oldWidget.routes.length != widget.routes.length) {
+      _pageController.dispose();
+      _currentPage = _indexForRoute(widget.selectedRouteId);
+      _pageController = PageController(
+        initialPage: _currentPage,
+        viewportFraction: 0.92,
+      );
+      return;
+    }
+
+    if (oldWidget.selectedRouteId != widget.selectedRouteId) {
+      final index = _indexForRoute(widget.selectedRouteId);
+      if (index != _currentPage && !_isAnimating) {
+        _animateToPage(index);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  int _indexForRoute(String routeId) {
+    final index = widget.routes.indexWhere((route) => route.id == routeId);
+    return index >= 0 ? index : 0;
+  }
+
+  Future<void> _animateToPage(int index) async {
+    if (!_pageController.hasClients) return;
+
+    _isAnimating = true;
+    await _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+    if (mounted) {
+      setState(() {
+        _isAnimating = false;
+        _currentPage = index;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
-      key: const ValueKey('route-choices'),
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // ── バナー ──
-        const Padding(
-          padding: EdgeInsets.fromLTRB(AppSizes.p16, AppSizes.p16, AppSizes.p16, 0),
-          child: AiRouteBanner(),
-        ),
-        
-        // ── カードリスト (横スクロール) ──
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final cardWidth = math.min(340.0, constraints.maxWidth * 0.84);
-
-              return ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.all(AppSizes.p16),
-                itemCount: routes.length,
-                separatorBuilder: (context, index) => const SizedBox(width: AppSizes.p12),
-                itemBuilder: (context, index) {
-                  final route = routes[index];
-                  final isSelected = route.id == selected.id;
-
-                  return SizedBox(
-                    width: cardWidth,
-                    child: RouteCard(
-                      route: route,
-                      spots: spots,
-                      isSelected: isSelected,
-                      onTap: () => onSelect(route.id),
-                    ),
-                  );
-                },
+        SizedBox(
+          height: _carouselHeight,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.routes.length,
+            onPageChanged: (index) {
+              if (_isAnimating) return;
+              _currentPage = index;
+              widget.onRouteSelected(widget.routes[index].id);
+            },
+            itemBuilder: (context, index) {
+              final route = widget.routes[index];
+              final isSelected = route.id == widget.selectedRouteId;
+              return RouteCard(
+                route: route,
+                isSelected: isSelected,
               );
             },
           ),
         ),
+        if (widget.onStart != null) RouteSelectButton(onStart: widget.onStart!),
       ],
     );
   }

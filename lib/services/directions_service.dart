@@ -1,6 +1,8 @@
 // lib/services/directions_service.dart
 
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -9,75 +11,162 @@ import 'package:http/http.dart' as http;
 import '../constants/api_constants.dart';
 
 class DirectionsService {
+  static final Uri _routesApiUri = Uri.https(
+    'routes.googleapis.com',
+    '/directions/v2:computeRoutes',
+  );
+
   final _polylinePoints = PolylinePoints();
 
-  /// Google Maps Directions API から徒歩ルートの折れ線（Polyline）座標を取得します。
-  /// 失敗した場合は、直線（origin -> waypoints -> destination）をフォールバックとして返します。
   Future<List<LatLng>> getDirectionsRoute({
     required LatLng origin,
     required LatLng destination,
     List<LatLng> waypoints = const [],
   }) async {
-    final apiKey = ApiConstants.googleMapsApiKey;
-    if (apiKey.isEmpty) {
-      // APIキーがない場合は直線フォールバック
-      return [origin, ...waypoints, destination];
+    final apiKeys = _candidateApiKeys();
+
+    if (apiKeys.isEmpty) {
+      debugPrint('Routes API key is empty.');
+      return const [];
     }
 
-    try {
-      final originStr = '${origin.latitude},${origin.longitude}';
-      final destStr = '${destination.latitude},${destination.longitude}';
+    for (final apiKey in apiKeys) {
+      try {
+        final response = await http.post(
+          _routesApiUri,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': apiKey,
+            'X-Goog-FieldMask':
+                'routes.polyline.encodedPolyline,routes.legs.polyline.encodedPolyline,routes.legs.steps.polyline.encodedPolyline',
+          },
+          body: jsonEncode({
+            'origin': _waypoint(origin),
+            'destination': _waypoint(destination),
+            if (waypoints.isNotEmpty)
+              'intermediates': waypoints.map(_waypoint).toList(),
+            'travelMode': 'WALK',
+            'computeAlternativeRoutes': false,
+            'polylineQuality': 'HIGH_QUALITY',
+            'polylineEncoding': 'ENCODED_POLYLINE',
+            'languageCode': 'ja',
+            'units': 'METRIC',
+          }),
+        );
 
-      String waypointsParam = '';
-      if (waypoints.isNotEmpty) {
-        final formattedWaypoints = waypoints
-            .map((w) => '${w.latitude},${w.longitude}')
-            .join('|');
-        waypointsParam = '&waypoints=$formattedWaypoints';
-      }
-
-      final url = 'https://maps.googleapis.com/maps/api/directions/json'
-          '?origin=$originStr'
-          '&destination=$destStr'
-          '$waypointsParam'
-          '&mode=walking'
-          '&language=ja'
-          '&key=$apiKey';
-
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final status = data['status'] as String?;
-
-        if (status == 'OK') {
-          final routes = data['routes'] as List<dynamic>?;
-          if (routes != null && routes.isNotEmpty) {
-            final overviewPolyline = routes[0]['overview_polyline'] as Map<String, dynamic>?;
-            if (overviewPolyline != null) {
-              final pointsStr = overviewPolyline['points'] as String?;
-              if (pointsStr != null && pointsStr.isNotEmpty) {
-                final decodedPoints = _polylinePoints.decodePolyline(pointsStr);
-                return decodedPoints
-                    .map((p) => LatLng(p.latitude, p.longitude))
-                    .toList();
-              }
-            }
-          }
+        if (response.statusCode != 200) {
+          debugPrint(
+            'Routes API HTTP ${response.statusCode}: ${response.body}',
+          );
+          continue;
         }
+
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final routes = data['routes'] as List<dynamic>? ?? const [];
+        if (routes.isEmpty) continue;
+
+        final route = routes.first as Map<String, dynamic>;
+        final stepPoints = _decodeStepPolylines(route);
+        if (stepPoints.length >= 2) return stepPoints;
+
+        final legPoints = _decodeLegPolylines(route);
+        if (legPoints.length >= 2) return legPoints;
+
+        final routePoints = _decodePolyline(
+          (route['polyline'] as Map<String, dynamic>?)?['encodedPolyline']
+              as String?,
+        );
+        if (routePoints.length >= 2) return routePoints;
+      } catch (e) {
+        debugPrint('Routes API fetch failed: $e');
       }
-    } catch (_) {
-      // ネットワークエラー等の場合は直線フォールバックに移行
     }
 
-    // フォールバック処理
-    return [origin, ...waypoints, destination];
+    return const [];
+  }
+
+  Future<List<LatLng>> getMultiStopWalkingRoute(List<LatLng> stops) async {
+    if (stops.isEmpty) return const [];
+    if (stops.length == 1) return stops;
+
+    final merged = <LatLng>[];
+    for (var i = 0; i < stops.length - 1; i++) {
+      final segment = await getDirectionsRoute(
+        origin: stops[i],
+        destination: stops[i + 1],
+      );
+      _appendPoints(merged, segment);
+    }
+
+    return merged;
+  }
+
+  List<String> _candidateApiKeys() {
+    return [
+      ApiConstants.googleMapsApiKey.trim(),
+      ApiConstants.googlePlacesApiKey.trim(),
+    ].where((key) => key.isNotEmpty).toSet().toList(growable: false);
+  }
+
+  Map<String, dynamic> _waypoint(LatLng point) {
+    return {
+      'location': {
+        'latLng': {'latitude': point.latitude, 'longitude': point.longitude},
+      },
+    };
+  }
+
+  List<LatLng> _decodeStepPolylines(Map<String, dynamic> route) {
+    final result = <LatLng>[];
+    final legs = route['legs'] as List<dynamic>? ?? const [];
+
+    for (final leg in legs) {
+      final steps =
+          (leg as Map<String, dynamic>)['steps'] as List<dynamic>? ?? const [];
+      for (final step in steps) {
+        final encoded =
+            ((step as Map<String, dynamic>)['polyline']
+                    as Map<String, dynamic>?)?['encodedPolyline']
+                as String?;
+        _appendPoints(result, _decodePolyline(encoded));
+      }
+    }
+
+    return result;
+  }
+
+  List<LatLng> _decodeLegPolylines(Map<String, dynamic> route) {
+    final result = <LatLng>[];
+    final legs = route['legs'] as List<dynamic>? ?? const [];
+
+    for (final leg in legs) {
+      final encoded =
+          ((leg as Map<String, dynamic>)['polyline']
+                  as Map<String, dynamic>?)?['encodedPolyline']
+              as String?;
+      _appendPoints(result, _decodePolyline(encoded));
+    }
+
+    return result;
+  }
+
+  List<LatLng> _decodePolyline(String? encoded) {
+    if (encoded == null || encoded.isEmpty) return [];
+
+    return _polylinePoints.decodePolyline(encoded).map((point) {
+      return LatLng(point.latitude, point.longitude);
+    }).toList();
+  }
+
+  void _appendPoints(List<LatLng> target, List<LatLng> points) {
+    for (final point in points) {
+      if (target.isEmpty || target.last != point) {
+        target.add(point);
+      }
+    }
   }
 }
 
-// ─────────────────────────────
-// 🛰️ Provider 登録
-// ─────────────────────────────
 final directionsServiceProvider = Provider<DirectionsService>((ref) {
   return DirectionsService();
 });

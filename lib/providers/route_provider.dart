@@ -1,6 +1,7 @@
 // lib/providers/route_provider.dart
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart';
 
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
@@ -113,12 +114,20 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
       // ───────────────────
 
       final position = await ref.read(currentLocationProvider.future);
+      final searchArea = await _resolveSearchArea(
+        position.latitude,
+        position.longitude,
+      );
 
       // ───────────────────
       // 🌌 冒険設定取得
       // ───────────────────
 
       final adventure = ref.read(adventureProvider);
+      final resolvedDestination = await _resolveDestination(
+        adventure,
+        searchArea: searchArea,
+      );
 
       // ───────────────────
       // 🛰️ Repository取得
@@ -155,20 +164,28 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
       // 🛠️ クライアントサイドでのルート再構築 (現在地 ➡ 経由地 ➡ 目的地)
       // ───────────────────
       final routeBuilder = ref.read(routeBuilderServiceProvider);
-      final builtRoutes = rawRoutes.map((rawRoute) {
-        return routeBuilder.buildRoute(
-          id: rawRoute.id,
-          startLat: position.latitude,
-          startLng: position.longitude,
-          themeName: rawRoute.themeName,
-          themeDescription: rawRoute.themeDescription,
-          tags: rawRoute.tags,
-          geminiSpots: rawRoute.generatedSpots,
-          destinationName: adventure.isRandomMode ? null : adventure.destinationName,
-          destinationLat: adventure.isRandomMode ? null : adventure.destinationLat,
-          destinationLng: adventure.isRandomMode ? null : adventure.destinationLng,
+      final builtRoutes = <RouteModel>[];
+      for (final rawRoute in rawRoutes) {
+        final resolvedSpots = await _resolveSpotCoordinates(
+          rawRoute.generatedSpots,
+          fallbackArea: searchArea,
         );
-      }).toList();
+
+        builtRoutes.add(
+          routeBuilder.buildRoute(
+            id: rawRoute.id,
+            startLat: position.latitude,
+            startLng: position.longitude,
+            themeName: rawRoute.themeName,
+            themeDescription: rawRoute.themeDescription,
+            tags: rawRoute.tags,
+            geminiSpots: resolvedSpots,
+            destinationName: resolvedDestination?.name,
+            destinationLat: resolvedDestination?.lat,
+            destinationLng: resolvedDestination?.lng,
+          ),
+        );
+      }
 
       // ───────────────────
       // ✅ 成功
@@ -209,6 +226,113 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
   void clearError() {
     state = state.copyWith(clearError: true);
   }
+
+  Future<_ResolvedPlace?> _resolveDestination(
+    AdventureState adventure, {
+    String? searchArea,
+  }) async {
+    final name = adventure.destinationName.trim();
+    if (adventure.isRandomMode || name.isEmpty) {
+      return null;
+    }
+
+    if (adventure.destinationLat != null && adventure.destinationLng != null) {
+      return _ResolvedPlace(
+        name: name,
+        lat: adventure.destinationLat,
+        lng: adventure.destinationLng,
+      );
+    }
+
+    final location = await _geocodePlace(name, fallbackArea: searchArea);
+    return _ResolvedPlace(
+      name: name,
+      lat: location?.latitude,
+      lng: location?.longitude,
+    );
+  }
+
+  Future<List<SpotModel>> _resolveSpotCoordinates(
+    List<SpotModel> spots, {
+    String? fallbackArea,
+  }) async {
+    final resolved = <SpotModel>[];
+
+    for (final spot in spots) {
+      final location = await _geocodePlace(
+        spot.name,
+        fallbackArea: fallbackArea,
+      );
+      if (location == null) {
+        resolved.add(spot);
+        continue;
+      }
+
+      resolved.add(
+        SpotModel(
+          id: spot.id,
+          lat: location.latitude,
+          lng: location.longitude,
+          name: spot.name,
+          category: spot.category,
+          aiStoryName: spot.aiStoryName,
+          aiFlavorText: spot.aiFlavorText,
+        ),
+      );
+    }
+
+    return resolved;
+  }
+
+  Future<String?> _resolveSearchArea(double lat, double lng) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isEmpty) {
+        return null;
+      }
+
+      final placemark = placemarks.first;
+      final parts = [
+        placemark.administrativeArea,
+        placemark.locality,
+        placemark.subLocality,
+      ].where((part) => part != null && part.trim().isNotEmpty);
+
+      final area = parts.join(' ');
+      return area.isEmpty ? null : area;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<Location?> _geocodePlace(String query, {String? fallbackArea}) async {
+    final normalizedQuery = query.trim();
+    if (normalizedQuery.isEmpty) {
+      return null;
+    }
+
+    final area = fallbackArea?.trim();
+    final address = [
+      normalizedQuery,
+      if (area != null && area.isNotEmpty) area,
+      '日本',
+    ].join(', ');
+
+    try {
+      final locations = await locationFromAddress(address);
+      return locations.isEmpty ? null : locations.first;
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+class _ResolvedPlace {
+  final String name;
+  final double? lat;
+  final double? lng;
+
+  const _ResolvedPlace({required this.name, this.lat, this.lng});
 }
 
 // ─────────────────────────────

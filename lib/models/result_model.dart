@@ -90,7 +90,7 @@ class AdventureResult {
 
       fragmentCount: 3,
 
-      expGained: 120,
+      expGained: 204,
 
       weather: '☔ 雨上がり',
 

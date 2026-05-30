@@ -83,14 +83,19 @@ class AdventureState {
     List<String>? hobbyTags,
     bool? isGenerating,
     String? errorMessage,
+    bool clearDestinationCoordinates = false,
   }) {
     return AdventureState(
       mood: mood ?? this.mood,
       mode: mode ?? this.mode,
       destination: destination ?? this.destination,
       destinationName: destinationName ?? this.destinationName,
-      destinationLat: destinationLat ?? this.destinationLat,
-      destinationLng: destinationLng ?? this.destinationLng,
+      destinationLat: clearDestinationCoordinates
+          ? null
+          : (destinationLat ?? this.destinationLat),
+      destinationLng: clearDestinationCoordinates
+          ? null
+          : (destinationLng ?? this.destinationLng),
       isRandomMode: isRandomMode ?? this.isRandomMode,
       freeTimeMinutes: freeTimeMinutes ?? this.freeTimeMinutes,
       hobbyTags: hobbyTags ?? this.hobbyTags,
@@ -137,6 +142,7 @@ class AdventureNotifier extends Notifier<AdventureState> {
       destinationLat: null,
       destinationLng: null,
       isRandomMode: false,
+      clearDestinationCoordinates: true,
     );
   }
 
@@ -169,6 +175,7 @@ class AdventureNotifier extends Notifier<AdventureState> {
       destinationName: '',
       destinationLat: null,
       destinationLng: null,
+      clearDestinationCoordinates: true,
     );
   }
 
@@ -179,6 +186,7 @@ class AdventureNotifier extends Notifier<AdventureState> {
       destinationName: enabled ? '' : state.destinationName,
       destinationLat: enabled ? null : state.destinationLat,
       destinationLng: enabled ? null : state.destinationLng,
+      clearDestinationCoordinates: enabled,
     );
   }
 

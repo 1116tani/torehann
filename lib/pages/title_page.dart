@@ -29,7 +29,7 @@ class _TitlePageState extends ConsumerState<TitlePage> {
           children: [
             const Spacer(flex: 3),
             const Text(
-              'Tale Trace',
+              'Treasure Navigation',
               style: TextStyle(
                 color: Color(0xFFF5EDD8),
                 fontSize: 32,
