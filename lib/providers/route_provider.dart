@@ -2,6 +2,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../models/route_model.dart';
 import '../models/spot_model.dart';
@@ -170,6 +171,12 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
           rawRoute.generatedSpots,
           fallbackArea: searchArea,
         );
+        final nearbySpots = _filterNearbySpots(
+          spots: resolvedSpots,
+          startLat: position.latitude,
+          startLng: position.longitude,
+          destination: resolvedDestination,
+        );
 
         builtRoutes.add(
           routeBuilder.buildRoute(
@@ -179,7 +186,7 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
             themeName: rawRoute.themeName,
             themeDescription: rawRoute.themeDescription,
             tags: rawRoute.tags,
-            geminiSpots: resolvedSpots,
+            geminiSpots: nearbySpots,
             destinationName: resolvedDestination?.name,
             destinationLat: resolvedDestination?.lat,
             destinationLng: resolvedDestination?.lng,
@@ -225,6 +232,86 @@ class RouteSelectNotifier extends Notifier<RouteSelectState> {
 
   void clearError() {
     state = state.copyWith(clearError: true);
+  }
+
+  List<SpotModel> _filterNearbySpots({
+    required List<SpotModel> spots,
+    required double startLat,
+    required double startLng,
+    _ResolvedPlace? destination,
+  }) {
+    const maxFromStartMeters = 6000.0;
+    const maxFromDestinationMeters = 8000.0;
+    const fallbackMaxMeters = 12000.0;
+
+    final uniqueSpots = <SpotModel>[];
+    final seenNames = <String>{};
+    for (final spot in spots) {
+      final name = spot.name.trim();
+      if (name.isEmpty || !seenNames.add(name)) continue;
+      uniqueSpots.add(spot);
+    }
+
+    final hasDestination = destination?.lat != null && destination?.lng != null;
+    final filtered = <SpotModel>[];
+
+    for (final spot in uniqueSpots) {
+      final fromStart = Geolocator.distanceBetween(
+        startLat,
+        startLng,
+        spot.lat,
+        spot.lng,
+      );
+      final nearStart = fromStart <= maxFromStartMeters;
+      final nearDestination =
+          hasDestination &&
+          Geolocator.distanceBetween(
+                destination!.lat!,
+                destination.lng!,
+                spot.lat,
+                spot.lng,
+              ) <=
+              maxFromDestinationMeters;
+
+      if (nearStart || nearDestination) {
+        filtered.add(spot);
+      }
+    }
+
+    if (filtered.isNotEmpty) {
+      return filtered.take(3).toList();
+    }
+
+    final fallback = [...uniqueSpots]
+      ..sort((a, b) {
+        final distanceA = Geolocator.distanceBetween(
+          startLat,
+          startLng,
+          a.lat,
+          a.lng,
+        );
+        final distanceB = Geolocator.distanceBetween(
+          startLat,
+          startLng,
+          b.lat,
+          b.lng,
+        );
+        return distanceA.compareTo(distanceB);
+      });
+
+    return fallback
+        .where(
+          (spot) =>
+              Geolocator.distanceBetween(
+                startLat,
+                startLng,
+                spot.lat,
+                spot.lng,
+              ) <=
+              fallbackMaxMeters,
+        )
+        .take(2)
+        .toList();
   }
 
   Future<_ResolvedPlace?> _resolveDestination(

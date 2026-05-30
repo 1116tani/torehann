@@ -13,10 +13,6 @@ import '../models/spot_model.dart';
 class GeminiService {
   final Dio _dio;
 
-  // ─────────────────────────────
-  // 🔑 API設定
-  // ─────────────────────────────
-
   static String get _apiKey {
     final envKey =
         dotenv.env['GEMINI_API_KEY'] ?? dotenv.env['Gemini_API_Key'] ?? '';
@@ -26,7 +22,6 @@ class GeminiService {
     return ApiConstants.geminiApiKey;
   }
 
-  // 🌟 最新の 3.5-flash モデルのエンドポイントだよ
   static const _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent';
 
@@ -39,10 +34,6 @@ class GeminiService {
           headers: {'Content-Type': 'application/json'},
         ),
       );
-
-  // ─────────────────────────────
-  // 🗺️ ルート生成
-  // ─────────────────────────────
 
   Future<List<RouteModel>> generateRoutes({
     required double lat,
@@ -66,10 +57,8 @@ class GeminiService {
     );
 
     try {
-      final url = '$_baseUrl?key=$_apiKey';
-
       final response = await _dio.post(
-        url,
+        '$_baseUrl?key=$_apiKey',
         data: {
           'contents': [
             {
@@ -78,17 +67,12 @@ class GeminiService {
               ],
             },
           ],
-
-          // ── generationConfig ──
           'generationConfig': {
-            'temperature': 0.85,
+            'temperature': 0.9,
             'topP': 0.95,
             'maxOutputTokens': 8192,
-
             'responseMimeType': 'application/json',
           },
-
-          // ── safety ──
           'safetySettings': [
             {
               'category': 'HARM_CATEGORY_HATE_SPEECH',
@@ -103,18 +87,14 @@ class GeminiService {
       );
 
       final candidates = response.data['candidates'];
-
       if (candidates == null || candidates.isEmpty) {
-        throw Exception('Geminiからレスポンスが返されませんでした');
+        throw Exception('Geminiからレスポンスが返りませんでした。');
       }
 
       final rawText = candidates[0]['content']['parts'][0]['text'];
-
       return _parseRoutes(rawText);
     } on DioException catch (e) {
-      final message =
-          e.response?.data.toString() ?? e.message ?? 'unknown error';
-
+      final message = e.response?.data.toString() ?? e.message ?? 'unknown';
       throw Exception('Gemini API通信に失敗しました\n$message');
     } on TimeoutException {
       throw Exception('Gemini APIがタイムアウトしました');
@@ -123,10 +103,6 @@ class GeminiService {
     }
   }
 
-  // ─────────────────────────────
-  // 📝 冒険レポート生成
-  // ─────────────────────────────
-
   Future<String> generateAdventureReport({
     required String themeName,
     required List<SpotModel> visitedSpots,
@@ -134,7 +110,7 @@ class GeminiService {
     required int durationMinutes,
   }) async {
     if (_apiKey.isEmpty) {
-      throw Exception('Gemini APIキーが設定されていません');
+      throw Exception('Gemini APIキーが設定されていません。');
     }
 
     final spotsText = visitedSpots
@@ -145,33 +121,25 @@ class GeminiService {
         '''
 あなたは幻想的な旅の語り部です。
 
-以下の冒険記録を元に、
-150文字程度の幻想的な冒険レポートを書いてください。
+以下の冒険記録を元に、150文字程度の詩的な冒険レポートを書いてください。
+JSONではなく、文章だけを返してください。
 
-【テーマ】
+テーマ:
 $themeName
 
-【巡った場所】
+巡った場所:
 $spotsText
 
-【歩行距離】
+歩行距離:
 ${distanceKm.toStringAsFixed(1)}km
 
-【所要時間】
+所要時間:
 $durationMinutes分
-
-条件:
-- 詩的で静かな文体
-- 街の記憶・断片・物語感
-- 「あなたは〜」の語り口
-- JSONではなく文章のみ
 ''';
 
     try {
-      final url = '$_baseUrl?key=$_apiKey';
-
       final response = await _dio.post(
-        url,
+        '$_baseUrl?key=$_apiKey',
         data: {
           'contents': [
             {
@@ -184,20 +152,15 @@ $durationMinutes分
         },
       );
 
-      final text =
-          response.data['candidates'][0]['content']['parts'][0]['text'];
-
-      return text.toString().trim();
+      return response.data['candidates'][0]['content']['parts'][0]['text']
+          .toString()
+          .trim();
     } on DioException catch (e) {
       throw Exception('冒険レポート生成に失敗しました\n$e');
     } catch (e) {
       throw Exception('冒険レポート生成に失敗しました\n$e');
     }
   }
-
-  // ─────────────────────────────
-  // ✨ プロンプト生成
-  // ─────────────────────────────
 
   String _buildPrompt({
     required double lat,
@@ -215,73 +178,77 @@ $durationMinutes分
     };
 
     final hobbies = hobbyTags.isEmpty ? '指定なし' : hobbyTags.join('、');
-
-    final destinationText = destination.isEmpty ? '現在地周辺でおまかせ' : destination;
+    final destinationText = destination.trim().isEmpty
+        ? '現在地周辺でおまかせ'
+        : destination.trim();
 
     return '''
-以下条件に合う、実在する場所を巡る徒歩ルートを【1つだけ】生成して、指定されたJSON形式のデータのみを出力してください。
-他の挨拶や説明、バッククォートなどのマークアップは一切含めないでください。
+あなたは徒歩ナビアプリのルート生成AIです。
+現在地から歩ける、実在する場所だけを使った徒歩ルートを、必ず3つ生成してください。
+返答はJSONだけにしてください。説明文、挨拶、Markdown、コードブロックは禁止です。
 
-【形式】
+出力形式:
 {
   "routes": [
     {
       "id": "route_001",
-      "themeName": "黄昏の記憶巡礼",
-      "themeDescription": "夕暮れの参道を抜けると、静かな水面に古い記憶が映る。",
+      "themeName": "白壁の記憶をたどる小径",
+      "themeDescription": "古い街角を抜けると、静かな記憶が道の奥で揺れている。",
       "totalDistance": 2.4,
       "estimatedTime": 35,
-      "tags": ["#夕暮れ探索", "#静かな寄り道", "#木漏れ日の記憶"],
+      "tags": ["#歴史の灯火", "#静かな歩み", "#路地裏の記憶"],
       "spots": [
         {
           "id": "spot_001",
-          "name": "○○公園",
+          "name": "実在するスポット名",
           "lat": 35.0,
           "lng": 139.0,
           "category": "公園",
-          "aiStoryName": "記憶の庭園",
-          "aiFlavorText": "風が静かに記憶を運ぶ"
+          "aiStoryName": "物語風の名前",
+          "aiFlavorText": "30文字以内の短い説明"
         }
       ]
     }
   ]
 }
 
-【現在地】
+条件:
+- routes は必ず3件: route_001, route_002, route_003
+- 3つのルートはテーマ、通るスポット、歩く方向をなるべく分ける
+- 3つのルートで同じスポット名を使い回さない
+- 3つのルートの経由地ができるだけ重ならないようにする
+- 可能なら、route_001は北/東寄り、route_002は西/南寄り、route_003は中心地/別方向のように分散する
+- 現在地から徒歩で自然に回れる範囲にする
+- 各ルートの spots は2〜3件の中間スポットだけにする
+- 目的地が指定されている場合、目的地そのものは spots に含めない
+- 目的地が指定されている場合、目的地へ向かう途中にある寄り道スポットだけを spots に入れる
+- 目的地がおまかせの場合、各ルートの終点方向もできるだけ別にする
+- 実在しない場所、座標が不明な場所、海や建物内だけを通る場所は禁止
+- lat/lng は実際の座標に近い値にする
+- themeName はゲームっぽく、でも短く
+- themeDescription は40〜70文字程度で、詩的だけど意味がわかる文章にする
+- tags は3個
+- aiStoryName は物語風の短いスポット名
+- aiFlavorText は30文字以内
+
+現在地:
 緯度: $lat
 経度: $lng
 
-【目的地】
+目的地:
 $destinationText
 
-【気分】
+気分:
 $mood
 
-【難易度】
+歩く距離:
 $mode
-距離目安: $distanceRange
+目安: $distanceRange
 
-【興味】
+趣味:
 $hobbies
-
-【ルール】
-- 1つの明確なテーマを作る
-- 実在する場所を使う
-- 徒歩で巡れる範囲
-- ルートの経由地（中間スポット）として、現在地から目的地（設定されている場合）の間にある実在の寄り道スポットを2〜3箇所生成してください。
-- 目的地（設定されている場合）そのものはスポットとして出力しないでください。目的地への道のりにある「寄り道」だけを生成してください。
-- カフェ、公園、路地裏、史跡などを混ぜる
-- 幻想的・ゲーム的なタイトル（themeName）
-- themeDescription は「夕暮れの参道を抜けると、静かな水面に古い記憶が映る。」のような、そのルートに流れる物語を想起させる幻想的で詩的な文章（40〜60文字程度）
-- tags は「#木漏れ日の記憶」「#静かな寄り道」「#夕暮れ探索」のような、歩き手の感情や情景に寄り添う幻想的でエモーショナルなハッシュタグ（3個程度）
-- aiStoryName は物語風
-- aiFlavorText は30文字以内
 ''';
   }
-
-  // ─────────────────────────────
-  // 🧩 JSON → RouteModel
-  // ─────────────────────────────
 
   List<RouteModel> _parseRoutes(dynamic rawData) {
     try {
@@ -291,15 +258,14 @@ $hobbies
           .replaceAll('```', '')
           .trim();
 
-      final Map<String, dynamic> data = jsonDecode(cleaned);
-
+      final data = jsonDecode(cleaned) as Map<String, dynamic>;
       final routesJson = data['routes'];
 
       if (routesJson == null || routesJson is! List) {
         throw Exception('routes が存在しません');
       }
 
-      final routes = routesJson.map<RouteModel>((routeJson) {
+      return routesJson.take(3).map<RouteModel>((routeJson) {
         final spotsJson = routeJson['spots'] as List? ?? [];
 
         final spots = spotsJson.map<SpotModel>((spotJson) {
@@ -325,8 +291,6 @@ $hobbies
           generatedSpots: spots,
         );
       }).toList();
-
-      return routes;
     } catch (e) {
       throw Exception('Geminiレスポンス解析に失敗しました\n$e');
     }
