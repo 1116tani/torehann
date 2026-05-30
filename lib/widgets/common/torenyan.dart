@@ -5,12 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../constants/app_sizes.dart';
 
-enum TorenyanState {
-  idle,
-  loading,
-  error,
-  success,
-}
+enum TorenyanState { idle, loading, error, success }
 
 class TorenyanLines {
   static const idle = [
@@ -20,20 +15,11 @@ class TorenyanLines {
     '面白い場所、見つかるかも',
   ];
 
-  static const loading = [
-    '街の記憶を探してるよ…',
-    'いい冒険になりそう',
-  ];
+  static const loading = ['街の記憶を探してるよ…', 'いい冒険になりそう'];
 
-  static const error = [
-    '街の記憶が見つからなかったみたい…',
-    '少し休んでからもう一度探そう？',
-  ];
+  static const error = ['街の記憶が見つからなかったみたい…', '少し休んでからもう一度探そう？'];
 
-  static const success = [
-    '面白いルートが見つかったよ！さあ歩こう！',
-    '今日の冒険に出発だね！',
-  ];
+  static const success = ['面白いルートが見つかったよ！さあ歩こう！', '今日の冒険に出発だね！'];
 
   static List<String> getLines(TorenyanState state) {
     return switch (state) {
@@ -110,23 +96,27 @@ class _TorenyanState extends State<Torenyan> {
 
   @override
   Widget build(BuildContext context) {
+    // 💡 おねえちゃんの魔法：sizeに合わせて自動でズレを計算するよ！
+    // これで size が 125 でも 200 でも、吹き出しと猫のバランスが完璧に保たれるの♡
+    final rightPadding = widget.size * 0.1;
+    final bottomPadding = widget.size * 0.15;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // 💬 ゲームライクな吹き出し
         if (widget.showSpeechBubble && _currentLine.isNotEmpty)
           _buildSpeechBubble(),
-          
+
         const SizedBox(height: 4),
 
-        // 🐱 トレにゃん本体 (タップ収縮フィードバックのみ)
-        // 💡 当たり判定を少し左上にずらし、イラストの真ん中辺りに調整
-        Transform.translate(
-          offset: const Offset(-10, -15),
+        // 🐱 トレにゃん本体 (当たり判定と見た目を完全一致！)
+        Padding(
+          padding: EdgeInsets.only(right: rightPadding, bottom: bottomPadding),
           child: GestureDetector(
             onTapDown: (_) {
               if (widget.enableTap) {
-                setState(() => _scale = 0.92);
+                setState(() => _scale = 0.92); // タップでキュッと縮むよ
               }
             },
             onTapUp: (_) {
@@ -204,17 +194,11 @@ class _TorenyanState extends State<Torenyan> {
             child: Container(
               width: 12.0,
               height: 12.0,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C2318),
+              decoration: const BoxDecoration(
+                color: Color(0xFF2C2318),
                 border: Border(
-                  bottom: BorderSide(
-                    color: const Color(0xFFC8A97A),
-                    width: 2.0,
-                  ),
-                  right: BorderSide(
-                    color: const Color(0xFFC8A97A),
-                    width: 2.0,
-                  ),
+                  bottom: BorderSide(color: Color(0xFFC8A97A), width: 2.0),
+                  right: BorderSide(color: Color(0xFFC8A97A), width: 2.0),
                 ),
               ),
             ),
