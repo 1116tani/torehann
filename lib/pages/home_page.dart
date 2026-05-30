@@ -15,6 +15,7 @@ import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
 
 import '../widgets/home/home_widgets.dart';
+import '../widgets/common/torenyan.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -340,6 +341,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
 
               child: const HomeDraggableMenu(),
+            ),
+
+            // 🐱 ボトムシートの上に乗るトレにゃん
+            Positioned(
+              top: screenHeight * (1 - _sheetPosition) - 220,
+              left: 15,
+              child: const Torenyan(
+                size: 210,
+                state: TorenyanState.idle,
+                enableTap: true,
+              ),
             ),
           ],
         ),

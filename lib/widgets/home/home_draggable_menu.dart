@@ -5,8 +5,6 @@ import '../../router/route_names.dart';
 import '../../utils/colors.dart';
 import 'adventure_start_button.dart';
 
-import '../common/torenyan.dart';
-
 class HomeDraggableMenu extends StatelessWidget {
   const HomeDraggableMenu({super.key});
 
@@ -156,17 +154,6 @@ class HomeDraggableMenu extends StatelessWidget {
                     ],
                   ),
                 ],
-              ),
-            ),
-
-            // 🐱 ボトムシートの上に乗るトレにゃん（左側に大きく配置し、フチを掴んでいるように）
-            const Positioned(
-              top: -180, // 吹き出し + 猫本体がボトムシートのフチにかぶる高さ
-              left: 15,
-              child: Torenyan(
-                size: 210, // 大きさを125に変更
-                state: TorenyanState.idle,
-                enableTap: true,
               ),
             ),
           ],

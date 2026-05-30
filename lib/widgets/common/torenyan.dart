@@ -108,115 +108,158 @@ class _TorenyanState extends State<Torenyan> {
     });
   }
 
+  void _onTapDown(TapDownDetails details) {
+    if (widget.enableTap) {
+      setState(() => _scale = 0.92);
+    }
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    if (widget.enableTap) {
+      setState(() => _scale = 1.0);
+    }
+  }
+
+  void _onTapCancel() {
+    if (widget.enableTap) {
+      setState(() => _scale = 1.0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // 💬 ゲームライクな吹き出し
-        if (widget.showSpeechBubble && _currentLine.isNotEmpty)
-          _buildSpeechBubble(),
-          
-        const SizedBox(height: 4),
+    // 吹き出しスペースを確保した全体の高さを定義
+    final totalHeight = widget.size + 120.0;
+    // 吹き出しがねこの横幅を超えて描画できるように横幅は 240.0 と widget.size の大きい方にする
+    final totalWidth = math.max(240.0, widget.size);
 
-        // 🐱 トレにゃん本体 (タップ収縮フィードバックのみ)
-        GestureDetector(
-          onTapDown: (_) {
-            if (widget.enableTap) {
-              setState(() => _scale = 0.92);
-            }
-          },
-          onTapUp: (_) {
-            if (widget.enableTap) {
-              setState(() => _scale = 1.0);
-            }
-          },
-          onTapCancel: () {
-            if (widget.enableTap) {
-              setState(() => _scale = 1.0);
-            }
-          },
-          onTap: _changeLine,
-          child: AnimatedScale(
-            scale: _scale,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeOut,
-            child: Image.asset(
-              'assets/images/mascot/mascot_neko.png',
-              width: widget.size,
-              height: widget.size,
-              fit: BoxFit.contain,
+    return SizedBox(
+      width: totalWidth,
+      height: totalHeight,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // 🐱 トレにゃん本体 (画像表示用・AnimatedScale)
+          // bottom: 32.0 に配置して下部に余白を確保し、「冒険へ出発」ボタンとの衝突を回避
+          Positioned(
+            bottom: 32.0,
+            left: 0,
+            width: widget.size,
+            height: widget.size,
+            child: IgnorePointer(
+              child: AnimatedScale(
+                scale: _scale,
+                duration: const Duration(milliseconds: 100),
+                curve: Curves.easeOut,
+                child: Image.asset(
+                  'assets/images/mascot/mascot_neko.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
           ),
-        ),
-      ],
+
+          // 💬 ゲームライクな吹き出し (ねこの上部に重なるように配置)
+          if (widget.showSpeechBubble && _currentLine.isNotEmpty)
+            Positioned(
+              bottom: 32.0 + widget.size - 12.0, // ねこの頭頂部から12dp重ねる
+              left: 0,
+              child: _buildSpeechBubble(),
+            ),
+
+          // 🐱 タッチ判定エリア (ねこ本体の上部65%のみに限定し、下のボタンの邪魔をしない)
+          Positioned(
+            bottom: 32.0 + widget.size * 0.35, // 下部 35% はタッチ判定を無効化
+            left: 0,
+            width: widget.size,
+            height: widget.size * 0.65, // 上部 65% のみ検知
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: _onTapDown,
+              onTapUp: _onTapUp,
+              onTapCancel: _onTapCancel,
+              onTap: _changeLine,
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildSpeechBubble() {
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      clipBehavior: Clip.none,
-      children: [
-        // 吹き出しのメイン枠
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.p16,
-            vertical: 10.0,
-          ),
-          constraints: const BoxConstraints(maxWidth: 240),
-          decoration: BoxDecoration(
-            color: const Color(0xFF2C2318), // 深いゲームUI調のダークブラウン
-            border: Border.all(
-              color: const Color(0xFFC8A97A), // 気品あるゴールドのフチ
-              width: 2.0,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      onTap: _changeLine,
+      child: Stack(
+        alignment: Alignment.bottomLeft, // 矢印を左寄りに配置するため
+        clipBehavior: Clip.none,
+        children: [
+          // 吹き出しのメイン枠
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.p16,
+              vertical: 10.0,
             ),
-            borderRadius: BorderRadius.circular(20), // 丸み強め
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.35),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+            constraints: const BoxConstraints(maxWidth: 240),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2C2318), // 深いゲームUI調のダークブラウン
+              border: Border.all(
+                color: const Color(0xFFC8A97A), // 気品あるゴールドのフチ
+                width: 2.0,
               ),
-            ],
-          ),
-          child: Text(
-            _currentLine,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFFF5EDD8), // 温かみのあるクリームゴールド
-              fontSize: 13.0,
-              fontWeight: FontWeight.bold,
-              height: 1.35,
+              borderRadius: BorderRadius.circular(20), // 丸み強め
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Text(
+              _currentLine,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFFF5EDD8), // 温かみのあるクリームゴールド
+                fontSize: 13.0,
+                fontWeight: FontWeight.bold,
+                height: 1.35,
+              ),
             ),
           ),
-        ),
 
-        // 吹き出しのツノ（矢印）
-        Positioned(
-          bottom: -6.0,
-          child: Transform.rotate(
-            angle: math.pi / 4,
-            child: Container(
-              width: 12.0,
-              height: 12.0,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C2318),
-                border: Border(
-                  bottom: BorderSide(
-                    color: const Color(0xFFC8A97A),
-                    width: 2.0,
-                  ),
-                  right: BorderSide(
-                    color: const Color(0xFFC8A97A),
-                    width: 2.0,
+          // 吹き出しのツノ（矢印）
+          // 左端から 55dp の位置に固定し、ねこの頭（左寄りの位置）を指すように調整
+          Positioned(
+            bottom: -6.0,
+            left: 55.0,
+            child: Transform.rotate(
+              angle: math.pi / 4,
+              child: Container(
+                width: 12.0,
+                height: 12.0,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C2318),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: const Color(0xFFC8A97A),
+                      width: 2.0,
+                    ),
+                    right: BorderSide(
+                      color: const Color(0xFFC8A97A),
+                      width: 2.0,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
