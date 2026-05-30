@@ -128,10 +128,11 @@ class _TorenyanState extends State<Torenyan> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomOffset = widget.showSpeechBubble ? 32.0 : 0.0;
     // 吹き出しスペースを確保した全体の高さを定義
-    final totalHeight = widget.size + 120.0;
+    final totalHeight = widget.showSpeechBubble ? (widget.size + 120.0) : widget.size;
     // 吹き出しがねこの横幅を超えて描画できるように横幅は 240.0 と widget.size の大きい方にする
-    final totalWidth = math.max(240.0, widget.size);
+    final totalWidth = widget.showSpeechBubble ? math.max(240.0, widget.size) : widget.size;
 
     return SizedBox(
       width: totalWidth,
@@ -140,9 +141,8 @@ class _TorenyanState extends State<Torenyan> {
         clipBehavior: Clip.none,
         children: [
           // 🐱 トレにゃん本体 (画像表示用・AnimatedScale)
-          // bottom: 32.0 に配置して下部に余白を確保し、「冒険へ出発」ボタンとの衝突を回避
           Positioned(
-            bottom: 32.0,
+            bottom: bottomOffset,
             left: 0,
             width: widget.size,
             height: widget.size,
@@ -162,26 +162,27 @@ class _TorenyanState extends State<Torenyan> {
           // 💬 ゲームライクな吹き出し (ねこの上部に重なるように配置)
           if (widget.showSpeechBubble && _currentLine.isNotEmpty)
             Positioned(
-              bottom: 32.0 + widget.size - 12.0, // ねこの頭頂部から12dp重ねる
+              bottom: bottomOffset + widget.size - 12.0, // ねこの頭頂部から12dp重ねる
               left: 0,
               child: _buildSpeechBubble(),
             ),
 
           // 🐱 タッチ判定エリア (ねこ本体の上部65%のみに限定し、下のボタンの邪魔をしない)
-          Positioned(
-            bottom: 32.0 + widget.size * 0.35, // 下部 35% はタッチ判定を無効化
-            left: 0,
-            width: widget.size,
-            height: widget.size * 0.65, // 上部 65% のみ検知
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTapDown: _onTapDown,
-              onTapUp: _onTapUp,
-              onTapCancel: _onTapCancel,
-              onTap: _changeLine,
-              child: const SizedBox.expand(),
+          if (widget.enableTap)
+            Positioned(
+              bottom: bottomOffset + widget.size * (widget.showSpeechBubble ? 0.35 : 0.0),
+              left: 0,
+              width: widget.size,
+              height: widget.showSpeechBubble ? widget.size * 0.65 : widget.size,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: _onTapDown,
+                onTapUp: _onTapUp,
+                onTapCancel: _onTapCancel,
+                onTap: _changeLine,
+                child: const SizedBox.expand(),
+              ),
             ),
-          ),
         ],
       ),
     );

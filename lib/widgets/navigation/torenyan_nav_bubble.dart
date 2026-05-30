@@ -51,7 +51,7 @@ class TorenyanNavBubble extends StatelessWidget {
             child: Text(
               _message,
               style: GoogleFonts.notoSerifJp(
-                fontSize: 11,
+                fontSize: 13,
                 color: NavigationUiConstants.textDark,
                 height: 1.4,
               ),

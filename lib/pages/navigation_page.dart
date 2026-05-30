@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -17,7 +18,6 @@ import '../providers/location_provider.dart';
 import '../providers/navigation_provider.dart';
 import '../router/route_names.dart';
 import '../services/directions_service.dart';
-import '../services/location_service.dart';
 import '../utils/polyline_utils.dart';
 import '../widgets/navigation/arrival_dialog.dart';
 import '../widgets/navigation/navigation_draggable_sheet.dart';
@@ -44,6 +44,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
   bool _isCameraAnimating = false;
   bool _arrivalDialogOpen = false;
   String? _pendingArrivalSpotId;
+  String? _mapStyle;
 
   List<LatLng> _routePolyline = const [];
   WalkingLegResult? _currentLeg;
@@ -56,11 +57,25 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
   @override
   void initState() {
     super.initState();
+    _loadMapStyle();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startLocationStream();
       _startCompassStream();
       _startArrivalTimer();
     });
+  }
+
+  Future<void> _loadMapStyle() async {
+    try {
+      final style = await rootBundle.loadString(
+        'assets/map_styles/dark_fantasy_map.json',
+      );
+      if (mounted) {
+        setState(() => _mapStyle = style);
+      }
+    } catch (e) {
+      debugPrint('Error loading map style: $e');
+    }
   }
 
   @override
@@ -258,6 +273,13 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: NavigationUiConstants.cream,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(
+            color: NavigationUiConstants.creamBorder,
+            width: 1.5,
+          ),
+        ),
         title: Text('冒険をやめる', style: NavigationUiConstants.serifTitle),
         content: Text(
           'ナビゲーションを中断して戻ります。よろしいですか？',
@@ -266,13 +288,19 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('キャンセル'),
+            child: Text(
+              'キャンセル',
+              style: TextStyle(color: NavigationUiConstants.textMuted),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               'やめる',
-              style: TextStyle(color: NavigationUiConstants.sepia),
+              style: TextStyle(
+                color: NavigationUiConstants.sepia,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -283,6 +311,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
     await _locationSub?.cancel();
     _locationSub = null;
+    if (!mounted) return;
     ref.read(navigationProvider.notifier).finishAdventure();
     if (context.canPop()) {
       context.pop();
@@ -308,7 +337,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
           icon: BitmapDescriptor.defaultMarkerWithHue(
             BitmapDescriptor.hueAzure,
           ),
-          zIndex: 10,
+          zIndexInt: 10,
         ),
       );
     }
@@ -403,6 +432,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               zoom: 16,
               tilt: 45,
             ),
+            style: _mapStyle,
             onMapCreated: (controller) => _mapController = controller,
             onCameraMoveStarted: () {
               if (!_isCameraAnimating) {
@@ -468,7 +498,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                 onPressed: () => context.go(AppRoutes.result),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: NavigationUiConstants.sepia,
-                  foregroundColor: Colors.white,
+                  foregroundColor: NavigationUiConstants.cream,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -477,7 +507,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                 child: Text(
                   '冒険の記録を報告する',
                   style: NavigationUiConstants.serifBody.copyWith(
-                    color: Colors.white,
+                    color: NavigationUiConstants.cream,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

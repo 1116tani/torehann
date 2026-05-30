@@ -7,33 +7,33 @@ import 'package:google_fonts/google_fonts.dart';
 class NavigationUiConstants {
   NavigationUiConstants._();
 
-  static const Color sepia = Color(0xFF8B7355);
-  static const Color cream = Color(0xFFFDF8F0);
-  static const Color creamBorder = Color(0xFFE8DFD0);
-  static const Color textDark = Color(0xFF3D2B1F);
-  static const Color textMuted = Color(0xFF7A6A58);
+  static const Color sepia = Color(0xFFD6B06A); // ✨ プレミアムアンティークゴールド
+  static const Color cream = Color(0xFF1D150F); // 🏰 ダークセピアベース背景
+  static const Color creamBorder = Color(0xFF5C4033); // 枠線に使うダークウッドブラウン
+  static const Color textDark = Color(0xFFF8F5EE); // 可読性抜群のクリームホワイト
+  static const Color textMuted = Color(0xFFD2CCC2); // 補助用の明るいセピアグレー
 
   static const double routeLineWidth = 5;
   static const double arrivalRadiusMeters = 30;
   static const double offRouteThresholdMeters = 50;
 
   static TextStyle get serifTitle => GoogleFonts.notoSerifJp(
-        fontSize: 18,
+        fontSize: 20, // 💡 18 → 20 (大きく)
         fontWeight: FontWeight.w700,
         color: textDark,
         height: 1.3,
       );
 
   static TextStyle get serifBody => GoogleFonts.notoSerifJp(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
+        fontSize: 15, // 💡 14 → 15 (大きく)
+        fontWeight: FontWeight.w500, // 💡 w400 → w500 (視認性向上)
         color: textDark,
         height: 1.5,
       );
 
   static TextStyle get serifCaption => GoogleFonts.notoSerifJp(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
+        fontSize: 13, // 💡 12 → 13 (大きく)
+        fontWeight: FontWeight.w600, // 💡 w500 → w600 (視認性向上)
         color: textMuted,
         height: 1.4,
       );

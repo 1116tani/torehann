@@ -27,7 +27,13 @@ class ArrivalDialog extends StatelessWidget {
 
     return Dialog(
       backgroundColor: NavigationUiConstants.cream,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(
+          color: NavigationUiConstants.creamBorder,
+          width: 1.5,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
         child: Column(
@@ -73,7 +79,7 @@ class ArrivalDialog extends StatelessWidget {
                 onPressed: onContinue,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: NavigationUiConstants.sepia,
-                  foregroundColor: Colors.white,
+                  foregroundColor: NavigationUiConstants.cream,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -82,7 +88,7 @@ class ArrivalDialog extends StatelessWidget {
                 child: Text(
                   '次へ進む',
                   style: NavigationUiConstants.serifBody.copyWith(
-                    color: Colors.white,
+                    color: NavigationUiConstants.cream,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
