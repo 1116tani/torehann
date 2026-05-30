@@ -120,32 +120,36 @@ class _TorenyanState extends State<Torenyan> {
         const SizedBox(height: 4),
 
         // 🐱 トレにゃん本体 (タップ収縮フィードバックのみ)
-        GestureDetector(
-          onTapDown: (_) {
-            if (widget.enableTap) {
-              setState(() => _scale = 0.92);
-            }
-          },
-          onTapUp: (_) {
-            if (widget.enableTap) {
-              setState(() => _scale = 1.0);
-            }
-          },
-          onTapCancel: () {
-            if (widget.enableTap) {
-              setState(() => _scale = 1.0);
-            }
-          },
-          onTap: _changeLine,
-          child: AnimatedScale(
-            scale: _scale,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeOut,
-            child: Image.asset(
-              'assets/images/mascot/mascot_neko.png',
-              width: widget.size,
-              height: widget.size,
-              fit: BoxFit.contain,
+        // 💡 当たり判定を少し左上にずらし、イラストの真ん中辺りに調整
+        Transform.translate(
+          offset: const Offset(-10, -15),
+          child: GestureDetector(
+            onTapDown: (_) {
+              if (widget.enableTap) {
+                setState(() => _scale = 0.92);
+              }
+            },
+            onTapUp: (_) {
+              if (widget.enableTap) {
+                setState(() => _scale = 1.0);
+              }
+            },
+            onTapCancel: () {
+              if (widget.enableTap) {
+                setState(() => _scale = 1.0);
+              }
+            },
+            onTap: _changeLine,
+            child: AnimatedScale(
+              scale: _scale,
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeOut,
+              child: Image.asset(
+                'assets/images/mascot/mascot_neko.png',
+                width: widget.size,
+                height: widget.size,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),
