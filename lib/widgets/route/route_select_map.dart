@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../../constants/app_colors.dart';
 import '../../models/route_model.dart';
 import '../../models/spot_model.dart';
 import '../../services/directions_service.dart';
@@ -18,6 +17,7 @@ class RouteSelectMap extends ConsumerStatefulWidget {
   final Map<String, SpotModel> spots;
   final String? selectedRouteId;
   final String? mapStyle;
+  final double topInset;
   final double bottomInset;
   final ValueChanged<String> onRouteTapped;
   final void Function(GoogleMapController controller)? onMapCreated;
@@ -28,6 +28,7 @@ class RouteSelectMap extends ConsumerStatefulWidget {
     required this.spots,
     required this.selectedRouteId,
     required this.mapStyle,
+    required this.topInset,
     required this.bottomInset,
     required this.onRouteTapped,
     this.onMapCreated,
@@ -42,6 +43,8 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
   final Map<String, List<LatLng>> _routeLines = {};
 
   static const _defaultPosition = LatLng(35.681236, 139.767125);
+  static const _routeEmerald = Color(0xFF34F26A);
+  static const _routeEmeraldGlow = Color(0xFF57D6C9);
 
   @override
   void initState() {
@@ -82,9 +85,8 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
         .whereType<SpotModel>()
         .toList(growable: false);
 
-    if (fromIds.length >= 2) return fromIds;
-    if (route.generatedSpots.length >= 2) return route.generatedSpots;
-    return fromIds.isNotEmpty ? fromIds : route.generatedSpots;
+    if (fromIds.isNotEmpty) return fromIds;
+    return route.generatedSpots;
   }
 
   Future<void> _fetchAllRoutes() async {
@@ -97,26 +99,23 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
     await Future.wait(
       routesSnapshot.map((route) async {
         final routeSpots = _routeSpots(route);
-        if (routeSpots.length < 2) {
-          lines[route.id] = routeSpots
-              .map((spot) => LatLng(spot.lat, spot.lng))
-              .toList(growable: false);
+        if (routeSpots.isEmpty) {
+          lines[route.id] = const [];
           return;
         }
 
-        final origin = LatLng(routeSpots.first.lat, routeSpots.first.lng);
-        final destination = LatLng(routeSpots.last.lat, routeSpots.last.lng);
-        final waypoints = routeSpots
-            .sublist(1, routeSpots.length - 1)
+        if (routeSpots.length == 1) {
+          lines[route.id] = [
+            LatLng(routeSpots.first.lat, routeSpots.first.lng),
+          ];
+          return;
+        }
+
+        final stops = routeSpots
             .map((spot) => LatLng(spot.lat, spot.lng))
             .toList(growable: false);
 
-        final points = await directions.getDirectionsRoute(
-          origin: origin,
-          destination: destination,
-          waypoints: waypoints,
-        );
-        lines[route.id] = points;
+        lines[route.id] = await directions.getMultiStopWalkingRoute(stops);
       }),
     );
 
@@ -157,40 +156,30 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
     final controller = _mapController;
     if (controller == null) return;
 
-    final points = _routeLines[routeId];
-    if (points == null || points.isEmpty) {
-      final spots = _routeSpots(
-        widget.routes.firstWhere((route) => route.id == routeId),
-      );
-      if (spots.isEmpty) return;
+    final route = widget.routes.firstWhere((r) => r.id == routeId);
+    final spots = _routeSpots(route);
+    final points = _routeLines[routeId] ?? [];
+
+    final allPoints = [
+      ...points,
+      ...spots.map((s) => LatLng(s.lat, s.lng)),
+    ];
+    if (allPoints.isEmpty) return;
+
+    if (allPoints.length == 1) {
       await _safeAnimateCamera(
         controller,
         CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(spots.first.lat, spots.first.lng),
-            zoom: 14,
-            tilt: 45,
-          ),
+          CameraPosition(target: allPoints.first, zoom: 15, tilt: 45),
         ),
       );
       return;
     }
 
-    if (points.length == 1) {
-      await _safeAnimateCamera(
-        controller,
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: points.first, zoom: 15, tilt: 45),
-        ),
-      );
-      return;
-    }
-
-    final bounds = _boundsFromPoints(points);
-    final padding = _cameraPadding();
+    final bounds = _boundsFromPoints(allPoints);
     await _safeAnimateCamera(
       controller,
-      CameraUpdate.newLatLngBounds(bounds, padding),
+      CameraUpdate.newLatLngBounds(bounds, _cameraPadding()),
     );
   }
 
@@ -207,8 +196,12 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
 
   double _cameraPadding() {
     final screenHeight = MediaQuery.sizeOf(context).height;
-    final maxPadding = screenHeight * 0.45;
-    return math.min(math.max(48, widget.bottomInset * 0.35), maxPadding);
+    final bottom = math.min(
+      math.max(48.0, widget.bottomInset * 0.35),
+      screenHeight * 0.42,
+    );
+    final top = math.min(widget.topInset + 16.0, screenHeight * 0.15);
+    return math.max(bottom, top).toDouble();
   }
 
   LatLngBounds _boundsFromPoints(List<LatLng> points) {
@@ -253,8 +246,8 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
           Polyline(
             polylineId: PolylineId('${route.id}_glow'),
             points: points,
-            width: 16,
-            color: AppColors.primary.withValues(alpha: 0.35),
+            width: 18,
+            color: _routeEmeraldGlow.withValues(alpha: 0.4),
             geodesic: false,
             zIndex: 5,
             startCap: Cap.roundCap,
@@ -270,7 +263,7 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
           points: points,
           width: isSelected ? 8 : 3,
           color: isSelected
-              ? AppColors.primaryDark
+              ? _routeEmerald
               : const Color(0xFF6B6560).withValues(alpha: 0.55),
           geodesic: false,
           zIndex: isSelected ? 20 : 8,
@@ -301,6 +294,49 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
     return polylines;
   }
 
+  Set<Marker> _buildMarkers() {
+    final selectedId = widget.selectedRouteId;
+    final markers = <Marker>{};
+
+    for (final route in widget.routes) {
+      if (route.id != selectedId) continue;
+
+      final spots = _routeSpots(route);
+      for (var i = 0; i < spots.length; i++) {
+        final spot = spots[i];
+        final isStart = i == 0;
+        final isGoal = i == spots.length - 1 && spots.length > 1;
+        final title =
+            spot.aiStoryName.isNotEmpty ? spot.aiStoryName : spot.name;
+
+        markers.add(
+          Marker(
+            markerId: MarkerId('${route.id}_${spot.id}'),
+            position: LatLng(spot.lat, spot.lng),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              isStart
+                  ? BitmapDescriptor.hueCyan
+                  : isGoal
+                  ? BitmapDescriptor.hueOrange
+                  : BitmapDescriptor.hueYellow,
+            ),
+            infoWindow: InfoWindow(
+              title: title,
+              snippet: isStart
+                  ? 'スタート'
+                  : isGoal
+                  ? 'ゴール'
+                  : 'スポット $i',
+            ),
+            zIndexInt: isStart || isGoal ? 3 : 2,
+          ),
+        );
+      }
+    }
+
+    return markers;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GoogleMap(
@@ -321,6 +357,7 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
         _mapController = controller;
         widget.onMapCreated?.call(controller);
       },
+      markers: _buildMarkers(),
       polylines: _buildPolylines(),
     );
   }

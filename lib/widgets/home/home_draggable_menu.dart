@@ -167,7 +167,7 @@ class HomeDraggableMenu extends StatelessWidget {
 
             // 🐱 トレにゃんは透明エリアの最上部（top: 0）に配置するよ！
             const Positioned(
-              top: 0,
+              top: 10,
               left: 15,
               child: Torenyan(
                 size: 200,

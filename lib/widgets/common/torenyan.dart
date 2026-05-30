@@ -1,5 +1,3 @@
-// lib/widgets/common/torenyan.dart
-
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
@@ -71,9 +69,7 @@ class _TorenyanState extends State<Torenyan> {
   void _updateLine() {
     final lines = TorenyanLines.getLines(widget.state);
     if (lines.isNotEmpty) {
-      setState(() {
-        _currentLine = lines[_random.nextInt(lines.length)];
-      });
+      _currentLine = lines[_random.nextInt(lines.length)];
     }
   }
 
@@ -83,7 +79,6 @@ class _TorenyanState extends State<Torenyan> {
     final lines = TorenyanLines.getLines(widget.state);
     if (lines.length <= 1) return;
 
-    // 前と違うセリフを選ぶようにループ
     String newLine;
     do {
       newLine = lines[_random.nextInt(lines.length)];
@@ -96,27 +91,25 @@ class _TorenyanState extends State<Torenyan> {
 
   @override
   Widget build(BuildContext context) {
-    // 💡 おねえちゃんの魔法：sizeに合わせて自動でズレを計算するよ！
-    // これで size が 125 でも 200 でも、吹き出しと猫のバランスが完璧に保たれるの♡
-    final rightPadding = widget.size * 0.1;
-    final bottomPadding = widget.size * 0.15;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 💬 ゲームライクな吹き出し
+        // 💬 吹き出し
         if (widget.showSpeechBubble && _currentLine.isNotEmpty)
           _buildSpeechBubble(),
 
         const SizedBox(height: 4),
 
-        // 🐱 トレにゃん本体 (当たり判定と見た目を完全一致！)
-        Padding(
-          padding: EdgeInsets.only(right: rightPadding, bottom: bottomPadding),
+        // 🐱 トレにゃん本体
+        // ✅ 当たり判定 = 画像サイズ
+        // ✅ 見た目とタップ位置が完全一致
+        Transform.translate(
+          offset: const Offset(-10, -15),
           child: GestureDetector(
+            behavior: HitTestBehavior.deferToChild,
             onTapDown: (_) {
               if (widget.enableTap) {
-                setState(() => _scale = 0.92); // タップでキュッと縮むよ
+                setState(() => _scale = 0.92);
               }
             },
             onTapUp: (_) {
@@ -130,15 +123,17 @@ class _TorenyanState extends State<Torenyan> {
               }
             },
             onTap: _changeLine,
-            child: AnimatedScale(
-              scale: _scale,
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.easeOut,
-              child: Image.asset(
-                'assets/images/mascot/mascot_neko.png',
-                width: widget.size,
-                height: widget.size,
-                fit: BoxFit.contain,
+            child: SizedBox(
+              width: widget.size,
+              height: widget.size,
+              child: AnimatedScale(
+                scale: _scale,
+                duration: const Duration(milliseconds: 100),
+                curve: Curves.easeOut,
+                child: Image.asset(
+                  'assets/images/mascot/mascot_neko.png',
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
@@ -152,7 +147,6 @@ class _TorenyanState extends State<Torenyan> {
       alignment: Alignment.bottomCenter,
       clipBehavior: Clip.none,
       children: [
-        // 吹き出しのメイン枠
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSizes.p16,
@@ -160,12 +154,9 @@ class _TorenyanState extends State<Torenyan> {
           ),
           constraints: const BoxConstraints(maxWidth: 240),
           decoration: BoxDecoration(
-            color: const Color(0xFF2C2318), // 深いゲームUI調のダークブラウン
-            border: Border.all(
-              color: const Color(0xFFC8A97A), // 気品あるゴールドのフチ
-              width: 2.0,
-            ),
-            borderRadius: BorderRadius.circular(20), // 丸み強め
+            color: const Color(0xFF2C2318),
+            border: Border.all(color: const Color(0xFFC8A97A), width: 2.0),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.35),
@@ -178,7 +169,7 @@ class _TorenyanState extends State<Torenyan> {
             _currentLine,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Color(0xFFF5EDD8), // 温かみのあるクリームゴールド
+              color: Color(0xFFF5EDD8),
               fontSize: 13.0,
               fontWeight: FontWeight.bold,
               height: 1.35,
@@ -186,7 +177,6 @@ class _TorenyanState extends State<Torenyan> {
           ),
         ),
 
-        // 吹き出しのツノ（矢印）
         Positioned(
           bottom: -6.0,
           child: Transform.rotate(

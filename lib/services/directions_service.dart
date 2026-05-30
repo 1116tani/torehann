@@ -84,6 +84,23 @@ class DirectionsService {
     return fallback;
   }
 
+  /// 複数スポットを順番に結ぶ徒歩ルート。各区間を道路に沿って取得して連結する。
+  Future<List<LatLng>> getMultiStopWalkingRoute(List<LatLng> stops) async {
+    if (stops.isEmpty) return const [];
+    if (stops.length == 1) return stops;
+
+    final merged = <LatLng>[];
+    for (var i = 0; i < stops.length - 1; i++) {
+      final segment = await getDirectionsRoute(
+        origin: stops[i],
+        destination: stops[i + 1],
+      );
+      _appendPoints(merged, segment);
+    }
+
+    return merged;
+  }
+
   Map<String, dynamic> _waypoint(LatLng point) {
     return {
       'location': {
