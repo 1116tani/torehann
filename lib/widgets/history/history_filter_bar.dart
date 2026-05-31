@@ -1,326 +1,118 @@
 // lib/widgets/history/history_filter_bar.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/history_provider.dart';
+import 'filter_bottom_sheet.dart';
 
-class HistoryFilterBar extends StatefulWidget {
-  final Set<FilterTag> activeFilters;
-  final Function(FilterTag) onToggle;
+class HistoryFilterBar extends ConsumerWidget {
+  HistoryFilterBar({super.key});
 
-  const HistoryFilterBar({
-    super.key,
-    required this.activeFilters,
-    required this.onToggle,
-  });
+  final GlobalKey _sortOrderKey = GlobalKey();
 
   @override
-  State<HistoryFilterBar> createState() =>
-      _HistoryFilterBarState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(historyProvider);
+    final notifier = ref.read(historyProvider.notifier);
 
-class _HistoryFilterBarState
-    extends State<HistoryFilterBar> {
-  bool isExpanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
-      ),
-
-      padding: const EdgeInsets.all(14),
-
-      decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
-
-        borderRadius: BorderRadius.circular(18),
-
-        border: Border.all(
-          color: const Color(0xFF5C4033),
-          width: 0.8,
-        ),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── 上段チップ ──
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-
-            child: Row(
-              children: [
-                ..._quickFilters.map(
-                  (tag) => Padding(
-                    padding:
-                        const EdgeInsets.only(
-                      right: 8,
-                    ),
-
-                    child: _buildChip(tag),
-                  ),
-                ),
-
-                // 詳細検索ボタン
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      isExpanded =
-                          !isExpanded;
-                    });
-                  },
-
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-
-                    decoration: BoxDecoration(
-                      color:
-                          const Color(
-                        0xFF3D2B1F,
-                      ),
-
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        14,
-                      ),
-
-                      border: Border.all(
-                        color:
-                            const Color(
-                          0xFF5C4033,
-                        ),
-                      ),
-                    ),
-
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.tune_rounded,
-                          size: 16,
-                          color: Color(
-                            0xFFC8A97A,
-                          ),
-                        ),
-
-                        const SizedBox(
-                          width: 6,
-                        ),
-
-                        Text(
-                          isExpanded
-                              ? '閉じる'
-                              : '詳細検索',
-
-                          style:
-                              const TextStyle(
-                            color: Color(
-                              0xFFC8A97A,
-                            ),
-                            fontSize: 11,
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          // 1行目: 絞り込みボタン（左）と並び順（右）
+          Row(
+            children: [
+              // 絞り込みボタン
+              _buildFilterButton(context, state.activeFilters.length),
+              const Spacer(),
+              // 並び順
+              _buildSortOrderRow(context, state, notifier),
+            ],
           ),
 
-          // ── アコーディオン ──
-          AnimatedCrossFade(
-            duration:
-                const Duration(
-              milliseconds: 220,
+          // 2行目以降: フィルターチップ（適用中のみ）
+          if (state.activeFilters.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.start,
+              children: state.activeFilters.map((filter) {
+                return _buildFilterChip(
+                  filter: filter,
+                  onRemove: () => notifier.toggleFilter(filter),
+                );
+              }).toList(),
             ),
+          ],
+        ],
+      ),
+    );
+  }
 
-            crossFadeState:
-                isExpanded
-                    ? CrossFadeState
-                        .showSecond
-                    : CrossFadeState
-                        .showFirst,
-
-            firstChild:
-                const SizedBox(),
-
-            secondChild: Padding(
-              padding:
-                  const EdgeInsets.only(
-                top: 18,
+  Widget _buildSortOrderRow(
+    BuildContext context,
+    HistoryState state,
+    HistoryNotifier notifier,
+  ) {
+    return GestureDetector(
+      key: _sortOrderKey,
+      onTap: () => _showSortOrderMenu(context, state, notifier),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF3D2B1F),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF5C4033)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _getSortOrderLabel(state.sortOrder),
+              style: const TextStyle(
+                color: Color(0xFFF5EDD8),
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(width: 6),
+            const Icon(Icons.expand_more, size: 18, color: Color(0xFFC8A97A)),
+          ],
+        ),
+      ),
+    );
+  }
 
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
-
-                children: [
-                  const Text(
-                    '絞り込み',
-
-                    style: TextStyle(
-                      color: Color(
-                        0xFFC8A97A,
-                      ),
-                      fontSize: 12,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 12,
-                  ),
-
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-
-                    children:
-                        _detailFilters.map(
-                      (tag) {
-                        return _buildChip(
-                          tag,
-                        );
-                      },
-                    ).toList(),
-                  ),
-
-                  const SizedBox(
-                    height: 18,
-                  ),
-
-                  const Text(
-                    '並び替え',
-
-                    style: TextStyle(
-                      color: Color(
-                        0xFFC8A97A,
-                      ),
-                      fontSize: 12,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 10,
-                  ),
-
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 12,
-                    ),
-
-                    decoration:
-                        BoxDecoration(
-                      color:
-                          const Color(
-                        0xFF3D2B1F,
-                      ),
-
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        14,
-                      ),
-
-                      border: Border.all(
-                        color:
-                            const Color(
-                          0xFF5C4033,
-                        ),
-                      ),
-                    ),
-
-                    child:
-                        DropdownButtonHideUnderline(
-                      child:
-                          DropdownButton<
-                              String>(
-                        dropdownColor:
-                            const Color(
-                          0xFF2C2318,
-                        ),
-
-                        value:
-                            'newest',
-
-                        items: const [
-                          DropdownMenuItem(
-                            value:
-                                'newest',
-                            child: Text(
-                              '新しい順',
-                              style:
-                                  TextStyle(
-                                color:
-                                    Color(
-                                  0xFFF5EDD8,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          DropdownMenuItem(
-                            value:
-                                'oldest',
-                            child: Text(
-                              '古い順',
-                              style:
-                                  TextStyle(
-                                color:
-                                    Color(
-                                  0xFFF5EDD8,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          DropdownMenuItem(
-                            value:
-                                'distance',
-                            child: Text(
-                              '距離順',
-                              style:
-                                  TextStyle(
-                                color:
-                                    Color(
-                                  0xFFF5EDD8,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-
-                        onChanged: (_) {},
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+  Widget _buildFilterChip({
+    required FilterTag filter,
+    required VoidCallback onRemove,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFC8A97A),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            _getFilterLabel(filter),
+            style: const TextStyle(
+              color: Color(0xFF1C1610),
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: onRemove,
+            child: const Icon(
+              Icons.close_rounded,
+              size: 14,
+              color: Color(0xFF1C1610),
             ),
           ),
         ],
@@ -328,95 +120,144 @@ class _HistoryFilterBarState
     );
   }
 
-  // ─────────────────────
-
-  Widget _buildChip(FilterTag tag) {
-    final isSelected =
-        widget.activeFilters.contains(tag);
-
-    return ChoiceChip(
-      label: Text(
-        _filterLabel(tag),
-
-        style: TextStyle(
-          fontSize: 11,
-
-          fontWeight:
-              FontWeight.bold,
-
-          color: isSelected
-              ? const Color(
-                  0xFF1C1610)
-              : const Color(
-                  0xFFDCC8A0),
+  Widget _buildFilterButton(BuildContext context, int filterCount) {
+    return GestureDetector(
+      onTap: () => _showFilterBottomSheet(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF3D2B1F),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF5C4033)),
         ),
-      ),
-
-      selected: isSelected,
-
-      onSelected: (_) =>
-          widget.onToggle(tag),
-
-      selectedColor:
-          const Color(0xFFC8A97A),
-
-      backgroundColor:
-          const Color(0xFF3D2B1F),
-
-      shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(16),
-
-        side: BorderSide(
-          color: isSelected
-              ? const Color(
-                  0xFFC8A97A)
-              : const Color(
-                  0xFF5C4033),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.tune_rounded, size: 18, color: Color(0xFFC8A97A)),
+            const SizedBox(width: 8),
+            Text(
+              filterCount > 0 ? '絞り込み($filterCount)' : '絞り込み',
+              style: const TextStyle(
+                color: Color(0xFFC8A97A),
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ─────────────────────
-
-  String _filterLabel(
-    FilterTag filter,
+  void _showSortOrderMenu(
+    BuildContext context,
+    HistoryState state,
+    HistoryNotifier notifier,
   ) {
-    return switch (filter) {
-      FilterTag.completedOnly =>
-        '完走のみ',
+    final RenderBox button =
+        _sortOrderKey.currentContext!.findRenderObject() as RenderBox;
+    final Offset offset = button.localToGlobal(Offset.zero);
+    final RelativeRect position = RelativeRect.fromLTRB(
+      offset.dx,
+      offset.dy + button.size.height,
+      offset.dx + button.size.width,
+      offset.dy + button.size.height + 200,
+    );
 
-      FilterTag.withAbandoned =>
-        '中断あり',
+    showMenu(
+      context: context,
+      position: position,
+      color: const Color(0xFF2C2318),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      items: [
+        _buildSortMenuItem(
+          SortOrder.newestFirst,
+          '新しい順',
+          state.sortOrder == SortOrder.newestFirst,
+          notifier,
+        ),
+        _buildSortMenuItem(
+          SortOrder.oldestFirst,
+          '古い順',
+          state.sortOrder == SortOrder.oldestFirst,
+          notifier,
+        ),
+        _buildSortMenuItem(
+          SortOrder.longestDistance,
+          '距離順',
+          state.sortOrder == SortOrder.longestDistance,
+          notifier,
+        ),
+        _buildSortMenuItem(
+          SortOrder.mostExperience,
+          '獲得経験値順',
+          state.sortOrder == SortOrder.mostExperience,
+          notifier,
+        ),
+      ],
+    );
+  }
 
-      FilterTag.withPhotos =>
-        '写真あり',
+  PopupMenuItem<dynamic> _buildSortMenuItem(
+    SortOrder order,
+    String label,
+    bool isSelected,
+    HistoryNotifier notifier,
+  ) {
+    return PopupMenuItem(
+      value: order,
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected
+                  ? const Color(0xFFC8A97A)
+                  : const Color(0xFFF5EDD8),
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          if (isSelected) ...[
+            const Spacer(),
+            const Icon(Icons.check_rounded, size: 16, color: Color(0xFFC8A97A)),
+          ],
+        ],
+      ),
+      onTap: () => notifier.setSortOrder(order),
+    );
+  }
 
-      FilterTag.morning =>
-        '朝の冒険',
+  void _showFilterBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const FilterBottomSheet(),
+    );
+  }
 
-      FilterTag.night =>
-        '夜の冒険',
-
-      FilterTag.rainy =>
-        '雨の日',
+  String _getSortOrderLabel(SortOrder order) {
+    return switch (order) {
+      SortOrder.newestFirst => '新しい順',
+      SortOrder.oldestFirst => '古い順',
+      SortOrder.longestDistance => '距離順',
+      SortOrder.longestDuration => '時間順',
+      SortOrder.mostExperience => '獲得経験値順',
     };
   }
 
-  // ─────────────────────
-
-  final List<FilterTag>
-      _quickFilters = [
-    FilterTag.withPhotos,
-    FilterTag.completedOnly,
-    FilterTag.night,
-  ];
-
-  final List<FilterTag>
-      _detailFilters = [
-    FilterTag.withAbandoned,
-    FilterTag.morning,
-    FilterTag.rainy,
-  ];
+  String _getFilterLabel(FilterTag filter) {
+    return switch (filter) {
+      FilterTag.completedOnly => '完走のみ',
+      FilterTag.withAbandoned => '中断あり',
+      FilterTag.withPhotos => '写真あり',
+      FilterTag.morning => '朝の冒険',
+      FilterTag.afternoon => '昼の冒険',
+      FilterTag.night => '夜の冒険',
+      FilterTag.sunny => '晴れ',
+      FilterTag.cloudy => '曇り',
+      FilterTag.rainy => '雨',
+    };
+  }
 }

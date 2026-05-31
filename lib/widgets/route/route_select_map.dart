@@ -127,8 +127,7 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
         ..addAll(lines);
     });
 
-    final selectedId =
-        widget.selectedRouteId ?? routesSnapshot.firstOrNull?.id;
+    final selectedId = widget.selectedRouteId ?? routesSnapshot.firstOrNull?.id;
     if (selectedId != null) {
       await Future<void>.delayed(const Duration(milliseconds: 200));
       if (mounted) _animateToRoute(selectedId);
@@ -160,10 +159,7 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
     final spots = _routeSpots(route);
     final points = _routeLines[routeId] ?? [];
 
-    final allPoints = [
-      ...points,
-      ...spots.map((s) => LatLng(s.lat, s.lng)),
-    ];
+    final allPoints = [...points, ...spots.map((s) => LatLng(s.lat, s.lng))];
     if (allPoints.isEmpty) return;
 
     if (allPoints.length == 1) {
@@ -261,12 +257,12 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
         Polyline(
           polylineId: PolylineId('${route.id}_line'),
           points: points,
-          width: isSelected ? 8 : 3,
+          width: isSelected ? 8 : 5,
           color: isSelected
               ? _routeEmerald
-              : const Color(0xFF6B6560).withValues(alpha: 0.55),
+              : _routeEmerald.withValues(alpha: 0.28),
           geodesic: false,
-          zIndex: isSelected ? 20 : 8,
+          zIndex: isSelected ? 20 : 6,
           startCap: Cap.roundCap,
           endCap: Cap.roundCap,
           jointType: JointType.round,
@@ -306,8 +302,9 @@ class _RouteSelectMapState extends ConsumerState<RouteSelectMap> {
         final spot = spots[i];
         final isStart = i == 0;
         final isGoal = i == spots.length - 1 && spots.length > 1;
-        final title =
-            spot.aiStoryName.isNotEmpty ? spot.aiStoryName : spot.name;
+        final title = spot.aiStoryName.isNotEmpty
+            ? spot.aiStoryName
+            : spot.name;
 
         markers.add(
           Marker(

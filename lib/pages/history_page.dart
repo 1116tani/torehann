@@ -23,11 +23,6 @@ class HistoryPage extends ConsumerWidget {
     final state =
         ref.watch(historyProvider);
 
-    final notifier =
-        ref.read(
-      historyProvider.notifier,
-    );
-
     final filtered =
         state.filteredHistories;
 
@@ -59,13 +54,7 @@ class HistoryPage extends ConsumerWidget {
             // フィルター
             // ─────────────────────
 
-            HistoryFilterBar(
-              activeFilters:
-                  state.activeFilters,
-
-              onToggle:
-                  notifier.toggleFilter,
-            ),
+            HistoryFilterBar(),
 
             // ─────────────────────
             // 履歴リスト

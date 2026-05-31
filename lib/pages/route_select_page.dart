@@ -26,8 +26,10 @@ class RouteSelectPage extends ConsumerStatefulWidget {
 
 class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
   String? _mapStyle;
+  bool _isRouteSheetExpanded = true;
 
   static const _carouselHeight = 340.0;
+  static const _collapsedSheetHeight = 86.0;
   static const _buttonAreaHeight = 92.0;
   static const _headerHeight = 88.0;
 
@@ -72,7 +74,9 @@ class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
     final routes = state.routes;
     final hasRoutes = routes.isNotEmpty;
     final selectedRoute = _selectedRoute(routes, state.selectedRouteId);
-    final bottomInset = _carouselHeight + _buttonAreaHeight;
+    final bottomInset =
+        (_isRouteSheetExpanded ? _carouselHeight : _collapsedSheetHeight) +
+        _buttonAreaHeight;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -138,6 +142,12 @@ class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
                         selectedRouteId:
                             state.selectedRouteId ?? routes.first.id,
                         onRouteSelected: notifier.selectRoute,
+                        isExpanded: _isRouteSheetExpanded,
+                        onExpandedChanged: (value) {
+                          setState(() {
+                            _isRouteSheetExpanded = value;
+                          });
+                        },
                         onStart: selectedRoute == null
                             ? null
                             : () {
@@ -163,12 +173,16 @@ class _RouteBottomCarousel extends StatefulWidget {
   final List<RouteModel> routes;
   final String selectedRouteId;
   final ValueChanged<String> onRouteSelected;
+  final bool isExpanded;
+  final ValueChanged<bool> onExpandedChanged;
   final VoidCallback? onStart;
 
   const _RouteBottomCarousel({
     required this.routes,
     required this.selectedRouteId,
     required this.onRouteSelected,
+    required this.isExpanded,
+    required this.onExpandedChanged,
     required this.onStart,
   });
 
@@ -182,6 +196,7 @@ class _RouteBottomCarouselState extends State<_RouteBottomCarousel> {
   bool _isAnimating = false;
 
   static const _carouselHeight = 340.0;
+  static const _collapsedHeight = 86.0;
 
   @override
   void initState() {
@@ -245,31 +260,163 @@ class _RouteBottomCarouselState extends State<_RouteBottomCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedRoute = widget.routes[_indexForRoute(widget.selectedRouteId)];
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          height: _carouselHeight,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: widget.routes.length,
-            onPageChanged: (index) {
-              if (_isAnimating) return;
-              _currentPage = index;
-              widget.onRouteSelected(widget.routes[index].id);
-            },
-            itemBuilder: (context, index) {
-              final route = widget.routes[index];
-              final isSelected = route.id == widget.selectedRouteId;
-              return RouteCard(
-                route: route,
-                isSelected: isSelected,
-              );
-            },
-          ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+          height: widget.isExpanded ? _carouselHeight : _collapsedHeight,
+          child: widget.isExpanded
+              ? Column(
+                  children: [
+                    _RouteSheetHandle(
+                      isExpanded: true,
+                      onTap: () => widget.onExpandedChanged(false),
+                    ),
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: widget.routes.length,
+                        onPageChanged: (index) {
+                          if (_isAnimating) return;
+                          _currentPage = index;
+                          widget.onRouteSelected(widget.routes[index].id);
+                        },
+                        itemBuilder: (context, index) {
+                          final route = widget.routes[index];
+                          final isSelected = route.id == widget.selectedRouteId;
+                          return RouteCard(
+                            route: route,
+                            isSelected: isSelected,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                )
+              : _CollapsedRouteSummary(
+                  route: selectedRoute,
+                  onTap: () => widget.onExpandedChanged(true),
+                ),
         ),
         if (widget.onStart != null) RouteSelectButton(onStart: widget.onStart!),
       ],
+    );
+  }
+}
+
+class _RouteSheetHandle extends StatelessWidget {
+  final bool isExpanded;
+  final VoidCallback onTap;
+
+  const _RouteSheetHandle({required this.isExpanded, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.92),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Icon(
+              isExpanded
+                  ? Icons.keyboard_arrow_down_rounded
+                  : Icons.keyboard_arrow_up_rounded,
+              color: AppColors.secondary,
+              size: 26,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CollapsedRouteSummary extends StatelessWidget {
+  final RouteModel route;
+  final VoidCallback onTap;
+
+  const _CollapsedRouteSummary({required this.route, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: AppColors.secondary, width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 18,
+                offset: const Offset(0, -3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.route_rounded,
+                color: AppColors.secondary,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      route.themeName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${route.totalDistance.toStringAsFixed(1)}km / ${route.estimatedTime}分 / ${route.generatedSpots.length}スポット',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(
+                Icons.keyboard_arrow_up_rounded,
+                color: AppColors.secondary,
+                size: 28,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
