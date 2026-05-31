@@ -13,6 +13,7 @@ enum SortOrder {
   oldestFirst,
   longestDistance,
   longestDuration,
+  mostExperience,
 }
 
 enum FilterTag {
@@ -20,7 +21,10 @@ enum FilterTag {
   withAbandoned,
   withPhotos,
   morning,
+  afternoon,
   night,
+  sunny,
+  cloudy,
   rainy,
 }
 
@@ -65,9 +69,13 @@ class HistoryState {
           FilterTag.withAbandoned => !history.isCompleted,
           FilterTag.withPhotos => history.imageUrls.isNotEmpty,
           FilterTag.morning =>
-            history.createdAt.hour >= 6 && history.createdAt.hour < 11,
-          FilterTag.night => history.createdAt.hour >= 20,
-          FilterTag.rainy => history.tags.contains('rainy'),
+            history.createdAt.hour >= 6 && history.createdAt.hour < 12,
+          FilterTag.afternoon =>
+            history.createdAt.hour >= 12 && history.createdAt.hour < 17,
+          FilterTag.night => history.createdAt.hour >= 17,
+          FilterTag.sunny => history.weather == '晴れ',
+          FilterTag.cloudy => history.weather == '曇り',
+          FilterTag.rainy => history.weather == '雨',
         };
       }).toList();
     }
@@ -79,6 +87,8 @@ class HistoryState {
         SortOrder.longestDistance => b.distanceKm.compareTo(a.distanceKm),
         SortOrder.longestDuration =>
           b.durationMinutes.compareTo(a.durationMinutes),
+        SortOrder.mostExperience =>
+          (b.distanceKm * 10 + b.durationMinutes).compareTo(a.distanceKm * 10 + a.durationMinutes),
       };
     });
 
