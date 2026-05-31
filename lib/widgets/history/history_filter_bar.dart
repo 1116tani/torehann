@@ -13,37 +13,25 @@ class HistoryFilterBar extends ConsumerWidget {
     final state = ref.watch(historyProvider);
     final notifier = ref.read(historyProvider.notifier);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
-      ),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFF5C4033),
-          width: 0.8,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 並び順表示
-          _buildSortOrderRow(context, state, notifier),
-          
-          const SizedBox(height: 12),
-          
-          // フィルターチップ（適用中のみ）
+          // 1行目: 絞り込みボタン（左）と並び順（右）
+          Row(
+            children: [
+              // 絞り込みボタン
+              _buildFilterButton(context, state.activeFilters.length),
+              const Spacer(),
+              // 並び順
+              _buildSortOrderRow(context, state, notifier),
+            ],
+          ),
+
+          // 2行目以降: フィルターチップ（適用中のみ）
           if (state.activeFilters.isNotEmpty) ...[
+            const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -54,11 +42,7 @@ class HistoryFilterBar extends ConsumerWidget {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 12),
           ],
-          
-          // 絞り込みボタン
-          _buildFilterButton(context, state.activeFilters.length),
         ],
       ),
     );
@@ -81,12 +65,6 @@ class HistoryFilterBar extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.sort_rounded,
-              size: 16,
-              color: Color(0xFFC8A97A),
-            ),
-            const SizedBox(width: 6),
             Text(
               _getSortOrderLabel(state.sortOrder),
               style: const TextStyle(
@@ -96,11 +74,7 @@ class HistoryFilterBar extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(
-              Icons.expand_more,
-              size: 16,
-              color: Color(0xFFC8A97A),
-            ),
+            const Icon(Icons.expand_more, size: 16, color: Color(0xFFC8A97A)),
           ],
         ),
       ),
@@ -146,7 +120,7 @@ class HistoryFilterBar extends ConsumerWidget {
     return GestureDetector(
       onTap: () => _showFilterBottomSheet(context),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: const Color(0xFF3D2B1F),
           borderRadius: BorderRadius.circular(12),
@@ -155,14 +129,10 @@ class HistoryFilterBar extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.tune_rounded,
-              size: 18,
-              color: Color(0xFFC8A97A),
-            ),
-            const SizedBox(width: 8),
+            const Icon(Icons.tune_rounded, size: 16, color: Color(0xFFC8A97A)),
+            const SizedBox(width: 6),
             Text(
-              filterCount > 0 ? '絞り込み（$filterCount）' : '絞り込み',
+              filterCount > 0 ? '絞り込み($filterCount)' : '絞り込み',
               style: const TextStyle(
                 color: Color(0xFFC8A97A),
                 fontSize: 13,
@@ -193,9 +163,7 @@ class HistoryFilterBar extends ConsumerWidget {
       context: context,
       position: position,
       color: const Color(0xFF2C2318),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       items: [
         _buildSortMenuItem(
           SortOrder.newestFirst,
@@ -238,18 +206,16 @@ class HistoryFilterBar extends ConsumerWidget {
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFFF5EDD8),
+              color: isSelected
+                  ? const Color(0xFFC8A97A)
+                  : const Color(0xFFF5EDD8),
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           if (isSelected) ...[
             const Spacer(),
-            const Icon(
-              Icons.check_rounded,
-              size: 16,
-              color: Color(0xFFC8A97A),
-            ),
+            const Icon(Icons.check_rounded, size: 16, color: Color(0xFFC8A97A)),
           ],
         ],
       ),
