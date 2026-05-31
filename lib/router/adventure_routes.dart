@@ -30,7 +30,12 @@ final adventureRoutes = [
 
   GoRoute(
     path: AppRoutes.result,
-    builder: (context, state) => const ResultPage(),
+    builder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>?;
+      final isFromHistoryExtra = extra?['isFromHistory'] as bool?;
+      final isFromHistoryQuery = state.uri.queryParameters['isFromHistory'] == 'true';
+      return ResultPage(isFromHistory: isFromHistoryExtra ?? isFromHistoryQuery);
+    },
   ),
 
   // Party

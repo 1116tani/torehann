@@ -30,6 +30,10 @@ class AdventureResult {
   // ── フレンド ─────────────────────────
   final List<ResultFriend> friends;
 
+  // ── 獲得物・実績 ──────────────────────
+  final List<String> fragments;
+  final List<String> achievements;
+
   const AdventureResult({
     required this.id,
     required this.title,
@@ -48,6 +52,8 @@ class AdventureResult {
     required this.routeMapImageUrl,
     required this.photos,
     required this.friends,
+    required this.fragments,
+    required this.achievements,
   });
 
   // ── ダミーデータ生成用 ─────────────────
@@ -129,6 +135,17 @@ class AdventureResult {
           id: 'friend_002',
           name: 'レオ',
         ),
+      ],
+
+      fragments: const [
+        '風の記憶',
+        '水鏡のささやき',
+        '黄金の砂時計',
+      ],
+
+      achievements: const [
+        '初めての冒険',
+        '総歩行距離5km',
       ],
     );
   }

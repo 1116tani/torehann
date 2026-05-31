@@ -215,26 +215,29 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
       builder: (context) => ArrivalDialog(
         spot: spot,
         isLastSpot: isLast,
-        onContinue: () => Navigator.of(context).pop(),
+        onContinue: () {
+          if (isLast) {
+            ref.read(navigationProvider.notifier).checkInNextSpot();
+            context.go(AppRoutes.result);
+          } else {
+            Navigator.of(context).pop();
+          }
+        },
       ),
     );
 
     if (!mounted) return;
 
-    _arrivalDialogOpen = false;
-    ref.read(navigationProvider.notifier).checkInNextSpot();
-    _pendingArrivalSpotId = null;
-    _lastRouteFetchDestId = null;
+    // Only proceed with navigation state resets for intermediate spots since final spot navigates immediately.
+    if (!isLast) {
+      _arrivalDialogOpen = false;
+      ref.read(navigationProvider.notifier).checkInNextSpot();
+      _pendingArrivalSpotId = null;
+      _lastRouteFetchDestId = null;
 
-    if (isLast) {
-      if (mounted) {
-        context.go(AppRoutes.result);
+      if (_lastPosition != null) {
+        _maybeFetchRoute(_lastPosition!);
       }
-      return;
-    }
-
-    if (_lastPosition != null) {
-      _maybeFetchRoute(_lastPosition!);
     }
   }
 
