@@ -35,7 +35,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   void initState() {
     super.initState();
     _loadMapStyle();
-    _checkLevelUp();
   }
 
   Future<void> _loadMapStyle() async {
@@ -49,26 +48,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     }
   }
 
-  void _checkLevelUp() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.isFromHistory) return;
-
-      final state = ref.read(resultProvider);
-      final result = state.result;
-      if (result == null) return;
-
-      final totalXp = ref.read(levelProvider).totalXp;
-      final oldState = LevelCalculator.fromTotalXp(totalXp);
-      final newState = LevelCalculator.fromTotalXp(totalXp + result.expGained);
-      final didLevelUp = newState.level > oldState.level;
-
-      if (didLevelUp) {
-        _showLevelUpDialog(oldState.level, newState.level, result.expGained);
-      } else {
-        ref.read(levelProvider.notifier).addXp(result.expGained);
-      }
-    });
-  }
+  // _checkLevelUp is now managed via ref.listen in the build method
 
   void _showLevelUpDialog(int oldLevel, int newLevel, int expGained) {
     if (!mounted) return;
@@ -144,6 +124,26 @@ class _ResultPageState extends ConsumerState<ResultPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ResultState>(resultProvider, (previous, next) {
+      if (widget.isFromHistory) return;
+      if (next.result != null && (previous == null || previous.result == null)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final res = next.result!;
+          final totalXp = ref.read(levelProvider).totalXp;
+          final oldState = LevelCalculator.fromTotalXp(totalXp);
+          final newState = LevelCalculator.fromTotalXp(totalXp + res.expGained);
+          final didLevelUp = newState.level > oldState.level;
+
+          if (didLevelUp) {
+            _showLevelUpDialog(oldState.level, newState.level, res.expGained);
+          } else {
+            ref.read(levelProvider.notifier).addXp(res.expGained);
+          }
+        });
+      }
+    });
+
     final resultState = ref.watch(resultProvider);
     final result = resultState.result;
 
@@ -237,7 +237,11 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   onPressed: () {
                     // ナビゲーションのメモリをクリアしてホームに戻る
                     ref.read(navigationProvider.notifier).finishAdventure();
-                    context.go(AppRoutes.home);
+                    Future.microtask(() {
+                      if (context.mounted) {
+                        context.go(AppRoutes.home);
+                      }
+                    });
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -531,7 +535,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   Widget _buildMapSection(AdventureResult result) {
     // 実際に歩いた軌跡を構成
     // navigationProvider にアクティブなルートがあれば使用し、なければ東京駅周辺のモックを使用
-    final navState = ref.watch(navigationProvider);
+    final navState = ref.read(navigationProvider);
     final routePoints = navState.currentRoute?.generatedSpots
             .map((s) => LatLng(s.lat, s.lng))
             .toList() ??

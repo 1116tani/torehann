@@ -212,15 +212,18 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => ArrivalDialog(
+      builder: (dialogContext) => ArrivalDialog(
         spot: spot,
         isLastSpot: isLast,
         onContinue: () {
+          Navigator.of(dialogContext).pop();
           if (isLast) {
             ref.read(navigationProvider.notifier).checkInNextSpot();
-            context.go(AppRoutes.result);
-          } else {
-            Navigator.of(context).pop();
+            Future.microtask(() {
+              if (mounted) {
+                context.go(AppRoutes.result);
+              }
+            });
           }
         },
       ),
