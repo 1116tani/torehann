@@ -13,20 +13,18 @@ class FilterBottomSheet extends ConsumerStatefulWidget {
 
 class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   late Set<FilterTag> _tempFilters;
-  late SortOrder _tempSortOrder;
 
   @override
   void initState() {
     super.initState();
     final state = ref.read(historyProvider);
     _tempFilters = Set<FilterTag>.from(state.activeFilters);
-    _tempSortOrder = state.sortOrder;
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Container(
       height: screenHeight * 0.8,
       decoration: const BoxDecoration(
@@ -37,10 +35,10 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
         children: [
           // Handle bar
           _buildHandleBar(),
-          
+
           // Header
           _buildHeader(),
-          
+
           // Filter options
           Expanded(
             child: SingleChildScrollView(
@@ -55,14 +53,12 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                   _buildSection('天候', _buildWeatherFilters()),
                   const SizedBox(height: 24),
                   _buildSection('写真', _buildPhotoFilters()),
-                  const SizedBox(height: 24),
-                  _buildSection('並び順', _buildSortOrderOptions()),
                   const SizedBox(height: 100),
                 ],
               ),
             ),
           ),
-          
+
           // Bottom buttons
           _buildBottomButtons(),
         ],
@@ -89,11 +85,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
-          const Icon(
-            Icons.tune_rounded,
-            color: Color(0xFFC8A97A),
-            size: 24,
-          ),
+          const Icon(Icons.tune_rounded, color: Color(0xFFC8A97A), size: 24),
           const SizedBox(width: 12),
           const Text(
             'フィルター設定',
@@ -165,26 +157,13 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     return Wrap(
       spacing: 10,
       runSpacing: 10,
-      children: [
-        _buildFilterChip(FilterTag.withPhotos, '写真あり'),
-      ],
-    );
-  }
-
-  Widget _buildSortOrderOptions() {
-    return Column(
-      children: [
-        _buildSortOption(SortOrder.newestFirst, '新しい順'),
-        _buildSortOption(SortOrder.oldestFirst, '古い順'),
-        _buildSortOption(SortOrder.longestDistance, '距離順'),
-        _buildSortOption(SortOrder.mostExperience, '獲得経験値順'),
-      ],
+      children: [_buildFilterChip(FilterTag.withPhotos, '写真あり')],
     );
   }
 
   Widget _buildFilterChip(FilterTag filter, String label) {
     final isSelected = _tempFilters.contains(filter);
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -201,60 +180,21 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
           color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFF2C2318),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFF5C4033),
+            color: isSelected
+                ? const Color(0xFFC8A97A)
+                : const Color(0xFF5C4033),
             width: 1,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? const Color(0xFF1C1610) : const Color(0xFFF5EDD8),
+            color: isSelected
+                ? const Color(0xFF1C1610)
+                : const Color(0xFFF5EDD8),
             fontSize: 13,
             fontWeight: FontWeight.bold,
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSortOption(SortOrder order, String label) {
-    final isSelected = _tempSortOrder == order;
-    
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _tempSortOrder = order;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3D2B1F) : const Color(0xFF2C2318),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFF5C4033),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFFF5EDD8),
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-            const Spacer(),
-            if (isSelected)
-              const Icon(
-                Icons.check_rounded,
-                size: 18,
-                color: Color(0xFFC8A97A),
-              ),
-          ],
         ),
       ),
     );
@@ -283,10 +223,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF2C2318),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF5C4033),
-                    width: 1,
-                  ),
+                  border: Border.all(color: const Color(0xFF5C4033), width: 1),
                 ),
                 child: const Text(
                   'リセット',
@@ -330,7 +267,6 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   void _handleReset() {
     setState(() {
       _tempFilters.clear();
-      _tempSortOrder = SortOrder.newestFirst;
     });
   }
 
@@ -340,7 +276,6 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     for (final filter in _tempFilters) {
       notifier.toggleFilter(filter);
     }
-    notifier.setSortOrder(_tempSortOrder);
     Navigator.pop(context);
   }
 }
