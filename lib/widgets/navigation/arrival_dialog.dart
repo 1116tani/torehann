@@ -10,11 +10,13 @@ import '../common/torenyan.dart';
 class ArrivalDialog extends StatelessWidget {
   final SpotModel spot;
   final VoidCallback onContinue;
+  final bool isLastSpot;
 
   const ArrivalDialog({
     super.key,
     required this.spot,
     required this.onContinue,
+    this.isLastSpot = false,
   });
 
   @override
@@ -86,7 +88,7 @@ class ArrivalDialog extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  '次へ進む',
+                  isLastSpot ? 'リザルト画面へ' : '次へ進む',
                   style: NavigationUiConstants.serifBody.copyWith(
                     color: NavigationUiConstants.cream,
                     fontWeight: FontWeight.w700,

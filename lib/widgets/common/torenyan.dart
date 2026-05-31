@@ -50,6 +50,7 @@ class Torenyan extends StatefulWidget {
   final bool enableTap;
   final TorenyanState state;
   final bool showSpeechBubble;
+  final List<String>? customLines;
 
   const Torenyan({
     super.key,
@@ -57,6 +58,7 @@ class Torenyan extends StatefulWidget {
     this.enableTap = true,
     this.state = TorenyanState.idle,
     this.showSpeechBubble = true,
+    this.customLines,
   });
 
   @override
@@ -77,16 +79,38 @@ class _TorenyanState extends State<Torenyan> {
   @override
   void didUpdateWidget(Torenyan oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.state != widget.state) {
+    
+    // Compare customLines content or state
+    bool linesChanged = oldWidget.state != widget.state ||
+        oldWidget.customLines != widget.customLines;
+
+    if (!linesChanged && oldWidget.customLines != null && widget.customLines != null) {
+      if (oldWidget.customLines!.length != widget.customLines!.length) {
+        linesChanged = true;
+      } else {
+        for (int i = 0; i < oldWidget.customLines!.length; i++) {
+          if (oldWidget.customLines![i] != widget.customLines![i]) {
+            linesChanged = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (linesChanged) {
       _updateLine();
     }
   }
 
   void _updateLine() {
-    final lines = TorenyanLines.getLines(widget.state);
+    final lines = widget.customLines ?? TorenyanLines.getLines(widget.state);
     if (lines.isNotEmpty) {
       setState(() {
         _currentLine = lines[_random.nextInt(lines.length)];
+      });
+    } else {
+      setState(() {
+        _currentLine = '';
       });
     }
   }
@@ -94,7 +118,7 @@ class _TorenyanState extends State<Torenyan> {
   void _changeLine() {
     if (!widget.enableTap) return;
 
-    final lines = TorenyanLines.getLines(widget.state);
+    final lines = widget.customLines ?? TorenyanLines.getLines(widget.state);
     if (lines.length <= 1) return;
 
     // 前と違うセリフを選ぶようにループ

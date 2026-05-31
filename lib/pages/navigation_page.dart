@@ -19,11 +19,13 @@ import '../providers/navigation_provider.dart';
 import '../router/route_names.dart';
 import '../services/directions_service.dart';
 import '../utils/polyline_utils.dart';
+import '../widgets/common/torenyan.dart';
 import '../widgets/navigation/arrival_dialog.dart';
 import '../widgets/navigation/navigation_draggable_sheet.dart';
 import '../widgets/navigation/navigation_map_controls.dart';
 import '../widgets/navigation/next_spot_header.dart';
-import '../widgets/navigation/torenyan_nav_bubble.dart';
+
+enum TorenyanNavMode { moving, offRoute, arrived }
 
 class NavigationPage extends ConsumerStatefulWidget {
   const NavigationPage({super.key});
@@ -37,6 +39,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
   StreamSubscription<Position>? _locationSub;
   StreamSubscription<CompassEvent>? _compassSub;
   Timer? _arrivalTimer;
+  final DraggableScrollableController _sheetController = DraggableScrollableController();
 
   Position? _lastPosition;
   double _compassHeading = 0;
@@ -58,11 +61,16 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
   void initState() {
     super.initState();
     _loadMapStyle();
+    _sheetController.addListener(_onSheetChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startLocationStream();
       _startCompassStream();
       _startArrivalTimer();
     });
+  }
+
+  void _onSheetChanged() {
+    setState(() {});
   }
 
   Future<void> _loadMapStyle() async {
@@ -80,6 +88,8 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
   @override
   void dispose() {
+    _sheetController.removeListener(_onSheetChanged);
+    _sheetController.dispose();
     _locationSub?.cancel();
     _compassSub?.cancel();
     _arrivalTimer?.cancel();
@@ -194,6 +204,9 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
       Vibration.vibrate(duration: 200);
     }
 
+    final nav = ref.read(navigationProvider);
+    final isLast = nav.routeSpots.isNotEmpty && nav.routeSpots.last.id == spot.id;
+
     if (!mounted) return;
 
     await showDialog<void>(
@@ -201,6 +214,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
       barrierDismissible: false,
       builder: (context) => ArrivalDialog(
         spot: spot,
+        isLastSpot: isLast,
         onContinue: () => Navigator.of(context).pop(),
       ),
     );
@@ -211,6 +225,13 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     ref.read(navigationProvider.notifier).checkInNextSpot();
     _pendingArrivalSpotId = null;
     _lastRouteFetchDestId = null;
+
+    if (isLast) {
+      if (mounted) {
+        context.go(AppRoutes.result);
+      }
+      return;
+    }
 
     if (_lastPosition != null) {
       _maybeFetchRoute(_lastPosition!);
@@ -384,6 +405,28 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     return TorenyanNavMode.moving;
   }
 
+  List<String> _torenyanLines(NavigationState nav) {
+    final mode = _torenyanMode(nav);
+    return switch (mode) {
+      TorenyanNavMode.moving => [
+          'この道を進めば、物語の続きが見えるよ',
+          '冒険の道中も、何か見つかるかもしれないね',
+          '一歩ずつ進んでいこう！',
+          '目的地まであと少しかな？',
+        ],
+      TorenyanNavMode.offRoute => [
+          '道から外れちゃった…戻ろうか',
+          'あれれ、どこに行くの？元の道に戻ろう',
+          'ちょっと寄り道？迷子にならないでね',
+        ],
+      TorenyanNavMode.arrived => [
+          '着いたね！ここで何か見つかるかも',
+          '目的地に到着！次のスポットを探そう',
+          'ここがチェックポイントだよ、お疲れ様！',
+        ],
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final nav = ref.watch(navigationProvider);
@@ -416,6 +459,9 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
         : (nav.nextSpot != null
               ? LatLng(nav.nextSpot!.lat, nav.nextSpot!.lng)
               : _defaultPosition);
+
+    final sheetSize = _sheetController.isAttached ? _sheetController.size : 0.12;
+    final bottomOffset = MediaQuery.sizeOf(context).height * sheetSize;
 
     return Scaffold(
       body: Stack(
@@ -458,22 +504,47 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               ),
             ),
 
+          if (!isCompleted && nav.nextSpot != null)
+            Positioned(
+              top: 150,
+              right: 16,
+              child: SafeArea(
+                child: FloatingActionButton.extended(
+                  onPressed: () => _showArrivalDialog(nav.nextSpot!),
+                  backgroundColor: const Color(0xFFC8A97A),
+                  foregroundColor: const Color(0xFF2C2318),
+                  icon: const Icon(Icons.check_circle_outline),
+                  label: const Text(
+                    '到着判定',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+
           Positioned(
             right: 16,
-            bottom: MediaQuery.sizeOf(context).height * 0.14 + 16,
+            bottom: bottomOffset + 16,
             child: NavigationMapControls(
               onCompass: _resetCompass,
               onRecenter: _recenter,
             ),
           ),
 
-          Positioned(
-            left: 12,
-            bottom: MediaQuery.sizeOf(context).height * 0.14 + 8,
-            child: TorenyanNavBubble(mode: _torenyanMode(nav)),
-          ),
+          if (!isCompleted)
+            Positioned(
+              top: MediaQuery.sizeOf(context).height * (1 - sheetSize) - 220,
+              left: 15,
+              child: Torenyan(
+                size: 210,
+                enableTap: true,
+                showSpeechBubble: true,
+                customLines: _torenyanLines(nav),
+              ),
+            ),
 
           DraggableScrollableSheet(
+            controller: _sheetController,
             initialChildSize: 0.12,
             minChildSize: 0.12,
             maxChildSize: 0.5,
@@ -481,7 +552,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               return NavigationDraggableSheet(
                 scrollController: scrollController,
                 nextSpot: nav.nextSpot,
-                distanceToNext: nav.distanceToNextSpot,
+                distanceLabel: distanceLabel,
                 allSpots: nav.routeSpots,
                 visitedSpotIds: nav.visitedSpotIds,
                 onQuit: _confirmQuit,

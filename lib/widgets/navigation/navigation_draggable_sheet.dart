@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 
 import '../../constants/navigation_ui_constants.dart';
 import '../../models/spot_model.dart';
-import '../../utils/polyline_utils.dart';
 
 class NavigationDraggableSheet extends StatelessWidget {
   final ScrollController scrollController;
   final SpotModel? nextSpot;
-  final double? distanceToNext;
+  final String distanceLabel;
   final List<SpotModel> allSpots;
   final Set<String> visitedSpotIds;
   final VoidCallback onQuit;
@@ -18,7 +17,7 @@ class NavigationDraggableSheet extends StatelessWidget {
     super.key,
     required this.scrollController,
     required this.nextSpot,
-    required this.distanceToNext,
+    required this.distanceLabel,
     required this.allSpots,
     required this.visitedSpotIds,
     required this.onQuit,
@@ -31,9 +30,7 @@ class NavigationDraggableSheet extends StatelessWidget {
         : (nextSpot!.aiStoryName.isNotEmpty
               ? nextSpot!.aiStoryName
               : nextSpot!.name);
-    final distance = distanceToNext != null
-        ? formatDistance(distanceToNext!)
-        : '—';
+    final distance = distanceLabel;
 
     return Material(
       color: NavigationUiConstants.cream,
