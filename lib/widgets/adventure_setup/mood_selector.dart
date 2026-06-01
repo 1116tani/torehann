@@ -80,6 +80,8 @@ class _MoodButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     return AnimatedScale(
       duration: const Duration(milliseconds: 180),
 
@@ -101,12 +103,12 @@ class _MoodButton extends StatelessWidget {
             height: 112,
 
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.selectedItem : AppColors.surface,
+              color: isSelected ? colors.selectedItem : colors.surface,
 
               borderRadius: BorderRadius.circular(AppSizes.radiusL),
 
               border: Border.all(
-                color: isSelected ? AppColors.primary : AppColors.border,
+                color: isSelected ? colors.primary : colors.border,
 
                 width: isSelected ? 1.6 : 1,
               ),
@@ -114,7 +116,7 @@ class _MoodButton extends StatelessWidget {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.22),
+                        color: colors.primary.withValues(alpha: 0.22),
 
                         blurRadius: 18,
 
@@ -147,10 +149,10 @@ class _MoodButton extends StatelessWidget {
 
                   textAlign: TextAlign.center,
 
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: textStyles.bodyMedium.copyWith(
                     color: isSelected
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary,
+                        ? colors.textPrimary
+                        : colors.textSecondary,
 
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   ),

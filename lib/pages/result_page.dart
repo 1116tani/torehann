@@ -10,10 +10,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../constants/app_colors.dart';
+import '../constants/app_gradients.dart';
 import '../models/result_model.dart';
 import '../providers/level_provider.dart';
 import '../providers/result_provider.dart';
 import '../providers/navigation_provider.dart';
+import '../providers/settings_provider.dart';
 import '../router/route_names.dart';
 
 class ResultPage extends ConsumerStatefulWidget {
@@ -34,33 +36,43 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   @override
   void initState() {
     super.initState();
-    _loadMapStyle();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final themeMode = ref.read(settingsProvider).themeMode;
+      _loadMapStyle(themeMode);
+    });
   }
 
-  Future<void> _loadMapStyle() async {
+  Future<void> _loadMapStyle(String themeMode) async {
+    if (themeMode == 'daylight') {
+      if (mounted) {
+        setState(() => _mapStyle = null);
+      }
+      return;
+    }
     try {
       final style = await rootBundle.loadString(
         'assets/map_styles/dark_fantasy_map.json',
       );
-      setState(() => _mapStyle = style);
+      if (mounted) {
+        setState(() => _mapStyle = style);
+      }
     } catch (e) {
       debugPrint('Error loading map style: $e');
     }
   }
 
-  // _checkLevelUp is now managed via ref.listen in the build method
-
   void _showLevelUpDialog(int oldLevel, int newLevel, int expGained) {
     if (!mounted) return;
+    final colors = AppColors.of(context);
 
     showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.primary, width: 2.0),
+          side: BorderSide(color: colors.primary, width: 2.0),
         ),
         title: Center(
           child: Text(
@@ -68,16 +80,16 @@ class _ResultPageState extends ConsumerState<ResultPage> {
             style: GoogleFonts.notoSerifJp(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              color: colors.primary,
             ),
           ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.stars_rounded,
-              color: AppColors.primary,
+              color: colors.primary,
               size: 80,
             ),
             const SizedBox(height: 16),
@@ -86,7 +98,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               style: GoogleFonts.notoSerifJp(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -95,7 +107,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               textAlign: TextAlign.center,
               style: GoogleFonts.notoSerifJp(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ),
           ],
@@ -108,8 +120,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                 ref.read(levelProvider.notifier).addXp(expGained);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.background,
+                backgroundColor: colors.primary,
+                foregroundColor: colors.background,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -124,6 +136,15 @@ class _ResultPageState extends ConsumerState<ResultPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    ref.listen<String>(settingsProvider.select((s) => s.themeMode), (prev, next) {
+      if (prev != next) {
+        _loadMapStyle(next);
+      }
+    });
+
     ref.listen<ResultState>(resultProvider, (previous, next) {
       if (widget.isFromHistory) return;
       if (next.result != null && (previous == null || previous.result == null)) {
@@ -148,25 +169,25 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     final result = resultState.result;
 
     if (resultState.isLoading || result == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
+      return Scaffold(
+        backgroundColor: colors.background,
         body: Center(
           child: CircularProgressIndicator(
-            color: AppColors.primary,
+            color: colors.primary,
           ),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: Stack(
         children: [
           SafeArea(
             child: Column(
               children: [
                 // ── 1. ヘッダー ──
-                _buildHeader(),
+                _buildHeader(context),
 
                 // ── スクロール本体 ──
                 Expanded(
@@ -176,46 +197,30 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                       18,
                       10,
                       18,
-                      widget.isFromHistory ? 40 : 120, // パターンAの場合はホームボタン固定枠を避けるため多めにパディング
+                      widget.isFromHistory ? 40 : 120,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── セクション1: 冒険サマリー ＆ レベル余韻 ──
-                        _buildSummarySection(result),
-
+                        _buildSummarySection(context, result),
                         const SizedBox(height: 30),
-
-                        // ── セクション2: 旅の軌跡 ──
-                        _buildMapSection(result),
-
+                        _buildMapSection(context, result),
                         const SizedBox(height: 30),
-
-                        // ── セクション3: 冒険アルバム ──
                         if (result.photos.isNotEmpty) ...[
-                          _buildAlbumSection(result),
+                          _buildAlbumSection(context, result),
                           const SizedBox(height: 30),
                         ],
-
-                        // ── セクション4: AIの旅日記 ──
-                        _buildAiJournalSection(result),
-
+                        _buildAiJournalSection(context, result),
                         const SizedBox(height: 30),
-
-                        // ── セクション5: 手に入れた街の断片 ──
                         if (result.fragments.isNotEmpty) ...[
-                          _buildFragmentsSection(result),
+                          _buildFragmentsSection(context, result),
                           const SizedBox(height: 30),
                         ],
-
-                        // ── セクション6: 解除した実績 ──
                         if (result.achievements.isNotEmpty) ...[
-                          _buildAchievementsSection(result),
+                          _buildAchievementsSection(context, result),
                           const SizedBox(height: 30),
                         ],
-
-                        // ── セクション8: 思い出の共有 (SNSシェア) ──
-                        _buildShareSection(result),
+                        _buildShareSection(context, result),
                       ],
                     ),
                   ),
@@ -224,7 +229,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
             ),
           ),
 
-          // ── 最下部固定：ホームへ戻るボタン ──
           if (!widget.isFromHistory)
             Positioned(
               left: 16,
@@ -235,7 +239,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    // ナビゲーションのメモリをクリアしてホームに戻る
                     ref.read(navigationProvider.notifier).finishAdventure();
                     Future.microtask(() {
                       if (context.mounted) {
@@ -244,8 +247,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                     });
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.background,
+                    backgroundColor: colors.primary,
+                    foregroundColor: colors.background,
                     elevation: 8,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -266,21 +269,18 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  // ─────────────────────────────────────────
-  // 1. ヘッダー (遷移元による出し分け)
-  // ─────────────────────────────────────────
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final colors = AppColors.of(context);
     if (widget.isFromHistory) {
-      // パターンB：履歴から開く
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Row(
           children: [
             IconButton(
               onPressed: () => context.pop(),
-              icon: const Icon(
+              icon: Icon(
                 Icons.arrow_back_ios_new_rounded,
-                color: AppColors.secondary,
+                color: colors.secondary,
               ),
             ),
             const SizedBox(width: 8),
@@ -291,7 +291,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   Text(
                     '冒険の記録',
                     style: GoogleFonts.notoSerifJp(
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -299,7 +299,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   Text(
                     'ADVENTURE RESULT',
                     style: GoogleFonts.notoSerifJp(
-                      color: AppColors.textMuted,
+                      color: colors.textMuted,
                       fontSize: 10,
                       letterSpacing: 2,
                     ),
@@ -311,7 +311,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
         ),
       );
     } else {
-      // パターンA：ナビ終了直後
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Center(
@@ -320,7 +319,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               Text(
                 'RESULT',
                 style: GoogleFonts.notoSerifJp(
-                  color: AppColors.primary,
+                  color: colors.primary,
                   fontSize: 12,
                   letterSpacing: 4,
                   fontWeight: FontWeight.bold,
@@ -330,7 +329,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               Text(
                 '冒険の記録',
                 style: GoogleFonts.notoSerifJp(
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -339,7 +338,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               Container(
                 width: 60,
                 height: 1.5,
-                color: AppColors.border,
+                color: colors.border,
               ),
             ],
           ),
@@ -348,10 +347,9 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     }
   }
 
-  // ─────────────────────────────────────────
-  // セクション1：冒険サマリー ＆ レベル余韻
-  // ─────────────────────────────────────────
-  Widget _buildSummarySection(AdventureResult result) {
+  Widget _buildSummarySection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final levelState = ref.watch(levelProvider);
     final dateStr = DateFormat('yyyy/MM/dd').format(result.completedAt);
     final remainingXp = levelState.nextLevelXp - levelState.currentLevelXp;
@@ -359,40 +357,37 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ルート名
         Text(
           result.title,
           style: GoogleFonts.notoSerifJp(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+            color: colors.primary,
             height: 1.3,
           ),
         ),
         const SizedBox(height: 8),
-
-        // 日付・ステータス
         Row(
           children: [
             Text(
               dateStr,
               style: GoogleFonts.notoSerifJp(
                 fontSize: 13,
-                color: AppColors.textMuted,
+                color: colors.textMuted,
               ),
             ),
             const SizedBox(width: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.primary, width: 1),
+                border: Border.all(color: colors.primary, width: 1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 '完走',
                 style: GoogleFonts.notoSerifJp(
                   fontSize: 11,
-                  color: AppColors.primary,
+                  color: colors.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -400,53 +395,51 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           ],
         ),
         const SizedBox(height: 20),
-
-        // 記日風のサマリーパラグラフ
         Container(
           padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: AppColors.divider, width: 0.5),
-              bottom: BorderSide(color: AppColors.divider, width: 0.5),
+              top: BorderSide(color: colors.divider, width: 0.5),
+              bottom: BorderSide(color: colors.divider, width: 0.5),
             ),
           ),
           child: Text.rich(
             TextSpan(
               style: GoogleFonts.notoSerifJp(
                 fontSize: 15,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 height: 1.8,
               ),
               children: [
                 const TextSpan(text: 'この日、私たちは '),
                 TextSpan(
                   text: '${result.distanceKm.toStringAsFixed(1)}km',
-                  style: const TextStyle(
-                    color: AppColors.primary,
+                  style: TextStyle(
+                    color: colors.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const TextSpan(text: ' の路を歩み、'),
                 TextSpan(
                   text: '${result.steps}歩',
-                  style: const TextStyle(
-                    color: AppColors.primary,
+                  style: TextStyle(
+                    color: colors.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const TextSpan(text: ' の足跡を残した。総所要時間は '),
                 TextSpan(
                   text: '${result.durationMinutes}分',
-                  style: const TextStyle(
-                    color: AppColors.primary,
+                  style: TextStyle(
+                    color: colors.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const TextSpan(text: '。この旅を通じて、私たちは新たに '),
                 TextSpan(
                   text: '+${result.expGained} EXP',
-                  style: const TextStyle(
-                    color: AppColors.primary,
+                  style: TextStyle(
+                    color: colors.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -456,15 +449,13 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           ),
         ),
         const SizedBox(height: 20),
-
-        // レベル余韻（ナビ直後のみ表示）
         if (!widget.isFromHistory) ...[
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border, width: 1),
+              border: Border.all(color: colors.border, width: 1),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,26 +468,25 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                       style: GoogleFonts.notoSerifJp(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                       ),
                     ),
                     Text(
                       '次のレベルまで あと $remainingXp EXP',
                       style: GoogleFonts.notoSerifJp(
                         fontSize: 12,
-                        color: AppColors.textMuted,
+                        color: colors.textMuted,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                // 経験値ゲージ
                 Stack(
                   children: [
                     Container(
                       height: 10,
                       decoration: BoxDecoration(
-                        color: AppColors.background,
+                        color: colors.background,
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
@@ -506,13 +496,11 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                       height: 10,
                       width: (MediaQuery.sizeOf(context).width - 68) * levelState.progress,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: AppColors.goldGradient,
-                        ),
+                        gradient: AppGradients.of(context).gold,
                         borderRadius: BorderRadius.circular(5),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
+                            color: colors.primary.withValues(alpha: 0.3),
                             blurRadius: 6,
                             spreadRadius: 1,
                           ),
@@ -529,12 +517,9 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  // ─────────────────────────────────────────
-  // セクション2：旅の軌跡
-  // ─────────────────────────────────────────
-  Widget _buildMapSection(AdventureResult result) {
-    // 実際に歩いた軌跡を構成
-    // navigationProvider にアクティブなルートがあれば使用し、なければ東京駅周辺のモックを使用
+  Widget _buildMapSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final navState = ref.read(navigationProvider);
     final routePoints = navState.currentRoute?.generatedSpots
             .map((s) => LatLng(s.lat, s.lng))
@@ -564,7 +549,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
       ),
     };
 
-    // 途中のチェックポイントを追加
     for (int i = 1; i < routePoints.length - 1; i++) {
       markers.add(
         Marker(
@@ -577,20 +561,18 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     }
 
     final polylines = <Polyline>{
-      // 発光演出のための太い半透明ポリライン
       Polyline(
         polylineId: const PolylineId('route_glow'),
         points: routePoints,
-        color: AppColors.primary.withValues(alpha: 0.35),
+        color: colors.primary.withValues(alpha: 0.35),
         width: 10,
         startCap: Cap.roundCap,
         endCap: Cap.roundCap,
       ),
-      // はっきりしたゴールドのポリライン
       Polyline(
         polylineId: const PolylineId('route_core'),
         points: routePoints,
-        color: AppColors.primary,
+        color: colors.primary,
         width: 4,
         startCap: Cap.roundCap,
         endCap: Cap.roundCap,
@@ -620,7 +602,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           style: GoogleFonts.notoSerifJp(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -628,22 +610,21 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           height: 240,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border, width: 1.5),
+            border: Border.all(color: colors.border, width: 1.5),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(14),
             child: Stack(
               children: [
                 mapWidget,
-                // 右下：拡大ボタン
                 Positioned(
                   right: 12,
                   bottom: 12,
                   child: ElevatedButton.icon(
                     onPressed: () => _openFullscreenMap(context, startPoint, markers, polylines),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.surface,
-                      foregroundColor: AppColors.primary,
+                      backgroundColor: colors.surface,
+                      foregroundColor: colors.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -665,10 +646,12 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   void _openFullscreenMap(BuildContext context, LatLng startPoint, Set<Marker> markers, Set<Polyline> polylines) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog<void>(
       context: context,
       builder: (context) => Dialog.fullscreen(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         child: Stack(
           children: [
             GoogleMap(
@@ -684,15 +667,14 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               markers: markers,
               polylines: polylines,
             ),
-            // 左上：閉じるボタン
             Positioned(
               top: 40,
               left: 16,
               child: SafeArea(
                 child: CircleAvatar(
-                  backgroundColor: AppColors.surface,
+                  backgroundColor: colors.surface,
                   child: IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.textPrimary),
+                    icon: Icon(Icons.close, color: colors.textPrimary),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -704,11 +686,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  // ─────────────────────────────────────────
-  // セクション3：冒険アルバム
-  // ─────────────────────────────────────────
-  Widget _buildAlbumSection(AdventureResult result) {
-    // 傾きの角度と配置のアライメントを設定（アルバムに手貼りされたような演出）
+  Widget _buildAlbumSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
     final angles = [-0.04, 0.03, -0.02];
     final alignments = [Alignment.centerLeft, Alignment.centerRight, Alignment.centerLeft];
 
@@ -720,7 +699,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           style: GoogleFonts.notoSerifJp(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 16),
@@ -750,7 +729,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 写真本体 (Heroアニメーション対応)
                       GestureDetector(
                         onTap: () => _openFullscreenImage(context, photo.imageUrl, photo.caption),
                         child: AspectRatio(
@@ -768,7 +746,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // キャプション（手書き風の筆記体・斜体）
                       Center(
                         child: Text(
                           photo.caption,
@@ -793,6 +770,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   void _openFullscreenImage(BuildContext context, String imageUrl, String caption) {
+    final colors = AppColors.of(context);
     Navigator.of(context).push(
       PageRouteBuilder<void>(
         opaque: false,
@@ -801,13 +779,11 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           backgroundColor: Colors.black.withValues(alpha: 0.9),
           body: Stack(
             children: [
-              // 閉じるためのタップエリア
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => Navigator.of(context).pop(),
                 child: const SizedBox.expand(),
               ),
-              // 画像本体
               Center(
                 child: Hero(
                   tag: imageUrl,
@@ -816,21 +792,19 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   ),
                 ),
               ),
-              // 上部の閉じるボタン
               Positioned(
                 top: 40,
                 right: 16,
                 child: SafeArea(
                   child: CircleAvatar(
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: colors.surface,
                     child: IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.textPrimary),
+                      icon: Icon(Icons.close, color: colors.textPrimary),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ),
                 ),
               ),
-              // 下部のキャプション
               Positioned(
                 left: 16,
                 right: 16,
@@ -840,13 +814,13 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.surface.withValues(alpha: 0.8),
+                        color: colors.surface.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         caption,
                         style: GoogleFonts.notoSerifJp(
-                          color: AppColors.textPrimary,
+                          color: colors.textPrimary,
                           fontSize: 14,
                         ),
                       ),
@@ -861,10 +835,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  // ─────────────────────────────────────────
-  // セクション4：AIの旅日記
-  // ─────────────────────────────────────────
-  Widget _buildAiJournalSection(AdventureResult result) {
+  Widget _buildAiJournalSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -873,11 +845,10 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           style: GoogleFonts.notoSerifJp(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
-        // アンティークな紙の質感のカード
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(24),
@@ -895,7 +866,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           ),
           child: Stack(
             children: [
-              // 羽ペン（ quills ）のワンポイントデコレーション（右上）
               const Positioned(
                 right: 0,
                 top: 0,
@@ -939,10 +909,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  // ─────────────────────────────────────────
-  // セクション5：手に入れた街の断片
-  // ─────────────────────────────────────────
-  Widget _buildFragmentsSection(AdventureResult result) {
+  Widget _buildFragmentsSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -951,7 +919,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           style: GoogleFonts.notoSerifJp(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -959,9 +927,9 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: colors.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border, width: 1),
+            border: Border.all(color: colors.border, width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -970,7 +938,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                 '本の目次のように、街の記憶が断片として紡ぎ出された。',
                 style: GoogleFonts.notoSerifJp(
                   fontSize: 12,
-                  color: AppColors.textMuted,
+                  color: colors.textMuted,
                 ),
               ),
               const SizedBox(height: 16),
@@ -979,9 +947,9 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.auto_stories_rounded,
-                        color: AppColors.primary,
+                        color: colors.primary,
                         size: 18,
                       ),
                       const SizedBox(width: 12),
@@ -990,7 +958,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                         style: GoogleFonts.notoSerifJp(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ],
@@ -1004,10 +972,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  // ─────────────────────────────────────────
-  // セクション6：解除した実績
-  // ─────────────────────────────────────────
-  Widget _buildAchievementsSection(AdventureResult result) {
+  Widget _buildAchievementsSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1016,7 +982,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           style: GoogleFonts.notoSerifJp(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -1024,10 +990,10 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           children: result.achievements.map((achievement) {
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
-              color: AppColors.surface,
+              color: colors.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: AppColors.border, width: 1),
+                side: BorderSide(color: colors.border, width: 1),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -1036,13 +1002,13 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
+                        color: colors.surfaceLight,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.primary, width: 1.5),
+                        border: Border.all(color: colors.primary, width: 1.5),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.emoji_events_rounded,
-                        color: AppColors.primary,
+                        color: colors.primary,
                         size: 24,
                       ),
                     ),
@@ -1056,7 +1022,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                             style: GoogleFonts.notoSerifJp(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
+                              color: colors.primary,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -1065,7 +1031,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                             style: GoogleFonts.notoSerifJp(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: colors.textPrimary,
                             ),
                           ),
                         ],
@@ -1081,28 +1047,26 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  // ─────────────────────────────────────────
-  // セクション8：思い出の共有 (SNSシェア)
-  // ─────────────────────────────────────────
-  Widget _buildShareSection(AdventureResult result) {
+  Widget _buildShareSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
     return Column(
       children: [
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(child: Divider(color: AppColors.divider, thickness: 0.5)),
+            Expanded(child: Divider(color: colors.divider, thickness: 0.5)),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
                 '冒険を振り返る',
                 style: TextStyle(
-                  color: AppColors.secondary,
+                  color: colors.secondary,
                   fontSize: 12,
                   letterSpacing: 1.5,
                 ),
               ),
             ),
-            Expanded(child: Divider(color: AppColors.divider, thickness: 0.5)),
+            Expanded(child: Divider(color: colors.divider, thickness: 0.5)),
           ],
         ),
         const SizedBox(height: 20),
@@ -1112,19 +1076,19 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           child: OutlinedButton.icon(
             onPressed: () => _onShare(context, result),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.textPrimary,
-              side: const BorderSide(color: AppColors.primary, width: 1.5),
+              foregroundColor: colors.textPrimary,
+              side: BorderSide(color: colors.primary, width: 1.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            icon: const Icon(Icons.share_rounded, color: AppColors.primary, size: 20),
+            icon: Icon(Icons.share_rounded, color: colors.primary, size: 20),
             label: Text(
               'この冒険を共有する',
               style: GoogleFonts.notoSerifJp(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: colors.primary,
               ),
             ),
           ),
@@ -1134,6 +1098,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   void _onShare(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
     final shareText = '''
 📜 ${result.title}
 🗺️ ${result.distanceKm.toStringAsFixed(1)}km を冒険しました！
@@ -1146,21 +1111,21 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          side: BorderSide(color: colors.primary, width: 1.5),
         ),
         title: Row(
           children: [
-            const Icon(Icons.mark_email_unread_outlined, color: AppColors.primary),
+            Icon(Icons.mark_email_unread_outlined, color: colors.primary),
             const SizedBox(width: 10),
             Text(
               'シェア用ポストカード',
               style: GoogleFonts.notoSerifJp(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ),
           ],
@@ -1208,7 +1173,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('閉じる', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('閉じる', style: TextStyle(color: colors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1217,8 +1182,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               _showSnackBar('📋 クリップボードに共有テキストをコピーしました！');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.background,
+              backgroundColor: colors.primary,
+              foregroundColor: colors.background,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -1231,17 +1196,18 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   void _showSnackBar(String text) {
+    final colors = AppColors.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: const Color(0xFF2C2318),
+        backgroundColor: colors.surface,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
         content: Text(
           text,
-          style: const TextStyle(
-            color: Color(0xFFF5EDD8),
+          style: TextStyle(
+            color: colors.textPrimary,
           ),
         ),
       ),

@@ -11,6 +11,7 @@ import 'firebase_options.dart';
 import 'router/app_router.dart';
 import 'themes/app_theme.dart';
 import 'services/local_storage_service.dart';
+import 'providers/settings_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,18 +41,25 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeModeSetting = ref.watch(settingsProvider.select((s) => s.themeMode));
+
+    // 'adventure' or 'default' -> dark, 'daylight' -> light
+    final isDaylight = themeModeSetting == 'daylight';
+
     return MaterialApp.router(
       title: 'Tale Trace',
 
       debugShowCheckedModeBanner: false,
 
       // Theme
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: isDaylight ? ThemeMode.light : ThemeMode.dark,
 
       // Router
       routerConfig: appRouter,

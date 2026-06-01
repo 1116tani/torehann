@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../constants/app_colors.dart';
 import '../../constants/app_sizes.dart';
 import '../../models/settings_model.dart';
 import '../../providers/settings_provider.dart';
@@ -74,6 +75,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final hasChanges = settings != _initialState;
+    final colors = AppColors.of(context);
 
     return PopScope(
       canPop: !hasChanges,
@@ -82,7 +84,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         await _handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF1C1610), // 渋くてカッコいいダークブラウン
+        backgroundColor: colors.background,
         body: SafeArea(
           child: Column(
             children: [
@@ -135,7 +137,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       SettingsTile(
                         icon: Icons.palette_outlined,
                         title: 'マップスタイル・文字・テーマ',
-                        subtitle: 'マップ: ${settings.mapStyle == 'game' ? 'ゲーム風' : settings.mapStyle == 'satellite' ? '航空写真' : '地形'} / テーマ: ${settings.themeMode}',
+                        subtitle: 'マップ: ${settings.mapStyle == 'game' ? 'ゲーム風' : settings.mapStyle == 'satellite' ? '航空写真' : '地形'} / テーマ: ${settings.themeMode == 'daylight' ? 'Daylight Mode' : 'Adventure Mode'}',
                         onTap: () => _showModal(context, const AppearanceModal()),
                       ),
 
@@ -178,10 +180,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       ),
 
                       const SizedBox(height: AppSizes.p24),
-                      const Center(
+                      Center(
                         child: Text(
                           'アプリのバージョン v1.0.0',
-                          style: TextStyle(color: Color(0xFF5C4033), fontSize: 12),
+                          style: TextStyle(color: colors.textMuted, fontSize: 12),
                         ),
                       ),
                       const SizedBox(height: AppSizes.p32),
@@ -211,9 +213,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   void _showSupportActions(BuildContext context) {
+    final colors = AppColors.of(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF2C2318),
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -223,23 +226,23 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
+            Text(
               '🧭 サポートメニュー',
-              style: TextStyle(color: Color(0xFFF5EDD8), fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
-            const Divider(color: Color(0xFF4A3728), height: 24),
+            Divider(color: colors.divider, height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1C1610),
-                foregroundColor: const Color(0xFFC8A97A),
+                backgroundColor: colors.surfaceLight,
+                foregroundColor: colors.primary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('チュートリアルを再生します（デモ）'), backgroundColor: Color(0xFF4A3728)),
+                  SnackBar(content: const Text('チュートリアルを再生します（デモ）'), backgroundColor: colors.surfaceLight),
                 );
               },
               child: const Text('チュートリアルをもう一度見る', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -247,15 +250,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             const SizedBox(height: 12),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1C1610),
-                foregroundColor: const Color(0xFFC8A97A),
+                backgroundColor: colors.surfaceLight,
+                foregroundColor: colors.primary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('フィードバック送信フォームを開きます（デモ）'), backgroundColor: Color(0xFF4A3728)),
+                  SnackBar(content: const Text('フィードバック送信フォームを開きます（デモ）'), backgroundColor: colors.surfaceLight),
                 );
               },
               child: const Text('フィードバックを送信する', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -263,8 +266,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             const SizedBox(height: 12),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1C1610),
-                foregroundColor: const Color(0xFF8B7355),
+                backgroundColor: colors.surfaceLight,
+                foregroundColor: colors.textSecondary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -282,35 +285,36 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   // 離脱確認ダイアログ
   Future<String?> _showDiscardConfirmDialog(BuildContext context) async {
+    final colors = AppColors.of(context);
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2C2318),
+        backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFFC8A97A), width: 1.5),
+          side: BorderSide(color: colors.primary, width: 1.5),
         ),
-        title: const Text(
+        title: Text(
           '未保存の変更があります',
-          style: TextStyle(color: Color(0xFFF5EDD8), fontWeight: FontWeight.bold),
+          style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
         ),
-        content: const Text(
+        content: Text(
           '変更内容を保存してから戻りますか？',
-          style: TextStyle(color: Color(0xFF8B7355), height: 1.4),
+          style: TextStyle(color: colors.textSecondary, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, 'cancel'),
-            child: const Text('キャンセル', style: TextStyle(color: Color(0xFF7A5C3A))),
+            child: Text('キャンセル', style: TextStyle(color: colors.textMuted)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, 'discard'),
-            child: const Text('保存せずに戻る', style: TextStyle(color: Color(0xFF8B3A1F))),
+            child: const Text('保存せずに戻る', style: TextStyle(color: AppColors.error)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFC8A97A),
-              foregroundColor: const Color(0xFF1C1610),
+              backgroundColor: colors.primary,
+              foregroundColor: colors.background,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.pop(context, 'save'),
@@ -323,6 +327,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   // 中央ふわっとフェード保存完了通知
   void _showSaveSuccessOverlay() {
+    final colors = AppColors.of(context);
     showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.3),
@@ -348,9 +353,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFF2C2318),
+                color: colors.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFC8A97A), width: 1.5),
+                border: Border.all(color: colors.primary, width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.4),
@@ -359,21 +364,21 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   ),
                 ],
               ),
-              child: const Column(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.check_circle_outline,
-                    color: Color(0xFFC8A97A),
+                    color: colors.primary,
                     size: 40,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Material(
                     color: Colors.transparent,
                     child: Text(
                       '設定を保存しました',
                       style: TextStyle(
-                        color: Color(0xFFF5EDD8),
+                        color: colors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),

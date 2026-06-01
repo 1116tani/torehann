@@ -3,8 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/adventure_history_model.dart';
+import '../../constants/app_colors.dart';
 import '../../constants/app_sizes.dart';
+import '../../models/adventure_history_model.dart';
 
 class HistoryCard extends StatelessWidget {
   final AdventureHistoryModel history;
@@ -18,6 +19,7 @@ class HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
 
@@ -27,28 +29,23 @@ class HistoryCard extends StatelessWidget {
         ),
 
         decoration: BoxDecoration(
-          color: const Color(0xFF2C2318),
+          color: colors.surface,
 
           borderRadius:
               BorderRadius.circular(
-            AppSizes.radiusL,
-          ),
+                AppSizes.radiusL,
+              ),
 
           border: Border.all(
             color: history.isCompleted
-                ? const Color(
-                    0xFF6A4B33,
-                  )
-                : const Color(
-                    0xFF4A3728,
-                  ),
+                ? colors.primary.withValues(alpha: 0.6)
+                : colors.border,
             width: 0.8,
           ),
 
           boxShadow: [
             BoxShadow(
-              color: Colors.black
-                  .withValues(alpha: 0.28),
+              color: Colors.black.withValues(alpha: 0.15),
 
               blurRadius: 10,
 
@@ -90,10 +87,7 @@ class HistoryCard extends StatelessWidget {
 
                     decoration:
                         BoxDecoration(
-                      color:
-                          const Color(
-                        0xFF3D2B1F,
-                      ),
+                      color: colors.surfaceLight,
 
                       borderRadius:
                           BorderRadius
@@ -123,10 +117,8 @@ class HistoryCard extends StatelessWidget {
                       ),
 
                       style:
-                          const TextStyle(
-                        color: Color(
-                          0xFF7A5C3A,
-                        ),
+                          TextStyle(
+                        color: colors.textSecondary,
                         fontSize: 11,
                         letterSpacing:
                             0.3,
@@ -157,27 +149,25 @@ class HistoryCard extends StatelessWidget {
               ),
 
               child: Text(
-                history.title,
+                 history.title,
 
-                maxLines: 2,
+                 maxLines: 2,
 
-                overflow:
-                    TextOverflow
-                        .ellipsis,
+                 overflow:
+                     TextOverflow
+                         .ellipsis,
 
-                style:
-                    const TextStyle(
-                  color: Color(
-                    0xFFF5EDD8,
-                  ),
+                 style:
+                     TextStyle(
+                   color: colors.textPrimary,
 
-                  fontSize: 17,
+                   fontSize: 17,
 
-                  height: 1.4,
+                   height: 1.4,
 
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+                   fontWeight:
+                       FontWeight.bold,
+                 ),
               ),
             ),
 
@@ -248,10 +238,7 @@ class HistoryCard extends StatelessWidget {
 
                         decoration:
                             BoxDecoration(
-                          color:
-                              const Color(
-                            0xFF3D2B1F,
-                          ),
+                          color: colors.surfaceLight,
 
                           borderRadius:
                               BorderRadius.circular(
@@ -260,10 +247,7 @@ class HistoryCard extends StatelessWidget {
 
                           border:
                               Border.all(
-                            color:
-                                const Color(
-                              0xFF5C4033,
-                            ),
+                            color: colors.border,
                             width:
                                 0.5,
                           ),
@@ -273,11 +257,8 @@ class HistoryCard extends StatelessWidget {
                           f,
 
                           style:
-                              const TextStyle(
-                            color:
-                                Color(
-                              0xFFC8A97A,
-                            ),
+                              TextStyle(
+                            color: colors.primary,
 
                             fontSize:
                                 10,
@@ -302,6 +283,10 @@ class HistoryCard extends StatelessWidget {
               )
             else
               const _MapPlaceholder(),
+
+            // ─────────────────────
+            // フレンド
+            // ─────────────────────
 
             // ─────────────────────
             // フレンド
@@ -337,10 +322,7 @@ class HistoryCard extends StatelessWidget {
 
                         decoration:
                             BoxDecoration(
-                          color:
-                              const Color(
-                            0xFF4A3728,
-                          ),
+                          color: colors.surfaceLight,
 
                           shape:
                               BoxShape
@@ -348,23 +330,17 @@ class HistoryCard extends StatelessWidget {
 
                           border:
                               Border.all(
-                            color:
-                                const Color(
-                              0xFFC8A97A,
-                            ),
+                            color: colors.primary,
                             width:
                                 0.6,
                           ),
                         ),
 
                         child:
-                            const Icon(
+                            Icon(
                           Icons.person,
                           size: 16,
-                          color:
-                              Color(
-                            0xFFC8A97A,
-                          ),
+                          color: colors.primary,
                         ),
                       ),
                     ),
@@ -377,11 +353,8 @@ class HistoryCard extends StatelessWidget {
                         '+${history.friendIds.length - 4}',
 
                         style:
-                            const TextStyle(
-                          color:
-                              Color(
-                            0xFF7A5C3A,
-                          ),
+                            TextStyle(
+                          color: colors.textSecondary,
                           fontSize:
                               11,
                         ),
@@ -421,6 +394,7 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding:
           const EdgeInsets.symmetric(
@@ -430,24 +404,16 @@ class _StatusBadge extends StatelessWidget {
 
       decoration: BoxDecoration(
         color: isCompleted
-            ? const Color(
-                0xFF1E4A43,
-              ).withValues(alpha: 0.35)
-            : const Color(
-                0xFF5A3A2D,
-              ).withValues(alpha: 0.35),
+            ? AppColors.success.withValues(alpha: 0.15)
+            : AppColors.warning.withValues(alpha: 0.15),
 
         borderRadius:
             BorderRadius.circular(20),
 
         border: Border.all(
           color: isCompleted
-              ? const Color(
-                  0xFF57D6C9,
-                )
-              : const Color(
-                  0xFFC8A97A,
-                ),
+              ? AppColors.success
+              : colors.primary,
           width: 0.6,
         ),
       ),
@@ -459,12 +425,8 @@ class _StatusBadge extends StatelessWidget {
 
         style: TextStyle(
           color: isCompleted
-              ? const Color(
-                  0xFF57D6C9,
-                )
-              : const Color(
-                  0xFFC8A97A,
-                ),
+              ? AppColors.success
+              : colors.primary,
 
           fontSize: 10,
 
@@ -491,6 +453,7 @@ class _StatChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding:
           const EdgeInsets.symmetric(
@@ -499,17 +462,13 @@ class _StatChip extends StatelessWidget {
       ),
 
       decoration: BoxDecoration(
-        color: const Color(
-          0xFF3D2B1F,
-        ),
+        color: colors.surfaceLight,
 
         borderRadius:
             BorderRadius.circular(20),
 
         border: Border.all(
-          color: const Color(
-            0xFF5C4033,
-          ),
+          color: colors.border,
           width: 0.5,
         ),
       ),
@@ -522,9 +481,7 @@ class _StatChip extends StatelessWidget {
           Icon(
             icon,
             size: 14,
-            color: const Color(
-              0xFFC8A97A,
-            ),
+            color: colors.primary,
           ),
 
           const SizedBox(
@@ -535,10 +492,8 @@ class _StatChip extends StatelessWidget {
             label,
 
             style:
-                const TextStyle(
-              color: Color(
-                0xFFC8A97A,
-              ),
+                TextStyle(
+              color: colors.primary,
               fontSize: 11,
               fontWeight:
                   FontWeight.w600,
@@ -564,6 +519,7 @@ class _PhotoThumbnails
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding:
           const EdgeInsets.fromLTRB(
@@ -613,18 +569,13 @@ class _PhotoThumbnails
                     width: 96,
                     height: 74,
 
-                    color:
-                        const Color(
-                      0xFF3D2B1F,
-                    ),
+                    color: colors.surfaceLight,
 
                     child:
-                        const Icon(
+                        Icon(
                       Icons
                           .image_not_supported_outlined,
-                      color: Color(
-                        0xFF7A5C3A,
-                      ),
+                      color: colors.textMuted,
                     ),
                   );
                 },
@@ -647,6 +598,7 @@ class _MapPlaceholder
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       margin:
           const EdgeInsets.fromLTRB(
@@ -659,22 +611,18 @@ class _MapPlaceholder
       height: 68,
 
       decoration: BoxDecoration(
-        color: const Color(
-          0xFF1C1610,
-        ),
+        color: colors.background,
 
         borderRadius:
             BorderRadius.circular(10),
 
         border: Border.all(
-          color: const Color(
-            0xFF4A3728,
-          ),
+          color: colors.border,
           width: 0.5,
         ),
       ),
 
-      child: const Center(
+      child: Center(
         child: Row(
           mainAxisSize:
               MainAxisSize.min,
@@ -683,20 +631,16 @@ class _MapPlaceholder
             Icon(
               Icons.map_rounded,
               size: 16,
-              color: Color(
-                0xFF7A5C3A,
-              ),
+              color: colors.textMuted,
             ),
 
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
 
             Text(
               'ルート軌跡ログ',
 
               style: TextStyle(
-                color: Color(
-                  0xFF7A5C3A,
-                ),
+                color: colors.textMuted,
                 fontSize: 11,
               ),
             ),

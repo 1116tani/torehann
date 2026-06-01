@@ -27,6 +27,8 @@ class ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSizes.p24),
@@ -40,13 +42,13 @@ class ErrorView extends StatelessWidget {
           ),
 
           decoration: BoxDecoration(
-            color: AppColors.sheetBackground,
+            color: colors.background.withValues(alpha: 0.9),
 
             borderRadius: BorderRadius.circular(AppRadius.xl),
 
             border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
 
-            boxShadow: AppShadows.glass,
+            boxShadow: AppShadows.glass(isDark),
           ),
 
           child: Column(
@@ -82,7 +84,7 @@ class ErrorView extends StatelessWidget {
                 title,
 
                 style: AppTextStyles.titleSmall.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
 
                 textAlign: TextAlign.center,
@@ -97,7 +99,7 @@ class ErrorView extends StatelessWidget {
                 Text(
                   message!,
 
-                  style: AppTextStyles.bodyMedium,
+                  style: AppTextStyles.bodyMedium.copyWith(color: colors.textSecondary),
 
                   textAlign: TextAlign.center,
                 ),

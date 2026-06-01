@@ -11,6 +11,11 @@ class MapOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (!isDark) return const SizedBox.shrink(); // Daylight mode doesn't need these overlays
+
     return Positioned.fill(
       child: IgnorePointer(
         child: Stack(
@@ -31,13 +36,13 @@ class MapOverlay extends StatelessWidget {
                   end: Alignment.bottomCenter,
 
                   colors: [
-                    AppColors.background.withValues(alpha: 0.18),
+                    colors.background.withValues(alpha: 0.18),
 
                     Colors.transparent,
 
                     Colors.transparent,
 
-                    AppColors.background.withValues(alpha: 0.14),
+                    colors.background.withValues(alpha: 0.14),
                   ],
 
                   stops: const [0.0, 0.18, 0.82, 1.0],
@@ -55,7 +60,7 @@ class MapOverlay extends StatelessWidget {
                 child: CustomPaint(
                   size: const Size(260, 260),
 
-                  painter: _CompassPainter(color: AppColors.primary),
+                  painter: _CompassPainter(color: colors.primary),
                 ),
               ),
             ),
@@ -69,7 +74,7 @@ class MapOverlay extends StatelessWidget {
               child: CustomPaint(
                 size: Size.infinite,
 
-                painter: _GridPainter(color: AppColors.primary),
+                painter: _GridPainter(color: colors.primary),
               ),
             ),
           ],
@@ -78,6 +83,7 @@ class MapOverlay extends StatelessWidget {
     );
   }
 }
+
 
 // ─────────────────────────────────
 // 🧭 Compass

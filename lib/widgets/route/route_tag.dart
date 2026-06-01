@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../../constants/app_colors.dart';
+
 enum RouteTagType {
   standard, // 基本のタグ
   mood, // 気分（楽しい、落ち着く）
@@ -20,6 +22,7 @@ class RouteTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     // タイプに合わせて色を出し分ける
     Color borderColor;
     Color backgroundColor;
@@ -27,19 +30,19 @@ class RouteTag extends StatelessWidget {
 
     switch (type) {
       case RouteTagType.mood:
-        borderColor = const Color(0xFFC8A97A); // ゴールド系
-        backgroundColor = const Color(0xFF3D2B1F);
-        textColor = const Color(0xFFC8A97A);
+        borderColor = colors.secondary; // ゴールド系
+        backgroundColor = colors.surfaceLight;
+        textColor = colors.secondary;
         break;
       case RouteTagType.difficulty:
-        borderColor = const Color(0xFFB8860B); // 少し強い色
-        backgroundColor = const Color(0xFF2C2318);
-        textColor = const Color(0xFFFFFFFF);
+        borderColor = colors.primary; // 少し強い色
+        backgroundColor = colors.surface;
+        textColor = colors.textPrimary;
         break;
       default:
-        borderColor = const Color(0xFF7A5C3A);
+        borderColor = colors.border;
         backgroundColor = Colors.transparent;
-        textColor = const Color(0xFFC8A97A);
+        textColor = colors.secondary;
     }
 
     return Container(
@@ -60,3 +63,4 @@ class RouteTag extends StatelessWidget {
     );
   }
 }
+

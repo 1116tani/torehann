@@ -21,6 +21,7 @@ class ArrivalDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final navConstants = NavigationUiConstants.of(context);
     final title =
         spot.aiStoryName.isNotEmpty ? spot.aiStoryName : spot.name;
     final flavor = spot.aiFlavorText.isNotEmpty
@@ -28,11 +29,11 @@ class ArrivalDialog extends StatelessWidget {
         : 'ここで新しい記憶が生まれた。';
 
     return Dialog(
-      backgroundColor: NavigationUiConstants.cream,
+      backgroundColor: navConstants.cream,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(
-          color: NavigationUiConstants.creamBorder,
+        side: BorderSide(
+          color: navConstants.creamBorder,
           width: 1.5,
         ),
       ),
@@ -48,12 +49,12 @@ class ArrivalDialog extends StatelessWidget {
               showSpeechBubble: false,
             ),
             const SizedBox(height: 16),
-            Text('到着！', style: NavigationUiConstants.serifTitle),
+            Text('到着！', style: navConstants.serifTitle),
             const SizedBox(height: 8),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: NavigationUiConstants.serifBody.copyWith(
+              style: navConstants.serifBody.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -64,7 +65,7 @@ class ArrivalDialog extends StatelessWidget {
                 animatedTexts: [
                   TypewriterAnimatedText(
                     flavor,
-                    textStyle: NavigationUiConstants.serifBody.copyWith(
+                    textStyle: navConstants.serifBody.copyWith(
                       fontStyle: FontStyle.italic,
                     ),
                     speed: const Duration(milliseconds: 40),
@@ -80,8 +81,8 @@ class ArrivalDialog extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onContinue,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: NavigationUiConstants.sepia,
-                  foregroundColor: NavigationUiConstants.cream,
+                  backgroundColor: navConstants.sepia,
+                  foregroundColor: navConstants.cream,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -89,8 +90,8 @@ class ArrivalDialog extends StatelessWidget {
                 ),
                 child: Text(
                   isLastSpot ? 'リザルト画面へ' : '次へ進む',
-                  style: NavigationUiConstants.serifBody.copyWith(
-                    color: NavigationUiConstants.cream,
+                  style: navConstants.serifBody.copyWith(
+                    color: navConstants.cream,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

@@ -73,6 +73,8 @@ class _CameraButtonState extends State<CameraButton>
   @override
   Widget build(BuildContext context) {
     final totalSize = widget.size + 28;
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedScale(
       scale: _isPressed ? 0.92 : 1.0,
@@ -129,7 +131,7 @@ class _CameraButtonState extends State<CameraButton>
 
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(
+                            color: colors.primary.withValues(
                               alpha: 0.10 - (pulse * 0.05),
                             ),
 
@@ -152,7 +154,7 @@ class _CameraButtonState extends State<CameraButton>
                 child: CustomPaint(
                   size: Size(totalSize, totalSize),
 
-                  painter: _MagicCirclePainter(),
+                  painter: _MagicCirclePainter(primaryColor: colors.primary),
                 ),
               ),
 
@@ -166,15 +168,17 @@ class _CameraButtonState extends State<CameraButton>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
 
-                  gradient: const RadialGradient(
-                    colors: [Color(0xFF473526), Color(0xFF2B2118)],
+                  gradient: RadialGradient(
+                    colors: isDark 
+                        ? [const Color(0xFF473526), const Color(0xFF2B2118)]
+                        : [const Color(0xFFF3E7C9), const Color(0xFFEBDDBA)],
 
                     radius: 0.95,
                   ),
 
-                  border: Border.all(color: AppColors.primary, width: 2),
+                  border: Border.all(color: colors.primary, width: 2),
 
-                  boxShadow: AppShadows.goldGlow,
+                  boxShadow: AppShadows.goldGlow(isDark),
                 ),
 
                 child: Stack(
@@ -191,15 +195,15 @@ class _CameraButtonState extends State<CameraButton>
                         shape: BoxShape.circle,
 
                         border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.18),
+                          color: colors.primary.withValues(alpha: 0.18),
                         ),
                       ),
                     ),
 
-                    const Icon(
+                    Icon(
                       Icons.photo_camera,
 
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
 
                       size: 30,
                     ),
@@ -219,6 +223,10 @@ class _CameraButtonState extends State<CameraButton>
 // ─────────────────────────────
 
 class _MagicCirclePainter extends CustomPainter {
+  final Color primaryColor;
+
+  _MagicCirclePainter({required this.primaryColor});
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
@@ -230,7 +238,7 @@ class _MagicCirclePainter extends CustomPainter {
     // ─────────────────────────
 
     final outerPaint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.18)
+      ..color = primaryColor.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -241,7 +249,7 @@ class _MagicCirclePainter extends CustomPainter {
     // ─────────────────────────
 
     final dashPaint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.28)
+      ..color = primaryColor.withValues(alpha: 0.28)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -270,7 +278,7 @@ class _MagicCirclePainter extends CustomPainter {
     // ─────────────────────────
 
     final starPaint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.14)
+      ..color = primaryColor.withValues(alpha: 0.14)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
@@ -312,3 +320,4 @@ class _MagicCirclePainter extends CustomPainter {
     return false;
   }
 }
+

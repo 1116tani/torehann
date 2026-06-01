@@ -36,6 +36,8 @@ class _HomeGlassHeaderState extends ConsumerState<HomeGlassHeader> {
     final progress = nextLevelExp > 0 ? levelState.progress : 1.0;
     final rankData = RankData.getRankData(level);
 
+    final colors = AppColors.of(context);
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _isExpanded = !_isExpanded),
@@ -76,6 +78,7 @@ class _HomeGlassHeaderState extends ConsumerState<HomeGlassHeader> {
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.titleSmall.copyWith(
                           fontWeight: FontWeight.bold,
+                          color: colors.textPrimary,
                         ),
                       ),
 
@@ -157,7 +160,7 @@ class _HomeGlassHeaderState extends ConsumerState<HomeGlassHeader> {
                     Text(
                       level >= 100 ? 'MAX' : '$currentExp / $nextLevelExp EXP',
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -170,7 +173,7 @@ class _HomeGlassHeaderState extends ConsumerState<HomeGlassHeader> {
                   borderRadius: BorderRadius.circular(999),
                   child: Stack(
                     children: [
-                      Container(height: 10, color: AppColors.surfaceLight),
+                      Container(height: 10, color: colors.surfaceLight),
 
                       FractionallySizedBox(
                         widthFactor: progress.clamp(0.0, 1.0).toDouble(),
@@ -188,6 +191,7 @@ class _HomeGlassHeaderState extends ConsumerState<HomeGlassHeader> {
                 ),
               ],
             ),
+
 
             AnimatedCrossFade(
               firstChild: const SizedBox(width: double.infinity),
@@ -212,6 +216,7 @@ class _RankDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.p16),
       child: Container(
@@ -236,7 +241,7 @@ class _RankDetails extends StatelessWidget {
             Text(
               rankData.description,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 height: 1.55,
               ),
             ),
@@ -246,3 +251,4 @@ class _RankDetails extends StatelessWidget {
     );
   }
 }
+

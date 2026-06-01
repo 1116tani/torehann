@@ -24,16 +24,17 @@ class HomeExpBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = nextLevelExp > 0 ? currentExp / nextLevelExp : 1.0;
     final rankData = RankData.getRankData(level);
+    final colors = AppColors.of(context);
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.p16),
 
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.92),
+        color: colors.surface.withValues(alpha: 0.92),
 
         borderRadius: BorderRadius.circular(AppRadius.xl),
 
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
 
         boxShadow: [
           BoxShadow(
@@ -60,7 +61,7 @@ class HomeExpBar extends StatelessWidget {
 
               const SizedBox(width: AppSizes.p8),
 
-              Text('調査員階級', style: AppTextStyles.titleSmall),
+              Text('調査員階級', style: AppTextStyles.titleSmall.copyWith(color: colors.textPrimary)),
 
               const Spacer(),
 
@@ -105,7 +106,7 @@ class HomeExpBar extends StatelessWidget {
           Text(
             rankData.description,
             style: AppTextStyles.subtitle.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
 
@@ -121,14 +122,14 @@ class HomeExpBar extends StatelessWidget {
               Text(
                 '次の階級への断片',
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
 
               Text(
                 level >= 100 ? 'MAX' : '$currentExp / $nextLevelExp EXP',
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -148,7 +149,7 @@ class HomeExpBar extends StatelessWidget {
                 Container(
                   height: 14,
 
-                  decoration: BoxDecoration(color: AppColors.surfaceLight),
+                  decoration: BoxDecoration(color: colors.surfaceLight),
                 ),
 
                 FractionallySizedBox(

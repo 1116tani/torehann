@@ -26,6 +26,8 @@ class LoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       children: [
         child,
@@ -40,7 +42,7 @@ class LoadingOverlay extends StatelessWidget {
               opacity: isLoading ? 1 : 0,
 
               child: Container(
-                color: AppColors.overlayHeavy,
+                color: Colors.black.withValues(alpha: 0.82),
 
                 child: Center(
                   child: ClipRRect(
@@ -58,16 +60,16 @@ class LoadingOverlay extends StatelessWidget {
                         ),
 
                         decoration: BoxDecoration(
-                          color: AppColors.sheetBackground,
+                          color: colors.background.withValues(alpha: 0.9),
 
                           borderRadius: BorderRadius.circular(AppRadius.xl),
 
                           border: Border.all(
-                            color: AppColors.glassBorder,
+                            color: colors.glassBorder,
                             width: 1,
                           ),
 
-                          boxShadow: AppShadows.glass,
+                          boxShadow: AppShadows.glass(isDark),
                         ),
 
                         child: Column(
@@ -84,11 +86,11 @@ class LoadingOverlay extends StatelessWidget {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2.8,
 
-                                valueColor: const AlwaysStoppedAnimation(
-                                  AppColors.primary,
+                                valueColor: AlwaysStoppedAnimation(
+                                  colors.primary,
                                 ),
 
-                                backgroundColor: AppColors.surfaceLight,
+                                backgroundColor: colors.surfaceLight,
                               ),
                             ),
 
@@ -101,7 +103,7 @@ class LoadingOverlay extends StatelessWidget {
                               Text(
                                 message!,
 
-                                style: AppTextStyles.bodyMedium,
+                                style: AppTextStyles.bodyMedium.copyWith(color: colors.textPrimary),
 
                                 textAlign: TextAlign.center,
                               ),

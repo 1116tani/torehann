@@ -16,6 +16,8 @@ class AdventureStartButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSizes.p20),
 
@@ -23,11 +25,11 @@ class AdventureStartButton extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppRadius.xxl),
 
-          gradient: AppGradients.primaryButton,
+          gradient: AppGradients.gold(isDark),
 
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.3), // 💡 グローシャドウを明るく強化
+              color: colors.primary.withValues(alpha: 0.3), // 💡 グローシャドウを明るく強化
 
               blurRadius: 18,
               offset: const Offset(0, 8),
@@ -62,7 +64,7 @@ class AdventureStartButton extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
 
-                  color: AppColors.textPrimary.withValues(alpha: 0.2), // 💡 サークルを少し明るく
+                  color: colors.textPrimary.withValues(alpha: 0.2), // 💡 サークルを少し明るく
                 ),
 
                 child: const Icon(

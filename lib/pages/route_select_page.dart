@@ -9,6 +9,7 @@ import '../constants/app_colors.dart';
 import '../models/route_model.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/route_provider.dart';
+import '../providers/settings_provider.dart';
 import '../router/route_names.dart';
 import '../widgets/common/custom_header.dart';
 import '../widgets/route/route_card.dart';
@@ -36,10 +37,19 @@ class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
   @override
   void initState() {
     super.initState();
-    _loadMapStyle();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final themeMode = ref.read(settingsProvider).themeMode;
+      _loadMapStyle(themeMode);
+    });
   }
 
-  Future<void> _loadMapStyle() async {
+  Future<void> _loadMapStyle(String themeMode) async {
+    if (themeMode == 'daylight') {
+      if (mounted) {
+        setState(() => _mapStyle = null);
+      }
+      return;
+    }
     try {
       final style = await rootBundle.loadString(
         'assets/map_styles/dark_fantasy_map.json',
@@ -68,6 +78,7 @@ class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final state = ref.watch(routeSelectProvider);
     final notifier = ref.read(routeSelectProvider.notifier);
     final spots = ref.watch(generatedSpotsProvider);
@@ -78,8 +89,14 @@ class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
         (_isRouteSheetExpanded ? _carouselHeight : _collapsedSheetHeight) +
         _buttonAreaHeight;
 
+    ref.listen<String>(settingsProvider.select((s) => s.themeMode), (prev, next) {
+      if (prev != next) {
+        _loadMapStyle(next);
+      }
+    });
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -104,29 +121,29 @@ class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
                       onRouteTapped: notifier.selectRoute,
                     )
                   else
-                    const ColoredBox(color: AppColors.background),
+                    ColoredBox(color: colors.background),
 
                   if (state.isLoading && !hasRoutes)
                     ColoredBox(
-                      color: AppColors.background.withValues(alpha: 0.88),
+                      color: colors.background.withValues(alpha: 0.88),
                       child: const RouteLoadingOverlay(),
                     ),
 
                   if (!state.isLoading && !hasRoutes)
                     ColoredBox(
-                      color: AppColors.background.withValues(alpha: 0.92),
+                      color: colors.background.withValues(alpha: 0.92),
                       child: RouteEmptyState(
                         onGenerate: () => notifier.generateRoutes(),
                       ),
                     ),
 
                   if (state.isLoading && hasRoutes)
-                    const Center(
+                    Center(
                       child: SizedBox(
                         width: 28,
                         height: 28,
                         child: CircularProgressIndicator(
-                          color: AppColors.secondary,
+                          color: colors.secondary,
                           strokeWidth: 2.5,
                         ),
                       ),
@@ -316,6 +333,7 @@ class _RouteSheetHandle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -325,15 +343,15 @@ class _RouteSheetHandle extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.92),
+              color: colors.surface.withValues(alpha: 0.92),
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: colors.border),
             ),
             child: Icon(
               isExpanded
                   ? Icons.keyboard_arrow_down_rounded
                   : Icons.keyboard_arrow_up_rounded,
-              color: AppColors.secondary,
+              color: colors.secondary,
               size: 26,
             ),
           ),
@@ -351,6 +369,7 @@ class _CollapsedRouteSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -359,9 +378,9 @@ class _CollapsedRouteSummary extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.94),
+            color: colors.surface.withValues(alpha: 0.94),
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: AppColors.secondary, width: 1.2),
+            border: Border.all(color: colors.secondary, width: 1.2),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.35),
@@ -372,9 +391,9 @@ class _CollapsedRouteSummary extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.route_rounded,
-                color: AppColors.secondary,
+                color: colors.secondary,
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -387,8 +406,8 @@ class _CollapsedRouteSummary extends StatelessWidget {
                       route.themeName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: colors.textPrimary,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
@@ -398,8 +417,8 @@ class _CollapsedRouteSummary extends StatelessWidget {
                       '${route.totalDistance.toStringAsFixed(1)}km / ${route.estimatedTime}分 / ${route.generatedSpots.length}スポット',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: colors.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -408,9 +427,9 @@ class _CollapsedRouteSummary extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_up_rounded,
-                color: AppColors.secondary,
+                color: colors.secondary,
                 size: 28,
               ),
             ],

@@ -18,6 +18,7 @@ class AuthGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
     final authState = ref.watch(authStateProvider);
 
     return authState.when(
@@ -36,9 +37,9 @@ class AuthGate extends ConsumerWidget {
       // ⏳ Loading
       // ─────────────────────────────
       loading: () {
-        return const Scaffold(
-          backgroundColor: AppColors.background,
-          body: LoadingView(message: 'ギルド認証を確認しています...'),
+        return Scaffold(
+          backgroundColor: colors.background,
+          body: const LoadingView(message: 'ギルド認証を確認しています...'),
         );
       },
 
@@ -47,7 +48,7 @@ class AuthGate extends ConsumerWidget {
       // ─────────────────────────────
       error: (error, stackTrace) {
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: colors.background,
           body: ErrorView(
             title: '接続に失敗しました',
             message: '認証情報を取得できませんでした。',

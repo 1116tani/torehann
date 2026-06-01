@@ -21,13 +21,14 @@ class RouteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isSelected ? AppColors.secondary : AppColors.divider,
+          color: isSelected ? colors.secondary : colors.divider,
           width: isSelected ? 1.5 : 1.0,
         ),
         boxShadow: [
@@ -48,8 +49,8 @@ class RouteCard extends StatelessWidget {
             children: [
               Text(
                 route.themeName,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: colors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,

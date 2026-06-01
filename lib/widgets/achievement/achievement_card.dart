@@ -14,14 +14,15 @@ class AchievementCard extends StatelessWidget {
 
   // ── 🎁 宝箱を開けるような詳細ダイアログを表示する関数 ──
   void _showAchievementDetail(BuildContext context, bool isUnearned) {
+    final colors = AppColors.of(context);
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          backgroundColor: AppColors.surface, // 💡 共通のsurfaceカラー
+          backgroundColor: colors.surface, // 💡 共通のsurfaceカラー
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: AppColors.primary, width: 1.5), // 金の縁取り
+            side: BorderSide(color: colors.primary, width: 1.5), // 金の縁取り
           ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -55,7 +56,7 @@ class AchievementCard extends StatelessWidget {
                   ),
                 ),
                  const SizedBox(height: 12),
-                 const Divider(color: AppColors.divider, thickness: 1),
+                 Divider(color: colors.divider, thickness: 1),
                  const SizedBox(height: 10),
                  // 🎯 解放・達成条件を大きく表示
                  Text(
@@ -86,9 +87,9 @@ class AchievementCard extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                      style: ElevatedButton.styleFrom(
-                       backgroundColor: AppColors.background,
-                       foregroundColor: AppColors.secondary,
-                       side: const BorderSide(color: AppColors.border),
+                       backgroundColor: colors.background,
+                       foregroundColor: colors.secondary,
+                       side: BorderSide(color: colors.border),
                        shape: RoundedRectangleBorder(
                          borderRadius: BorderRadius.circular(10),
                        ),
@@ -107,6 +108,7 @@ class AchievementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final rank = achievement.currentRank;
 
     final isUnearned =
@@ -140,12 +142,12 @@ class AchievementCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 6), // 💡 左右マージンを0にして、リスト全体のパディングに委ねることで横幅を広く確保
         decoration: BoxDecoration(
-          color: AppColors.surface, // 💡 共通のsurfaceカラー
+          color: colors.surface, // 💡 共通のsurfaceカラー
           borderRadius: BorderRadius.circular(16), // 💡 角丸を少しリッチに大きく（14 -> 16）
           border: Border.all(
             color: rank != AchievementRank.none
-                ? AppColors.primary
-                : AppColors.border,
+                ? colors.primary
+                : colors.border,
             width: rank != AchievementRank.none ? 1.2 : 0.6,
           ),
           boxShadow: [

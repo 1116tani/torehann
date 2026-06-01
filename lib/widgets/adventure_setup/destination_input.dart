@@ -185,6 +185,8 @@ class _DestinationTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     return GestureDetector(
       onTap: () {
         if (isRandomMode) {
@@ -205,31 +207,32 @@ class _DestinationTextField extends StatelessWidget {
                 onEnableInput();
               }
             },
-            style: AppTextStyles.bodyLarge,
+            style: textStyles.bodyLarge.copyWith(color: colors.textPrimary),
             decoration: InputDecoration(
               hintText: '駅名・街・スポット名を入力',
-              prefixIcon: const Icon(
+              hintStyle: textStyles.bodyLarge.copyWith(color: colors.textMuted),
+              prefixIcon: Icon(
                 Icons.search_rounded,
-                color: AppColors.textMuted,
+                color: colors.textMuted,
               ),
               filled: true,
-              fillColor: AppColors.surfaceLight,
+              fillColor: colors.surfaceLight,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSizes.p16,
                 vertical: AppSizes.p16,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: colors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: colors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                borderSide: const BorderSide(
-                  color: AppColors.primary,
+                borderSide: BorderSide(
+                  color: colors.primary,
                   width: 1.5,
                 ),
               ),
@@ -252,6 +255,8 @@ class _RandomDestinationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final selectedForeground = AppColors.textDark;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -260,15 +265,15 @@ class _RandomDestinationButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppSizes.radiusL),
-          color: isRandomMode ? AppColors.primary : const Color(0xFF2C2318),
+          color: isRandomMode ? colors.primary : colors.surfaceLight,
           border: Border.all(
-            color: isRandomMode ? AppColors.primaryLight : AppColors.border,
+            color: isRandomMode ? colors.primaryLight : colors.border,
             width: 1.2,
           ),
           boxShadow: isRandomMode
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.25),
+                    color: colors.primary.withValues(alpha: 0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -280,9 +285,7 @@ class _RandomDestinationButton extends StatelessWidget {
           children: [
             Icon(
               Icons.casino_rounded,
-              color: isRandomMode
-                  ? AppColors.textDark
-                  : AppColors.textSecondary,
+              color: isRandomMode ? selectedForeground : colors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -290,8 +293,8 @@ class _RandomDestinationButton extends StatelessWidget {
               '目的地をおまかせする',
               style: TextStyle(
                 color: isRandomMode
-                    ? AppColors.textDark
-                    : AppColors.textSecondary,
+                    ? selectedForeground
+                    : colors.textSecondary,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.1,
@@ -312,9 +315,10 @@ class _SuggestionBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     if (state.isLoading) {
       return _SuggestionShell(
-        child: const SizedBox(
+        child: SizedBox(
           height: 48,
           child: Center(
             child: SizedBox(
@@ -322,7 +326,7 @@ class _SuggestionBox extends StatelessWidget {
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AppColors.secondary,
+                color: colors.secondary,
               ),
             ),
           ),
@@ -346,7 +350,7 @@ class _SuggestionBox extends StatelessWidget {
               onTap: () => onSelect(visiblePlaces[index]),
             ),
             if (index != visiblePlaces.length - 1)
-              const Divider(height: 1, thickness: 1, color: AppColors.divider),
+              Divider(height: 1, thickness: 1, color: colors.divider),
           ],
         ],
       ),
@@ -361,16 +365,17 @@ class _SuggestionShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Material(
       color: Colors.transparent,
       elevation: 12,
-      shadowColor: Colors.black.withValues(alpha: 0.35),
+      shadowColor: colors.textPrimary.withValues(alpha: 0.22),
       borderRadius: BorderRadius.circular(AppSizes.radiusL),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusL),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: child,
@@ -387,6 +392,7 @@ class _SuggestionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -402,14 +408,14 @@ class _SuggestionTile extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: AppColors.background.withValues(alpha: 0.55),
+                  color: colors.background.withValues(alpha: 0.55),
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.glassBorder),
+                  border: Border.all(color: colors.glassBorder),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.location_on_outlined,
                   size: 21,
-                  color: AppColors.secondary,
+                  color: colors.secondary,
                 ),
               ),
               const SizedBox(width: AppSizes.p12),
@@ -421,8 +427,9 @@ class _SuggestionTile extends StatelessWidget {
                       place.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodyMedium.copyWith(
+                      style: AppTextStyles.of(context).bodyMedium.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
                       ),
                     ),
                     if (place.address.isNotEmpty) ...[
@@ -431,8 +438,8 @@ class _SuggestionTile extends StatelessWidget {
                         place.address,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textMuted,
+                        style: AppTextStyles.of(context).bodySmall.copyWith(
+                          color: colors.textMuted,
                         ),
                       ),
                     ],
@@ -440,10 +447,10 @@ class _SuggestionTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSizes.p12),
-              const Icon(
+              Icon(
                 Icons.north_west_rounded,
                 size: 22,
-                color: AppColors.textMuted,
+                color: colors.textMuted,
               ),
             ],
           ),
@@ -452,3 +459,4 @@ class _SuggestionTile extends StatelessWidget {
     );
   }
 }
+

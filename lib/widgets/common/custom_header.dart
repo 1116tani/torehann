@@ -31,6 +31,7 @@ class CustomHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       width: double.infinity,
 
@@ -42,10 +43,10 @@ class CustomHeader extends StatelessWidget {
       ),
 
       decoration: BoxDecoration(
-        color: AppColors.background.withValues(alpha: 0.92),
+        color: colors.background.withValues(alpha: 0.92),
 
         border: Border(
-          bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.7)),
+          bottom: BorderSide(color: colors.border.withValues(alpha: 0.7)),
         ),
 
         boxShadow: [
@@ -91,6 +92,7 @@ class CustomHeader extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     height: 1.1,
                     letterSpacing: 1.8,
+                    color: colors.textPrimary,
                   ),
                 ),
 
@@ -104,7 +106,7 @@ class CustomHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
 
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                       fontSize: 13,
                       letterSpacing: 1.4,
                     ),
@@ -138,8 +140,9 @@ class _HeaderIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Material(
-      color: AppColors.surfaceLight,
+      color: colors.surfaceLight,
       borderRadius: BorderRadius.circular(AppSizes.radiusFull),
 
       child: InkWell(
@@ -153,12 +156,13 @@ class _HeaderIconButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSizes.radiusFull),
 
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: colors.border),
           ),
 
-          child: Icon(icon, size: 18, color: AppColors.textPrimary),
+          child: Icon(icon, size: 18, color: colors.textPrimary),
         ),
       ),
     );
   }
 }
+

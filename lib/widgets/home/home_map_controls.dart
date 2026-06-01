@@ -73,6 +73,7 @@ class _MapControlButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Material(
       color: Colors.transparent,
 
@@ -89,13 +90,13 @@ class _MapControlButton extends StatelessWidget {
             shape: BoxShape.circle,
 
             color: isPrimary
-                ? AppColors.primary
-                : AppColors.surface.withValues(alpha: 0.92),
+                ? colors.primary
+                : colors.surface.withValues(alpha: 0.92),
 
             border: Border.all(
               color: isPrimary
-                  ? AppColors.primaryLight.withValues(alpha: 0.4)
-                  : AppColors.border,
+                  ? colors.primaryLight.withValues(alpha: 0.4)
+                  : colors.border,
             ),
 
             boxShadow: [
@@ -112,7 +113,7 @@ class _MapControlButton extends StatelessWidget {
           child: Icon(
             icon,
 
-            color: isPrimary ? AppColors.textDark : AppColors.textPrimary,
+            color: isPrimary ? AppColors.textDark : colors.textPrimary,
 
             size: 24,
           ),
@@ -121,3 +122,4 @@ class _MapControlButton extends StatelessWidget {
     );
   }
 }
+

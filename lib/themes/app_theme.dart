@@ -8,37 +8,33 @@ import '../constants/app_sizes.dart';
 import '../constants/app_text_styles.dart';
 
 class AppTheme {
-  static ThemeData get darkTheme {
-    final base = ThemeData.dark();
+  static ThemeData get darkTheme => _buildTheme(isDark: true);
+  static ThemeData get lightTheme => _buildTheme(isDark: false);
+
+  static ThemeData _buildTheme({required bool isDark}) {
+    final base = isDark ? ThemeData.dark() : ThemeData.light();
+
+    final colors = isDark ? AppColors.dark : AppColors.light;
+    final primary = colors.primary;
+    final background = colors.background;
+    final surface = colors.surface;
+    final textPrimary = colors.textPrimary;
+    final border = colors.border;
+    final divider = colors.divider;
 
     return base.copyWith(
-      brightness: Brightness.dark,
+      brightness: isDark ? Brightness.dark : Brightness.light,
 
-      scaffoldBackgroundColor: AppColors.background,
+      scaffoldBackgroundColor: background,
 
-      primaryColor: AppColors.primary,
+      primaryColor: primary,
 
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
 
-      // ─────────────────────────────────
-      // 🎨 Color Scheme
-      // ─────────────────────────────────
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.primary,
-        primaryContainer: AppColors.primaryDark,
-
-        secondary: AppColors.secondary,
-
-        surface: AppColors.surface,
-
-        onPrimary: AppColors.textDark,
-        onSecondary: AppColors.textDark,
-
-        onSurface: AppColors.textPrimary,
-
-        error: AppColors.error,
-      ),
+      extensions: [
+        isDark ? AppColors.dark : AppColors.light,
+      ],
 
       // ─────────────────────────────────
       // 📝 Typography
@@ -53,33 +49,36 @@ class AppTheme {
         bodySmall: AppTextStyles.bodySmall,
 
         labelLarge: AppTextStyles.button,
+      ).apply(
+        bodyColor: textPrimary,
+        displayColor: textPrimary,
       ),
 
       // ─────────────────────────────────
       // 🏛 AppBar
       // ─────────────────────────────────
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
 
         backgroundColor: Colors.transparent,
 
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: textPrimary,
 
         iconTheme: IconThemeData(
-          color: AppColors.textPrimary,
+          color: textPrimary,
           size: AppSizes.iconM,
         ),
 
-        titleTextStyle: AppTextStyles.titleMedium,
+        titleTextStyle: AppTextStyles.titleMedium.copyWith(color: textPrimary),
       ),
 
       // ─────────────────────────────────
       // 🎴 Card
       // ─────────────────────────────────
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: surface,
 
         elevation: 0,
 
@@ -90,7 +89,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.card),
 
-          side: const BorderSide(color: AppColors.border, width: 1),
+          side: BorderSide(color: border, width: 1),
         ),
       ),
 
@@ -101,13 +100,13 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           elevation: 0,
 
-          backgroundColor: AppColors.primary,
+          backgroundColor: primary,
 
-          foregroundColor: AppColors.textDark,
+          foregroundColor: isDark ? AppColors.textDark : Colors.white,
 
-          disabledBackgroundColor: AppColors.disabled,
+          disabledBackgroundColor: isDark ? const Color(0xFF4A4440) : Colors.grey[300],
 
-          disabledForegroundColor: AppColors.textDisabled,
+          disabledForegroundColor: isDark ? const Color(0xFF6B6560) : Colors.grey[500],
 
           minimumSize: const Size(double.infinity, AppSizes.buttonHeight),
 
@@ -119,7 +118,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.button),
 
-            side: const BorderSide(color: AppColors.border, width: 1),
+            side: BorderSide(color: border, width: 1),
           ),
 
           textStyle: AppTextStyles.button,
@@ -131,11 +130,11 @@ class AppTheme {
       // ─────────────────────────────────
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.textPrimary,
+          foregroundColor: textPrimary,
 
           minimumSize: const Size(double.infinity, AppSizes.buttonHeight),
 
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: border),
 
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.button),
@@ -150,7 +149,7 @@ class AppTheme {
       // ─────────────────────────────────
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: primary,
 
           textStyle: AppTextStyles.button.copyWith(
             fontSize: 14,
@@ -178,24 +177,24 @@ class AppTheme {
       // 💬 Dialog
       // ─────────────────────────────────
       dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: surface,
 
         elevation: 0,
 
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.dialog),
 
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: border),
         ),
       ),
 
       // ─────────────────────────────────
       // ✨ Floating Action Button
       // ─────────────────────────────────
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primary,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
 
-        foregroundColor: AppColors.textDark,
+        foregroundColor: isDark ? AppColors.textDark : Colors.white,
 
         elevation: 0,
       ),
@@ -203,8 +202,8 @@ class AppTheme {
       // ─────────────────────────────────
       // 📍 Divider
       // ─────────────────────────────────
-      dividerTheme: const DividerThemeData(
-        color: AppColors.divider,
+      dividerTheme: DividerThemeData(
+        color: divider,
         thickness: 1,
         space: 1,
       ),
@@ -215,10 +214,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
 
-        fillColor: AppColors.surfaceLight,
+        fillColor: colors.surfaceLight,
 
         hintStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textMuted,
+          color: colors.textMuted,
         ),
 
         contentPadding: const EdgeInsets.symmetric(
@@ -229,19 +228,19 @@ class AppTheme {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
 
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: border),
         ),
 
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
 
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: border),
         ),
 
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
 
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+          borderSide: BorderSide(color: primary, width: 1.4),
         ),
 
         errorBorder: OutlineInputBorder(
@@ -261,13 +260,13 @@ class AppTheme {
       // 🎚 Slider
       // ─────────────────────────────────
       sliderTheme: SliderThemeData(
-        activeTrackColor: AppColors.primary,
+        activeTrackColor: primary,
 
-        inactiveTrackColor: AppColors.surfaceLight,
+        inactiveTrackColor: colors.surfaceLight,
 
-        thumbColor: AppColors.primaryLight,
+        thumbColor: colors.primaryLight,
 
-        overlayColor: AppColors.primary.withValues(alpha: 0.2),
+        overlayColor: primary.withValues(alpha: 0.2),
 
         trackHeight: 4,
       ),
@@ -278,18 +277,18 @@ class AppTheme {
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppColors.primary;
+            return primary;
           }
 
-          return AppColors.textMuted;
+          return colors.textMuted;
         }),
 
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppColors.primaryDark;
+            return colors.primaryDark;
           }
 
-          return AppColors.surfaceLight;
+          return colors.surfaceLight;
         }),
       ),
 
@@ -297,18 +296,19 @@ class AppTheme {
       // 💬 SnackBar
       // ─────────────────────────────────
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: surface,
 
-        contentTextStyle: AppTextStyles.bodyMedium,
+        contentTextStyle: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
 
         behavior: SnackBarBehavior.floating,
 
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
 
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: border),
         ),
       ),
     );
   }
 }
+

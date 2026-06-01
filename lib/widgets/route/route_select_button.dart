@@ -11,6 +11,7 @@ class RouteSelectButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AppSizes.p16,
@@ -23,8 +24,8 @@ class RouteSelectButton extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.background.withValues(alpha: 0),
-            AppColors.background.withValues(alpha: 0.92),
+            colors.background.withValues(alpha: 0),
+            colors.background.withValues(alpha: 0.92),
           ],
         ),
       ),
@@ -38,13 +39,13 @@ class RouteSelectButton extends StatelessWidget {
             icon: const Icon(Icons.auto_awesome, size: 20),
             label: const Text('この物語を歩きはじめる'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryDark,
+              backgroundColor: colors.primaryDark,
               foregroundColor: Colors.white,
               elevation: 8,
-              shadowColor: AppColors.primaryDark.withValues(alpha: 0.5),
+              shadowColor: colors.primaryDark.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: AppColors.secondary, width: 0.5),
+                side: BorderSide(color: colors.secondary, width: 0.5),
               ),
               textStyle: const TextStyle(
                 fontSize: 16,

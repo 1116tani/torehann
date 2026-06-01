@@ -19,6 +19,8 @@ class GenerateRouteButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final adventureState = ref.watch(adventureProvider);
     final routeState = ref.watch(routeSelectProvider);
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
 
     final notifier = ref.read(routeSelectProvider.notifier);
 
@@ -56,7 +58,7 @@ class GenerateRouteButton extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     routeState.errorMessage!,
-                    style: AppTextStyles.bodySmall.copyWith(
+                    style: textStyles.bodySmall.copyWith(
                       color: AppColors.error,
                     ),
                   ),
@@ -86,9 +88,9 @@ class GenerateRouteButton extends ConsumerWidget {
                   },
 
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: colors.primary,
 
-              disabledBackgroundColor: AppColors.surfaceLight,
+              disabledBackgroundColor: colors.surfaceLight,
 
               foregroundColor: AppColors.textDark,
 
@@ -120,7 +122,10 @@ class GenerateRouteButton extends ConsumerWidget {
 
                         Text(
                           '冒険ルートを生成中...',
-                          style: AppTextStyles.button.copyWith(fontSize: 16),
+                          style: textStyles.button.copyWith(
+                            color: AppColors.textDark,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     )
@@ -134,7 +139,8 @@ class GenerateRouteButton extends ConsumerWidget {
 
                         Text(
                           'ルートを生成する',
-                          style: AppTextStyles.button.copyWith(
+                          style: textStyles.button.copyWith(
+                            color: AppColors.textDark,
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
                           ),
@@ -158,8 +164,8 @@ class GenerateRouteButton extends ConsumerWidget {
                 ? '今の気分に合わせて、AIが街の物語を編みはじめるよ。'
                 : '目的地を入力するか、おまかせモードを選んでね。',
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textMuted,
+            style: textStyles.bodySmall.copyWith(
+              color: colors.textMuted,
               height: 1.5,
             ),
           ),

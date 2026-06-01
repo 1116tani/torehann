@@ -26,6 +26,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSizes.p12,
@@ -43,7 +44,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: AppBar(
             automaticallyImplyLeading: false,
 
-            backgroundColor: AppColors.sheetBackground,
+            backgroundColor: colors.background.withValues(alpha: 0.9),
 
             elevation: 0,
 
@@ -54,7 +55,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.xl),
 
-              side: const BorderSide(color: AppColors.glassBorder),
+              side: BorderSide(color: colors.glassBorder),
             ),
 
             leading: showBackButton && context.canPop()
@@ -66,10 +67,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         context.pop();
                       },
 
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.arrow_back_ios_new_rounded,
 
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
 
                         size: AppSizes.iconS,
                       ),

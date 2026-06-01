@@ -22,6 +22,7 @@ class PartnerDialogBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Stack(
       clipBehavior: Clip.none,
 
@@ -42,7 +43,7 @@ class PartnerDialogBubble extends StatelessWidget {
 
             borderRadius: BorderRadius.circular(AppRadius.xl),
 
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+            border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
 
             boxShadow: [
               BoxShadow(
@@ -63,7 +64,7 @@ class PartnerDialogBubble extends StatelessWidget {
                 title,
 
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.primaryDark,
+                  color: colors.primaryDark,
 
                   fontWeight: FontWeight.bold,
 
@@ -105,11 +106,11 @@ class PartnerDialogBubble extends StatelessWidget {
 
                 border: Border(
                   right: BorderSide(
-                    color: AppColors.primary.withValues(alpha: 0.2),
+                    color: colors.primary.withValues(alpha: 0.2),
                   ),
 
                   bottom: BorderSide(
-                    color: AppColors.primary.withValues(alpha: 0.2),
+                    color: colors.primary.withValues(alpha: 0.2),
                   ),
                 ),
               ),

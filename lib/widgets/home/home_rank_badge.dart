@@ -96,7 +96,7 @@ class HomeRankBadge extends StatelessWidget {
                 rankData.title,
 
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: AppColors.of(context).textPrimary,
                   fontWeight: FontWeight.w700,
                 ),
               ),

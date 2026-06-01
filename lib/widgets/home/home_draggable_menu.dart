@@ -11,6 +11,7 @@ class HomeDraggableMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = AppColors.of(context);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.22,
@@ -22,14 +23,12 @@ class HomeDraggableMenu extends StatelessWidget {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: const Color(
-                  0xFF1D150F,
-                ).withValues(alpha: 0.97), // 💡 より暗い深セピア背景で視認性を強化
+                color: colors.background.withValues(alpha: 0.97), // 💡 より暗い深セピア背景で視認性を強化
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(30),
                 ),
                 border: Border.all(
-                  color: AppColors.primary.withValues(
+                  color: colors.primary.withValues(
                     alpha: 0.35,
                   ), // 💡 金枠を少し明るくクッキリ
                   width: 1.5,
@@ -54,7 +53,7 @@ class HomeDraggableMenu extends StatelessWidget {
                       width: 50,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: AppColors.textMuted,
+                        color: colors.textMuted,
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -64,10 +63,10 @@ class HomeDraggableMenu extends StatelessWidget {
                   const AdventureStartButton(),
 
                   const SizedBox(height: 32),
-                  const Text(
+                  Text(
                     "冒険のログ",
                     style: TextStyle(
-                      color: AppColors.primary, // 💡 文字をゴールドに明るく
+                      color: colors.primary, // 💡 文字をゴールドに明るく
                       fontSize: 14, // 💡 12 → 14 (大きく)
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.1,
@@ -109,10 +108,10 @@ class HomeDraggableMenu extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 32),
-                  const Text(
+                  Text(
                     "ギルド拡張（準備中）",
                     style: TextStyle(
-                      color: AppColors
+                      color: colors
                           .textSecondary, // 💡 textMuted → textSecondary (明るく)
                       fontSize: 14, // 💡 12 → 14 (大きく)
                       fontWeight: FontWeight.bold,
@@ -170,6 +169,7 @@ class HomeDraggableMenu extends StatelessWidget {
     String? route, {
     bool isLocked = false,
   }) {
+    final colors = AppColors.of(context);
     return InkWell(
       onTap: isLocked || route == null ? null : () => context.push(route),
       child: Opacity(
@@ -180,7 +180,7 @@ class HomeDraggableMenu extends StatelessWidget {
               padding: const EdgeInsets.all(14), // 💡 12 → 14 (アイコン枠を大きく)
               decoration: BoxDecoration(
                 color: isLocked
-                    ? AppColors.border.withValues(alpha: 0.5)
+                    ? colors.border.withValues(alpha: 0.5)
                     : theme.colorScheme.primary.withValues(
                         alpha: 0.18,
                       ), // 💡 枠内を少し明るく
@@ -197,7 +197,7 @@ class HomeDraggableMenu extends StatelessWidget {
               child: Icon(
                 icon,
                 color: isLocked
-                    ? AppColors.textMuted
+                    ? colors.textMuted
                     : theme.colorScheme.primary,
                 size: 26, // 💡 アイコンサイズを大きく (24 → 26)
               ),
@@ -205,8 +205,8 @@ class HomeDraggableMenu extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors
+              style: TextStyle(
+                color: colors
                     .textPrimary, // 💡 textSecondary → textPrimary (明るい羊皮紙色)
                 fontSize: 12.5, // 💡 11 → 12.5 (文字を大きく)
                 fontWeight: FontWeight.w500,

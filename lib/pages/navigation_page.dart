@@ -11,11 +11,13 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:vibration/vibration.dart';
 
+import '../constants/app_colors.dart';
 import '../constants/navigation_ui_constants.dart';
 import '../models/spot_model.dart';
 import '../models/walking_leg_result.dart';
 import '../providers/location_provider.dart';
 import '../providers/navigation_provider.dart';
+import '../providers/settings_provider.dart';
 import '../router/route_names.dart';
 import '../services/directions_service.dart';
 import '../utils/polyline_utils.dart';
@@ -60,9 +62,10 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
   @override
   void initState() {
     super.initState();
-    _loadMapStyle();
     _sheetController.addListener(_onSheetChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final themeMode = ref.read(settingsProvider).themeMode;
+      _loadMapStyle(themeMode);
       _startLocationStream();
       _startCompassStream();
       _startArrivalTimer();
@@ -73,7 +76,13 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     setState(() {});
   }
 
-  Future<void> _loadMapStyle() async {
+  Future<void> _loadMapStyle(String themeMode) async {
+    if (themeMode == 'daylight') {
+      if (mounted) {
+        setState(() => _mapStyle = null);
+      }
+      return;
+    }
     try {
       final style = await rootBundle.loadString(
         'assets/map_styles/dark_fantasy_map.json',
@@ -296,28 +305,29 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
   }
 
   Future<void> _confirmQuit() async {
+    final navConstants = NavigationUiConstants.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: NavigationUiConstants.cream,
+        backgroundColor: navConstants.cream,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(
-            color: NavigationUiConstants.creamBorder,
+          side: BorderSide(
+            color: navConstants.creamBorder,
             width: 1.5,
           ),
         ),
-        title: Text('冒険をやめる', style: NavigationUiConstants.serifTitle),
+        title: Text('冒険をやめる', style: navConstants.serifTitle),
         content: Text(
           'ナビゲーションを中断して戻ります。よろしいですか？',
-          style: NavigationUiConstants.serifBody,
+          style: navConstants.serifBody,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'キャンセル',
-              style: TextStyle(color: NavigationUiConstants.textMuted),
+              style: TextStyle(color: navConstants.textMuted),
             ),
           ),
           TextButton(
@@ -325,7 +335,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
             child: Text(
               'やめる',
               style: TextStyle(
-                color: NavigationUiConstants.sepia,
+                color: navConstants.sepia,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -390,12 +400,13 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
   Set<Polyline> _buildPolylines() {
     if (_routePolyline.length < 2) return const {};
+    final navConstants = NavigationUiConstants.of(context);
 
     return {
       Polyline(
         polylineId: const PolylineId('walking_route'),
         points: _routePolyline,
-        color: NavigationUiConstants.sepia,
+        color: navConstants.sepia,
         width: NavigationUiConstants.routeLineWidth.toInt(),
         geodesic: false,
         startCap: Cap.roundCap,
@@ -436,10 +447,17 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
   @override
   Widget build(BuildContext context) {
     final nav = ref.watch(navigationProvider);
+    final navConstants = NavigationUiConstants.of(context);
+
+    ref.listen<String>(settingsProvider.select((s) => s.themeMode), (prev, next) {
+      if (prev != next) {
+        _loadMapStyle(next);
+      }
+    });
 
     if (!nav.isAdventureStarted) {
       return Scaffold(
-        backgroundColor: NavigationUiConstants.cream,
+        backgroundColor: navConstants.cream,
         body: Center(
           child: ElevatedButton(
             onPressed: () => context.go(AppRoutes.home),
@@ -517,8 +535,8 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               child: SafeArea(
                 child: FloatingActionButton.extended(
                   onPressed: () => _showArrivalDialog(nav.nextSpot!),
-                  backgroundColor: const Color(0xFFC8A97A),
-                  foregroundColor: const Color(0xFF2C2318),
+                  backgroundColor: AppColors.of(context).primary,
+                  foregroundColor: AppColors.of(context).background,
                   icon: const Icon(Icons.check_circle_outline),
                   label: const Text(
                     '到着判定',
@@ -574,8 +592,8 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               child: ElevatedButton(
                 onPressed: () => context.go(AppRoutes.result),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: NavigationUiConstants.sepia,
-                  foregroundColor: NavigationUiConstants.cream,
+                  backgroundColor: navConstants.sepia,
+                  foregroundColor: navConstants.cream,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -583,8 +601,8 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                 ),
                 child: Text(
                   '冒険の記録を報告する',
-                  style: NavigationUiConstants.serifBody.copyWith(
-                    color: NavigationUiConstants.cream,
+                  style: navConstants.serifBody.copyWith(
+                    color: navConstants.cream,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

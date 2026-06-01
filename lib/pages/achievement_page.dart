@@ -13,6 +13,9 @@ class AchievementPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final achievements = ref.watch(
       achievementListProvider,
     );
@@ -25,7 +28,7 @@ class AchievementPage extends ConsumerWidget {
         .length;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
 
       body: SafeArea(
         child: Column(
@@ -43,19 +46,19 @@ class AchievementPage extends ConsumerWidget {
                 horizontal: 24,
               ),
 
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
+              decoration: BoxDecoration(
+                color: colors.surface,
 
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                 ),
 
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black54,
+                    color: isDark ? Colors.black54 : Colors.black12,
                     blurRadius: 10,
-                    offset: Offset(0, 4),
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),

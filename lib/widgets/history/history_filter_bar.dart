@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../constants/app_colors.dart';
 import '../../providers/history_provider.dart';
 import 'filter_bottom_sheet.dart';
 
@@ -40,6 +42,7 @@ class HistoryFilterBar extends ConsumerWidget {
               alignment: WrapAlignment.start,
               children: state.activeFilters.map((filter) {
                 return _buildFilterChip(
+                  context: context,
                   filter: filter,
                   onRemove: () => notifier.toggleFilter(filter),
                 );
@@ -56,29 +59,30 @@ class HistoryFilterBar extends ConsumerWidget {
     HistoryState state,
     HistoryNotifier notifier,
   ) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       key: _sortOrderKey,
       onTap: () => _showSortOrderMenu(context, state, notifier),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF3D2B1F),
+          color: colors.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF5C4033)),
+          border: Border.all(color: colors.border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               _getSortOrderLabel(state.sortOrder),
-              style: const TextStyle(
-                color: Color(0xFFF5EDD8),
+              style: TextStyle(
+                color: colors.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(Icons.expand_more, size: 18, color: Color(0xFFC8A97A)),
+            Icon(Icons.expand_more, size: 18, color: colors.primary),
           ],
         ),
       ),
@@ -86,13 +90,15 @@ class HistoryFilterBar extends ConsumerWidget {
   }
 
   Widget _buildFilterChip({
+    required BuildContext context,
     required FilterTag filter,
     required VoidCallback onRemove,
   }) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFC8A97A),
+        color: colors.primary,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -100,8 +106,8 @@ class HistoryFilterBar extends ConsumerWidget {
         children: [
           Text(
             _getFilterLabel(filter),
-            style: const TextStyle(
-              color: Color(0xFF1C1610),
+            style: TextStyle(
+              color: colors.background,
               fontSize: 11,
               fontWeight: FontWeight.bold,
             ),
@@ -109,10 +115,10 @@ class HistoryFilterBar extends ConsumerWidget {
           const SizedBox(width: 6),
           GestureDetector(
             onTap: onRemove,
-            child: const Icon(
+            child: Icon(
               Icons.close_rounded,
               size: 14,
-              color: Color(0xFF1C1610),
+              color: colors.background,
             ),
           ),
         ],
@@ -121,24 +127,25 @@ class HistoryFilterBar extends ConsumerWidget {
   }
 
   Widget _buildFilterButton(BuildContext context, int filterCount) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: () => _showFilterBottomSheet(context),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF3D2B1F),
+          color: colors.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF5C4033)),
+          border: Border.all(color: colors.border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.tune_rounded, size: 18, color: Color(0xFFC8A97A)),
+            Icon(Icons.tune_rounded, size: 18, color: colors.primary),
             const SizedBox(width: 8),
             Text(
               filterCount > 0 ? '絞り込み($filterCount)' : '絞り込み',
-              style: const TextStyle(
-                color: Color(0xFFC8A97A),
+              style: TextStyle(
+                color: colors.primary,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
@@ -154,6 +161,7 @@ class HistoryFilterBar extends ConsumerWidget {
     HistoryState state,
     HistoryNotifier notifier,
   ) {
+    final colors = AppColors.of(context);
     final RenderBox button =
         _sortOrderKey.currentContext!.findRenderObject() as RenderBox;
     final Offset offset = button.localToGlobal(Offset.zero);
@@ -167,28 +175,32 @@ class HistoryFilterBar extends ConsumerWidget {
     showMenu(
       context: context,
       position: position,
-      color: const Color(0xFF2C2318),
+      color: colors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       items: [
         _buildSortMenuItem(
+          context,
           SortOrder.newestFirst,
           '新しい順',
           state.sortOrder == SortOrder.newestFirst,
           notifier,
         ),
         _buildSortMenuItem(
+          context,
           SortOrder.oldestFirst,
           '古い順',
           state.sortOrder == SortOrder.oldestFirst,
           notifier,
         ),
         _buildSortMenuItem(
+          context,
           SortOrder.longestDistance,
           '距離順',
           state.sortOrder == SortOrder.longestDistance,
           notifier,
         ),
         _buildSortMenuItem(
+          context,
           SortOrder.mostExperience,
           '獲得経験値順',
           state.sortOrder == SortOrder.mostExperience,
@@ -199,11 +211,13 @@ class HistoryFilterBar extends ConsumerWidget {
   }
 
   PopupMenuItem<dynamic> _buildSortMenuItem(
+    BuildContext context,
     SortOrder order,
     String label,
     bool isSelected,
     HistoryNotifier notifier,
   ) {
+    final colors = AppColors.of(context);
     return PopupMenuItem(
       value: order,
       child: Row(
@@ -212,15 +226,15 @@ class HistoryFilterBar extends ConsumerWidget {
             label,
             style: TextStyle(
               color: isSelected
-                  ? const Color(0xFFC8A97A)
-                  : const Color(0xFFF5EDD8),
+                  ? colors.primary
+                  : colors.textPrimary,
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           if (isSelected) ...[
             const Spacer(),
-            const Icon(Icons.check_rounded, size: 16, color: Color(0xFFC8A97A)),
+            Icon(Icons.check_rounded, size: 16, color: colors.primary),
           ],
         ],
       ),

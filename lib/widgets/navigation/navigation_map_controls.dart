@@ -48,8 +48,9 @@ class _NavFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final navConstants = NavigationUiConstants.of(context);
     return Material(
-      color: NavigationUiConstants.cream,
+      color: navConstants.cream,
       elevation: 4,
       shadowColor: Colors.black26,
       shape: const CircleBorder(),
@@ -61,7 +62,7 @@ class _NavFab extends StatelessWidget {
           child: SizedBox(
             width: 48,
             height: 48,
-            child: Icon(icon, color: NavigationUiConstants.sepia, size: 22),
+            child: Icon(icon, color: navConstants.sepia, size: 22),
           ),
         ),
       ),
