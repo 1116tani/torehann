@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../constants/app_colors.dart';
 import '../../constants/app_sizes.dart';
 import '../../widgets/common/custom_header.dart';
 import '../../widgets/settings/settings_tile.dart';
@@ -13,8 +14,10 @@ class AccountPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610),
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -61,21 +64,21 @@ class AccountPage extends ConsumerWidget {
                       icon: Icons.logout_outlined,
                       title: 'ログアウト',
                       subtitle: '現在のアカウントからサインアウトします。',
-                      titleColor: const Color(0xFFC8A97A),
+                      titleColor: colors.primary,
                       onTap: () => _showLogoutConfirmDialog(context),
                     ),
                     SettingsTile(
                       icon: Icons.delete_forever_outlined,
                       title: 'アカウント削除',
                       subtitle: 'アカウントと関連するデータをすべて完全に削除します。',
-                      titleColor: const Color(0xFF8B3A1F),
+                      titleColor: AppColors.error,
                       onTap: () => _showDeleteAccountConfirmDialog(context),
                     ),
                     SettingsTile(
                       icon: Icons.cleaning_services_outlined,
                       title: 'すべてのローカルデータを消去',
                       subtitle: '端末に保存されている冒険ログや設定値を初期化します。',
-                      titleColor: const Color(0xFF8B3A1F),
+                      titleColor: AppColors.error,
                       onTap: () => _showClearDataConfirmDialog(context),
                     ),
                     const SizedBox(height: 32),
@@ -90,28 +93,29 @@ class AccountPage extends ConsumerWidget {
   }
 
   void _showMockActionDialog(BuildContext context, String actionName) {
+    final colors = AppColors.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2C2318),
+        backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFF4A3728), width: 1.5),
+          side: BorderSide(color: colors.border, width: 1.5),
         ),
         title: Text(
           actionName,
-          style: const TextStyle(color: Color(0xFFF5EDD8), fontWeight: FontWeight.bold),
+          style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
         ),
         content: Text(
           '後ほど Firebase Auth 実装へ切り替え可能です。\n（$actionName のデモ処理）',
-          style: const TextStyle(color: Color(0xFF8B7355), height: 1.4),
+          style: TextStyle(color: colors.textSecondary, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               '閉じる',
-              style: TextStyle(color: Color(0xFFC8A97A), fontWeight: FontWeight.bold),
+              style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -120,30 +124,31 @@ class AccountPage extends ConsumerWidget {
   }
 
   void _showLogoutConfirmDialog(BuildContext context) {
+    final colors = AppColors.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2C2318),
+        backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFF4A3728), width: 1.5),
+          side: BorderSide(color: colors.border, width: 1.5),
         ),
-        title: const Text('ログアウト', style: TextStyle(color: Color(0xFFF5EDD8), fontWeight: FontWeight.bold)),
-        content: const Text('本当にログアウトしますか？', style: TextStyle(color: Color(0xFF8B7355))),
+        title: Text('ログアウト', style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold)),
+        content: Text('本当にログアウトしますか？', style: TextStyle(color: colors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル', style: TextStyle(color: Color(0xFF7A5C3A))),
+            child: Text('キャンセル', style: TextStyle(color: colors.textMuted)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               // ここで擬似ログアウト処理か、あるいはログイン画面などへ遷移
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('ログアウトしました（デモ）'), backgroundColor: Color(0xFF4A3728)),
+                SnackBar(content: const Text('ログアウトしました（デモ）'), backgroundColor: colors.surfaceLight),
               );
             },
-            child: const Text('ログアウトする', style: TextStyle(color: Color(0xFFC8A97A), fontWeight: FontWeight.bold)),
+            child: Text('ログアウトする', style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -151,32 +156,33 @@ class AccountPage extends ConsumerWidget {
   }
 
   void _showDeleteAccountConfirmDialog(BuildContext context) {
+    final colors = AppColors.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2C2318),
+        backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFF8B3A1F), width: 1.5),
+          side: BorderSide(color: AppColors.error, width: 1.5),
         ),
-        title: const Text('アカウントの完全削除', style: TextStyle(color: Color(0xFF8B3A1F), fontWeight: FontWeight.bold)),
-        content: const Text(
+        title: Text('アカウントの完全削除', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+        content: Text(
           'この操作は取り消せません。あなたの冒険手帳、コレクション、実績など、すべてのデータが永遠に失われます。\n本当に削除しますか？',
-          style: TextStyle(color: Color(0xFF8B7355), height: 1.4),
+          style: TextStyle(color: colors.textSecondary, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル', style: TextStyle(color: Color(0xFF7A5C3A))),
+            child: Text('キャンセル', style: TextStyle(color: colors.textMuted)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('アカウントを削除しました（デモ）'), backgroundColor: Color(0xFF8B3A1F)),
+                SnackBar(content: const Text('アカウントを削除しました（デモ）'), backgroundColor: colors.surfaceLight),
               );
             },
-            child: const Text('削除する', style: TextStyle(color: Color(0xFF8B3A1F), fontWeight: FontWeight.bold)),
+            child: Text('削除する', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -184,29 +190,30 @@ class AccountPage extends ConsumerWidget {
   }
 
   void _showClearDataConfirmDialog(BuildContext context) {
+    final colors = AppColors.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2C2318),
+        backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFF8B3A1F), width: 1.5),
+          side: BorderSide(color: AppColors.error, width: 1.5),
         ),
-        title: const Text('ローカルデータの初期化', style: TextStyle(color: Color(0xFF8B3A1F), fontWeight: FontWeight.bold)),
-        content: const Text('端末上のすべての設定値を初期化し、初期状態に戻します。よろしいですか？', style: TextStyle(color: Color(0xFF8B7355))),
+        title: Text('ローカルデータの初期化', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+        content: Text('端末上のすべての設定値を初期化し、初期状態に戻します。よろしいですか？', style: TextStyle(color: colors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル', style: TextStyle(color: Color(0xFF7A5C3A))),
+            child: Text('キャンセル', style: TextStyle(color: colors.textMuted)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('データを初期化しました（デモ）'), backgroundColor: Color(0xFF8B3A1F)),
+                SnackBar(content: const Text('データを初期化しました（デモ）'), backgroundColor: colors.surfaceLight),
               );
             },
-            child: const Text('初期化する', style: TextStyle(color: Color(0xFF8B3A1F), fontWeight: FontWeight.bold)),
+            child: Text('初期化する', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

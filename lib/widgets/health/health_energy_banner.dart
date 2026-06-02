@@ -1,6 +1,7 @@
 // lib/widgets/health/health_energy_banner.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class HealthEnergyBanner extends StatelessWidget {
   final int energy;
@@ -14,23 +15,24 @@ class HealthEnergyBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       width: double.infinity,
 
       padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [
-            Color(0xFF3D2B1F),
-            Color(0xFF2C2318),
+            colors.surfaceLight,
+            colors.surface,
           ],
         ),
 
         borderRadius: BorderRadius.circular(18),
 
         border: Border.all(
-          color: const Color(0xFFB8860B),
+          color: colors.primary,
           width: 0.7,
         ),
       ),
@@ -42,13 +44,13 @@ class HealthEnergyBanner extends StatelessWidget {
             height: 52,
 
             decoration: BoxDecoration(
-              color: const Color(0xFFB8860B).withValues(alpha: 0.15),
+              color: colors.primary.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
 
             child: const Icon(
               Icons.auto_awesome,
-              color: Color(0xFFFFD700),
+              color: AppColors.warning,
             ),
           ),
 
@@ -60,8 +62,8 @@ class HealthEnergyBanner extends StatelessWidget {
               children: [
                 Text(
                   '冒険エネルギー $energy%',
-                  style: const TextStyle(
-                    color: Color(0xFFF5EDD8),
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
@@ -71,8 +73,8 @@ class HealthEnergyBanner extends StatelessWidget {
 
                 Text(
                   message,
-                  style: const TextStyle(
-                    color: Color(0xFFC8A97A),
+                  style: TextStyle(
+                    color: colors.secondary,
                     fontSize: 12,
                     height: 1.5,
                   ),

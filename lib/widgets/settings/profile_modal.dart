@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../constants/app_colors.dart';
 import '../../providers/settings_provider.dart';
 import 'base_dialog.dart';
 
@@ -33,6 +34,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
 
@@ -41,39 +43,39 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '冒険者名',
-            style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14, fontWeight: FontWeight.bold),
+            style: TextStyle(color: colors.secondary, fontSize: 14, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _nameController,
             onChanged: notifier.updateUserName,
-            style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 16),
+            style: TextStyle(color: colors.textPrimary, fontSize: 16),
             decoration: InputDecoration(
               hintText: '名前を入力してください',
-              hintStyle: const TextStyle(color: Color(0xFF5C4033)),
+              hintStyle: TextStyle(color: colors.textMuted),
               filled: true,
-              fillColor: const Color(0xFF1C1610),
+              fillColor: colors.surfaceLight,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF4A3728)),
+                borderSide: BorderSide(color: colors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF4A3728)),
+                borderSide: BorderSide(color: colors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFC8A97A), width: 1.5),
+                borderSide: BorderSide(color: colors.primary, width: 1.5),
               ),
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             '年齢',
-            style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14, fontWeight: FontWeight.bold),
+            style: TextStyle(color: colors.secondary, fontSize: 14, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -83,24 +85,24 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
               final age = int.tryParse(val) ?? 0;
               notifier.updateAge(age);
             },
-            style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 16),
+            style: TextStyle(color: colors.textPrimary, fontSize: 16),
             decoration: InputDecoration(
               hintText: '年齢を入力してください',
-              hintStyle: const TextStyle(color: Color(0xFF5C4033)),
+              hintStyle: TextStyle(color: colors.textMuted),
               filled: true,
-              fillColor: const Color(0xFF1C1610),
+              fillColor: colors.surfaceLight,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF4A3728)),
+                borderSide: BorderSide(color: colors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF4A3728)),
+                borderSide: BorderSide(color: colors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFC8A97A), width: 1.5),
+                borderSide: BorderSide(color: colors.primary, width: 1.5),
               ),
             ),
           ),
@@ -108,25 +110,25 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 '1日の距離目標',
-                style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14, fontWeight: FontWeight.bold),
+                style: TextStyle(color: colors.secondary, fontSize: 14, fontWeight: FontWeight.bold),
               ),
               Text(
                 '${settings.dailyGoalKm.toStringAsFixed(1)} km',
-                style: const TextStyle(color: Color(0xFFF5EDD8), fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),
           const SizedBox(height: 8),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: const Color(0xFFC8A97A),
-              inactiveTrackColor: const Color(0xFF4A3728),
-              thumbColor: const Color(0xFFC8A97A),
-              overlayColor: const Color(0xFFC8A97A).withValues(alpha: 0.12),
-              valueIndicatorColor: const Color(0xFF4A3728),
-              valueIndicatorTextStyle: const TextStyle(color: Color(0xFFF5EDD8)),
+              activeTrackColor: colors.primary,
+              inactiveTrackColor: colors.surfaceLight,
+              thumbColor: colors.primaryLight,
+              overlayColor: colors.primary.withOpacity(0.12),
+              valueIndicatorColor: colors.border,
+              valueIndicatorTextStyle: TextStyle(color: colors.textPrimary),
             ),
             child: Slider(
               value: settings.dailyGoalKm.clamp(1.0, 20.0),
@@ -142,7 +144,7 @@ class _ProfileModalState extends ConsumerState<ProfileModal> {
           Center(
             child: Text(
               '目安歩数: ${settings.dailyStepGoal} 歩',
-              style: const TextStyle(color: Color(0xFF8B7355), fontSize: 13),
+              style: TextStyle(color: colors.textMuted, fontSize: 13),
             ),
           ),
           const SizedBox(height: 16),

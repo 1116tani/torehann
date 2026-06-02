@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../constants/app_colors.dart';
 import '../../providers/settings_provider.dart';
 import 'base_dialog.dart';
 
@@ -10,6 +11,7 @@ class NotificationModal extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
 
@@ -18,6 +20,7 @@ class NotificationModal extends ConsumerWidget {
       child: Column(
         children: [
           _buildSwitchTile(
+            context: context,
             title: '毎日のリマインド',
             subtitle: '「今日も歩こう」通知を受け取ります。',
             value: settings.reminderEnabled,
@@ -25,6 +28,7 @@ class NotificationModal extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _buildSwitchTile(
+            context: context,
             title: 'バックグラウンド通知',
             subtitle: '冒険中に相棒が面白いものを見つけた時の通知など。',
             value: settings.backgroundNotificationEnabled,
@@ -37,17 +41,19 @@ class NotificationModal extends ConsumerWidget {
   }
 
   Widget _buildSwitchTile({
+    required BuildContext context,
     required String title,
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C1610),
+        color: colors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF4A3728)),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -58,8 +64,8 @@ class NotificationModal extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Color(0xFFF5EDD8),
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -67,8 +73,8 @@ class NotificationModal extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF8B7355),
+                  style: TextStyle(
+                    color: colors.textMuted,
                     fontSize: 12,
                     height: 1.3,
                   ),
@@ -80,10 +86,10 @@ class NotificationModal extends ConsumerWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: const Color(0xFFC8A97A),
-            activeTrackColor: const Color(0xFF5C4033),
-            inactiveThumbColor: const Color(0xFF7A5C3A),
-            inactiveTrackColor: const Color(0xFF1C1610),
+            activeThumbColor: colors.primary,
+            activeTrackColor: colors.primaryDark,
+            inactiveThumbColor: colors.secondary,
+            inactiveTrackColor: colors.surface,
           ),
         ],
       ),

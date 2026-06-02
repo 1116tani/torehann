@@ -1,6 +1,7 @@
 // lib/widgets/party/qr_invite_card.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class QrInviteCard extends StatelessWidget {
   final String roomId;
@@ -14,15 +15,16 @@ class QrInviteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFF5C4033),
+          color: colors.border,
           width: 1,
         ),
         boxShadow: [
@@ -36,10 +38,10 @@ class QrInviteCard extends StatelessWidget {
 
       child: Column(
         children: [
-          const Text(
+          Text(
             '仲間を招待する',
             style: TextStyle(
-              color: Color(0xFFF5EDD8),
+              color: colors.textPrimary,
               fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
@@ -47,10 +49,10 @@ class QrInviteCard extends StatelessWidget {
 
           const SizedBox(height: 4),
 
-          const Text(
+          Text(
             'QRコードを読み取って参加',
             style: TextStyle(
-              color: Color(0xFF7A5C3A),
+              color: colors.textMuted,
               fontSize: 11,
             ),
           ),
@@ -112,18 +114,18 @@ class QrInviteCard extends StatelessWidget {
               vertical: 8,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFF1C1610),
+              color: colors.background,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF4A3728),
+                color: colors.border,
                 width: 1,
               ),
             ),
 
             child: Text(
               'ROOM : $roomId',
-              style: const TextStyle(
-                color: Color(0xFFC8A97A),
+              style: TextStyle(
+                color: colors.secondary,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 2,
@@ -139,17 +141,19 @@ class QrInviteCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onShare,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3D2B1F),
-                foregroundColor: const Color(0xFFF5EDD8),
+                backgroundColor: colors.surfaceLight,
+                foregroundColor: colors.textPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(color: colors.border),
                 ),
               ),
-              icon: const Icon(Icons.share),
-              label: const Text(
+              icon: Icon(Icons.share, color: colors.primary),
+              label: Text(
                 '招待をシェア',
                 style: TextStyle(
+                  color: colors.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               ),

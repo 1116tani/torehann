@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../constants/app_colors.dart';
 import '../../models/fragment_model.dart'; // 👈 新しいレアリティ型を使うためにインポート
 import '../../providers/collection_provider.dart';
 import '../../widgets/collection/fragment_grid_item.dart';
@@ -29,8 +30,10 @@ class CollectionPage extends ConsumerWidget {
         .where((i) => i.rarity == FragmentRarity.legend)
         .toList();
 
+    final colors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610),
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -45,23 +48,23 @@ class CollectionPage extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-              decoration: const BoxDecoration(
-                color: Color(0xFF2C2318),
+              decoration: BoxDecoration(
+                color: colors.surface,
                 border: Border(
-                  bottom: BorderSide(color: Color(0xFF5C4033), width: 1),
+                  bottom: BorderSide(color: colors.border, width: 1),
                 ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     '見出した街の断片',
-                    style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14),
+                    style: TextStyle(color: colors.secondary, fontSize: 14),
                   ),
                   Text(
                     '$unlockedCount / ${items.length}',
-                    style: const TextStyle(
-                      color: Color(0xFFB8860B),
+                    style: TextStyle(
+                      color: colors.primary,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -72,9 +75,9 @@ class CollectionPage extends ConsumerWidget {
           ),
 
           // ── 各セクションのレンダリング ──
-          ..._buildCategorySection('🟢 日常の断片（ノーマル）', normalItems),
-          ..._buildCategorySection('🔷 街角の記憶（レア）', rareItems),
-          ..._buildCategorySection('👑 紡がれた神話（レジェンド）', legendItems),
+          ..._buildCategorySection(context, '🟢 日常の断片（ノーマル）', normalItems),
+          ..._buildCategorySection(context, '🔷 街角の記憶（レア）', rareItems),
+          ..._buildCategorySection(context, '👑 紡がれた神話（レジェンド）', legendItems),
 
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
@@ -88,10 +91,12 @@ class CollectionPage extends ConsumerWidget {
 
   /// カテゴリごとの見出しとグリッドを作るヘルパーメソッド
   List<Widget> _buildCategorySection(
+    BuildContext context,
     String title,
-    List<CollectionItemUIModel> categoryItems, // 👈 新しいUI用モデルの型に修正
+    List<CollectionItemUIModel> categoryItems,
   ) {
     if (categoryItems.isEmpty) return [];
+    final colors = AppColors.of(context);
 
     return [
       SliverToBoxAdapter(
@@ -99,8 +104,8 @@ class CollectionPage extends ConsumerWidget {
           padding: const EdgeInsets.only(left: 20, top: 28, bottom: 12),
           child: Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF8B7355), // 視認性の高い、少し明るいゴールドブラウンに
+            style: TextStyle(
+              color: colors.secondary,
               fontSize: 13,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.1,

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../constants/app_colors.dart';
 import '../../providers/settings_provider.dart';
 import 'base_dialog.dart';
 
@@ -18,14 +19,15 @@ class PlaceTagModal extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
 
+    final colors = AppColors.of(context);
     return BaseDialog(
       title: '🎒 好きな場所タグ (最大5個)',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'よく行く場所や、AIに提案してほしいスポットの属性を選択してください。',
-            style: TextStyle(color: Color(0xFF8B7355), fontSize: 13, height: 1.4),
+            style: TextStyle(color: colors.textMuted, fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 16),
           Wrap(
@@ -39,11 +41,11 @@ class PlaceTagModal extends ConsumerWidget {
                 onSelected: (_) {
                   notifier.toggleFavoriteTag(tag);
                 },
-                selectedColor: const Color(0xFFC8A97A),
-                checkmarkColor: const Color(0xFF1C1610),
-                backgroundColor: const Color(0xFF1C1610),
+                selectedColor: colors.primary.withOpacity(0.15),
+                checkmarkColor: colors.primary,
+                backgroundColor: colors.surface,
                 labelStyle: TextStyle(
-                  color: isSelected ? const Color(0xFF1C1610) : const Color(0xFFF5EDD8),
+                  color: isSelected ? AppColors.textDark : colors.textPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -51,7 +53,7 @@ class PlaceTagModal extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFF4A3728),
+                    color: isSelected ? colors.primary : colors.border,
                     width: 1.0,
                   ),
                 ),
@@ -63,7 +65,7 @@ class PlaceTagModal extends ConsumerWidget {
             child: Text(
               '選択中: ${settings.favoriteTags.length} / 5',
               style: TextStyle(
-                color: settings.favoriteTags.length >= 5 ? const Color(0xFFC8A97A) : const Color(0xFF8B7355),
+                color: settings.favoriteTags.length >= 5 ? colors.primary : colors.textMuted,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),

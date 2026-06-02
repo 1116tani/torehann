@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../constants/app_colors.dart';
+
 class MyFriendCodeCard extends StatelessWidget {
   final String friendCode;
 
@@ -13,19 +15,21 @@ class MyFriendCodeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: const Color(0xFFC8A97A),
+          color: colors.primary,
           width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
+            color: colors.background.withValues(alpha: 0.25),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -38,18 +42,16 @@ class MyFriendCodeCard extends StatelessWidget {
           // タイトル
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.badge_outlined,
-                color: Color(0xFFB8860B),
+                color: colors.primary,
                 size: 20,
               ),
-
               const SizedBox(width: 8),
-
-              const Text(
+              Text(
                 'マイフレンドコード',
                 style: TextStyle(
-                  color: Color(0xFFF5EDD8),
+                  color: colors.textPrimary,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
@@ -67,18 +69,18 @@ class MyFriendCodeCard extends StatelessWidget {
                 vertical: 16,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF1C1610),
+                color: colors.surfaceLight,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF5C4033),
+                  color: colors.border,
                   width: 0.6,
                 ),
               ),
 
               child: Text(
                 friendCode,
-                style: const TextStyle(
-                  color: Color(0xFFFFD700),
+                style: TextStyle(
+                  color: colors.primary,
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 8,
@@ -90,12 +92,12 @@ class MyFriendCodeCard extends StatelessWidget {
           const SizedBox(height: 18),
 
           // 説明
-          const Center(
+          Center(
             child: Text(
               'このコードを友達に共有すると\n一緒に冒険できるようになります',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF7A5C3A),
+                color: colors.textMuted,
                 fontSize: 11,
                 height: 1.5,
               ),
@@ -118,9 +120,12 @@ class MyFriendCodeCard extends StatelessWidget {
 
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('フレンドコードをコピーしました'),
-                          backgroundColor: Color(0xFF2C2318),
+                        SnackBar(
+                          content: Text(
+                            'フレンドコードをコピーしました',
+                            style: TextStyle(color: colors.textPrimary),
+                          ),
+                          backgroundColor: colors.surface,
                         ),
                       );
                     }
@@ -163,16 +168,17 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return GestureDetector(
       onTap: onTap,
-
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF3D2B1F),
+          color: colors.surfaceLight,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF5C4033),
+            color: colors.border,
             width: 0.6,
           ),
         ),
@@ -187,11 +193,10 @@ class _ActionButton extends StatelessWidget {
             ),
 
             const SizedBox(width: 6),
-
             Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFFC8A97A),
+              style: TextStyle(
+                color: colors.secondary,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),

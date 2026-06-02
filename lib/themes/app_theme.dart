@@ -22,16 +22,34 @@ class AppTheme {
     final border = colors.border;
     final divider = colors.divider;
 
-    return base.copyWith(
+    final colorScheme = base.colorScheme.copyWith(
       brightness: isDark ? Brightness.dark : Brightness.light,
+      primary: primary,
+      secondary: colors.secondary,
+      background: background,
+      surface: surface,
+      onPrimary: isDark ? AppColors.textDark : Colors.white,
+      onSecondary: Colors.white,
+      onBackground: textPrimary,
+      onSurface: textPrimary,
+      surfaceVariant: colors.surfaceLight,
+      outline: border,
+      inverseSurface: isDark ? const Color(0xFF26201A) : const Color(0xFFF7EFE0),
+      shadow: Colors.black.withOpacity(0.18),
+    );
 
+    return base.copyWith(
+      colorScheme: colorScheme,
+      brightness: isDark ? Brightness.dark : Brightness.light,
       scaffoldBackgroundColor: background,
-
+      canvasColor: surface,
+      cardColor: surface,
+      dialogBackgroundColor: surface,
+      bottomAppBarTheme: BottomAppBarThemeData(color: background),
       primaryColor: primary,
-
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-
+      shadowColor: Colors.black.withOpacity(0.15),
       extensions: [
         isDark ? AppColors.dark : AppColors.light,
       ],
@@ -99,13 +117,9 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
-
           backgroundColor: primary,
-
           foregroundColor: isDark ? AppColors.textDark : Colors.white,
-
           disabledBackgroundColor: isDark ? const Color(0xFF4A4440) : Colors.grey[300],
-
           disabledForegroundColor: isDark ? const Color(0xFF6B6560) : Colors.grey[500],
 
           minimumSize: const Size(double.infinity, AppSizes.buttonHeight),
@@ -150,12 +164,20 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primary,
-
           textStyle: AppTextStyles.button.copyWith(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: surface,
+        textStyle: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: surface,
+        selectedItemColor: primary,
+        unselectedItemColor: colors.textSecondary,
       ),
 
       // ─────────────────────────────────

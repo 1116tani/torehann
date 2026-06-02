@@ -3,7 +3,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -20,6 +19,7 @@ import '../providers/navigation_provider.dart';
 import '../providers/settings_provider.dart';
 import '../router/route_names.dart';
 import '../services/directions_service.dart';
+import '../utils/map_style_loader.dart';
 import '../utils/polyline_utils.dart';
 import '../widgets/common/torenyan.dart';
 import '../widgets/navigation/arrival_dialog.dart';
@@ -77,21 +77,16 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
   }
 
   Future<void> _loadMapStyle(String themeMode) async {
-    if (themeMode == 'daylight') {
-      if (mounted) {
-        setState(() => _mapStyle = null);
-      }
-      return;
-    }
     try {
-      final style = await rootBundle.loadString(
-        'assets/map_styles/dark_fantasy_map.json',
-      );
+      final style = await loadGoogleMapStyle(themeMode);
       if (mounted) {
         setState(() => _mapStyle = style);
       }
     } catch (e) {
       debugPrint('Error loading map style: $e');
+      if (mounted) {
+        setState(() => _mapStyle = null);
+      }
     }
   }
 

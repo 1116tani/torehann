@@ -1,7 +1,6 @@
 // lib/pages/route_select_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,6 +10,7 @@ import '../providers/navigation_provider.dart';
 import '../providers/route_provider.dart';
 import '../providers/settings_provider.dart';
 import '../router/route_names.dart';
+import '../utils/map_style_loader.dart';
 import '../widgets/common/custom_header.dart';
 import '../widgets/route/route_card.dart';
 import '../widgets/route/route_empty_state.dart';
@@ -44,19 +44,12 @@ class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
   }
 
   Future<void> _loadMapStyle(String themeMode) async {
-    if (themeMode == 'daylight') {
-      if (mounted) {
-        setState(() => _mapStyle = null);
-      }
-      return;
-    }
     try {
-      final style = await rootBundle.loadString(
-        'assets/map_styles/dark_fantasy_map.json',
-      );
+      final style = await loadGoogleMapStyle(themeMode);
       if (mounted) setState(() => _mapStyle = style);
     } catch (e) {
       debugPrint('Error loading map style: $e');
+      if (mounted) setState(() => _mapStyle = null);
     }
   }
 

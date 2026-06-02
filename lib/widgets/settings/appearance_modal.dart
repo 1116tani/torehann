@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../constants/app_colors.dart';
 import '../../providers/settings_provider.dart';
 import 'base_dialog.dart';
 
@@ -12,6 +13,7 @@ class AppearanceModal extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
+    final colors = AppColors.of(context);
 
     return BaseDialog(
       title: '👁️ 見た目の設定',
@@ -19,16 +21,17 @@ class AppearanceModal extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── マップスタイル ──
-          const Text(
+          Text(
             'マップスタイル',
             style: TextStyle(
-              color: Color(0xFFC8A97A),
+              color: colors.secondary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           _buildSegmentedControl<String>(
+            colors: colors,
             currentValue: settings.mapStyle,
             options: [
               {'value': 'game', 'label': 'ゲーム風'},
@@ -40,16 +43,17 @@ class AppearanceModal extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // ── 文字サイズ ──
-          const Text(
+          Text(
             '文字サイズ',
             style: TextStyle(
-              color: Color(0xFFC8A97A),
+              color: colors.secondary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           _buildSegmentedControl<String>(
+            colors: colors,
             currentValue: settings.textSize,
             options: [
               {'value': 'small', 'label': '小'},
@@ -61,22 +65,23 @@ class AppearanceModal extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // ── アプリテーマ ──
-          const Text(
+          Text(
             'アプリテーマ',
             style: TextStyle(
-              color: Color(0xFFC8A97A),
+              color: colors.secondary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           _buildSegmentedControl<String>(
+            colors: colors,
             currentValue: settings.themeMode == 'daylight'
                 ? 'daylight'
                 : 'adventure',
             options: [
-              {'value': 'adventure', 'label': 'ゲームモード'},
-              {'value': 'daylight', 'label': 'ホワイトモード'},
+              {'value': 'adventure', 'label': 'ダーク'},
+              {'value': 'daylight', 'label': 'ライト'},
             ],
             onChanged: notifier.setThemeMode,
           ),
@@ -87,6 +92,7 @@ class AppearanceModal extends ConsumerWidget {
   }
 
   Widget _buildSegmentedControl<T>({
+    required AppColors colors,
     required T currentValue,
     required List<Map<String, dynamic>> options,
     required ValueChanged<T> onChanged,
@@ -94,6 +100,9 @@ class AppearanceModal extends ConsumerWidget {
     return Row(
       children: options.map((opt) {
         final isSelected = currentValue == opt['value'];
+        final fillColor = isSelected ? colors.primary : colors.surface;
+        final borderColor = isSelected ? colors.primary : colors.border;
+        final textColor = isSelected ? colors.surface : colors.textPrimary;
         return Expanded(
           child: GestureDetector(
             onTap: () => onChanged(opt['value'] as T),
@@ -101,23 +110,15 @@ class AppearanceModal extends ConsumerWidget {
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFFC8A97A)
-                    : const Color(0xFF1C1610),
+                color: fillColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected
-                      ? const Color(0xFFC8A97A)
-                      : const Color(0xFF4A3728),
-                ),
+                border: Border.all(color: borderColor),
               ),
               child: Center(
                 child: Text(
                   opt['label'] as String,
                   style: TextStyle(
-                    color: isSelected
-                        ? const Color(0xFF1C1610)
-                        : const Color(0xFFF5EDD8),
+                    color: textColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),

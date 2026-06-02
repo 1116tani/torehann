@@ -1,6 +1,7 @@
 // lib/widgets/party/member_slot.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import '../../providers/party_provider.dart';
 
 class MemberSlot extends StatelessWidget {
@@ -13,6 +14,7 @@ class MemberSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final isEmpty = member == null;
 
     return AnimatedContainer(
@@ -21,15 +23,15 @@ class MemberSlot extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         color: isEmpty
-            ? const Color(0xFF241B14)
-            : const Color(0xFF2C2318),
+            ? colors.background
+            : colors.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isEmpty
-              ? const Color(0xFF4A3728)
+              ? colors.border
               : member!.isReady
-                  ? const Color(0xFF57D6C9)
-                  : const Color(0xFFC8A97A),
+                  ? AppColors.success
+                  : colors.secondary,
           width: 1,
         ),
         boxShadow: [
@@ -51,22 +53,22 @@ class MemberSlot extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isEmpty
-                  ? const Color(0xFF1C1610)
-                  : const Color(0xFF3D2B1F),
+                  ? colors.background
+                  : colors.surfaceLight,
               border: Border.all(
                 color: isEmpty
-                    ? const Color(0xFF4A3728)
+                    ? colors.border
                     : member!.isReady
-                        ? const Color(0xFF57D6C9)
-                        : const Color(0xFFC8A97A),
+                        ? AppColors.success
+                        : colors.secondary,
                 width: 1.2,
               ),
             ),
             child: Icon(
               isEmpty ? Icons.add : Icons.person,
               color: isEmpty
-                  ? const Color(0xFF5C4033)
-                  : const Color(0xFFC8A97A),
+                  ? colors.textMuted
+                  : colors.secondary,
               size: 24,
             ),
           ),
@@ -80,8 +82,8 @@ class MemberSlot extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: isEmpty
-                  ? const Color(0xFF5C4033)
-                  : const Color(0xFFF5EDD8),
+                  ? colors.textMuted
+                  : colors.textPrimary,
               fontSize: 11,
               fontWeight: FontWeight.bold,
             ),
@@ -98,16 +100,16 @@ class MemberSlot extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: member!.isReady
-                    ? const Color(0xFF2D5A3D)
-                    : const Color(0xFF4A3728),
+                    ? colors.surfaceLight
+                    : colors.border,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 member!.isReady ? 'READY' : '接続中',
                 style: TextStyle(
                   color: member!.isReady
-                      ? const Color(0xFF57D6C9)
-                      : const Color(0xFFC8A97A),
+                      ? AppColors.success
+                      : colors.secondary,
                   fontSize: 9,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.6,
@@ -120,10 +122,10 @@ class MemberSlot extends StatelessWidget {
           // ── HOST表示 ──
           if (!isEmpty && member!.isHost) ...[
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'HOST',
               style: TextStyle(
-                color: Color(0xFFB8860B),
+                color: colors.primary,
                 fontSize: 9,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../constants/app_colors.dart';
 import '../models/mission_model.dart';
 import '../providers/mission_provider.dart';
 
@@ -29,8 +30,10 @@ class MissionPage extends ConsumerWidget {
         .where((m) => m.status == MissionStatus.claimed)
         .length;
 
+    final colors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610),
+      backgroundColor: colors.background,
 
       body: SafeArea(
         child: Column(
@@ -98,9 +101,10 @@ class MissionPage extends ConsumerWidget {
     BuildContext context,
     int exp,
   ) {
+    final colors = AppColors.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: const Color(0xFF2C2318),
+        backgroundColor: colors.surface,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(milliseconds: 1800),
         shape: RoundedRectangleBorder(
@@ -108,17 +112,17 @@ class MissionPage extends ConsumerWidget {
         ),
         content: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.auto_awesome,
-              color: Color(0xFFFFD700),
+              color: AppColors.warning,
             ),
 
             const SizedBox(width: 10),
 
             Text(
               'EXP +$exp を獲得した！',
-              style: const TextStyle(
-                color: Color(0xFFF5EDD8),
+              style: TextStyle(
+                color: colors.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -145,13 +149,14 @@ class _MissionHeader extends StatelessWidget {
         ? 0.0
         : completedCount / totalCount;
 
+    final colors = AppColors.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
 
-      decoration: const BoxDecoration(
-        color: Color(0xFF2C2318),
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
         ),
@@ -159,7 +164,7 @@ class _MissionHeader extends StatelessWidget {
           BoxShadow(
             color: Colors.black54,
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -169,10 +174,10 @@ class _MissionHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 '本日の達成状況',
                 style: TextStyle(
-                  color: Color(0xFFC8A97A),
+                  color: colors.secondary,
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.1,
@@ -181,8 +186,8 @@ class _MissionHeader extends StatelessWidget {
 
               Text(
                 '$completedCount / $totalCount',
-                style: const TextStyle(
-                  color: Color(0xFFE5A93C),
+                style: TextStyle(
+                  color: colors.primary,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -198,10 +203,10 @@ class _MissionHeader extends StatelessWidget {
               value: progress,
               minHeight: 8,
 
-              backgroundColor: const Color(0xFF1C1610),
+              backgroundColor: colors.background,
 
-              valueColor: const AlwaysStoppedAnimation(
-                Color(0xFFB8860B),
+              valueColor: AlwaysStoppedAnimation(
+                colors.primary,
               ),
             ),
           ),
@@ -217,24 +222,25 @@ class _MissionEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.assignment_outlined,
               size: 52,
-              color: Color(0xFF5C4033),
+              color: colors.secondary,
             ),
 
             const SizedBox(height: 18),
 
-            const Text(
+            Text(
               '現在受注中の依頼はありません',
               style: TextStyle(
-                color: Color(0xFFF5EDD8),
+                color: colors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -242,11 +248,11 @@ class _MissionEmpty extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            const Text(
+            Text(
               '新しい依頼が届くまで、\n酒場で少し休憩しましょう。',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF7A5C3A),
+                color: colors.textMuted,
                 fontSize: 12,
                 height: 1.6,
               ),

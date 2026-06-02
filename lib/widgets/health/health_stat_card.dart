@@ -1,6 +1,7 @@
 // lib/widgets/health/health_stat_card.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class HealthStatCard extends StatelessWidget {
   final IconData icon;
@@ -18,6 +19,7 @@ class HealthStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 12,
@@ -25,10 +27,10 @@ class HealthStatCard extends StatelessWidget {
       ),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF5C4033),
+          color: colors.border,
           width: 0.6,
         ),
       ),
@@ -45,8 +47,8 @@ class HealthStatCard extends StatelessWidget {
 
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF7A5C3A),
+            style: TextStyle(
+              color: colors.textMuted,
               fontSize: 11,
             ),
           ),
@@ -55,8 +57,8 @@ class HealthStatCard extends StatelessWidget {
 
           Text(
             value,
-            style: const TextStyle(
-              color: Color(0xFFF5EDD8),
+            style: TextStyle(
+              color: colors.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),

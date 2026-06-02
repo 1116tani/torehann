@@ -1,6 +1,7 @@
 // lib/widgets/party/partner_status_board.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import '../../providers/party_provider.dart';
 import 'member_slot.dart';
 
@@ -14,6 +15,7 @@ class PartnerStatusBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     // 最大5人固定
     final slots = List<PartyMember?>.generate(
       5,
@@ -30,10 +32,10 @@ class PartnerStatusBoard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF241B14),
+        color: colors.background,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: const Color(0xFF4A3728),
+          color: colors.border,
           width: 1,
         ),
         boxShadow: [
@@ -51,18 +53,18 @@ class PartnerStatusBoard extends StatelessWidget {
           // ── タイトル ──
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.groups_rounded,
-                color: Color(0xFFB8860B),
+                color: colors.primary,
                 size: 20,
               ),
 
               const SizedBox(width: 8),
 
-              const Text(
+              Text(
                 '冒険パーティ',
                 style: TextStyle(
-                  color: Color(0xFFF5EDD8),
+                  color: colors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -72,8 +74,8 @@ class PartnerStatusBoard extends StatelessWidget {
 
               Text(
                 '${members.length} / 5',
-                style: const TextStyle(
-                  color: Color(0xFFC8A97A),
+                style: TextStyle(
+                  color: colors.secondary,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -83,10 +85,10 @@ class PartnerStatusBoard extends StatelessWidget {
 
           const SizedBox(height: 6),
 
-          const Text(
+          Text(
             '仲間が集まるのを待っています...',
             style: TextStyle(
-              color: Color(0xFF7A5C3A),
+              color: colors.textMuted,
               fontSize: 11,
             ),
           ),
@@ -114,10 +116,10 @@ class PartnerStatusBoard extends StatelessWidget {
             ),
 
             decoration: BoxDecoration(
-              color: const Color(0xFF1C1610),
+              color: colors.surfaceLight,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: const Color(0xFF3D2B1F),
+                color: colors.border,
                 width: 1,
               ),
             ),
@@ -130,13 +132,13 @@ class PartnerStatusBoard extends StatelessWidget {
 
                   decoration: BoxDecoration(
                     color: members.isNotEmpty
-                        ? const Color(0xFF57D6C9)
-                        : const Color(0xFF7A5C3A),
+                        ? AppColors.success
+                        : colors.textMuted,
                     shape: BoxShape.circle,
                     boxShadow: members.isNotEmpty
                         ? [
                             BoxShadow(
-                              color: const Color(0xFF57D6C9)
+                              color: AppColors.success
                                   .withValues(alpha: 0.5),
                               blurRadius: 8,
                             ),
@@ -153,8 +155,8 @@ class PartnerStatusBoard extends StatelessWidget {
                       : '接続待機中',
                   style: TextStyle(
                     color: members.isNotEmpty
-                        ? const Color(0xFF57D6C9)
-                        : const Color(0xFF7A5C3A),
+                        ? AppColors.success
+                        : colors.textMuted,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -162,9 +164,9 @@ class PartnerStatusBoard extends StatelessWidget {
 
                 const Spacer(),
 
-                const Icon(
+                Icon(
                   Icons.wifi_rounded,
-                  color: Color(0xFFC8A97A),
+                  color: colors.secondary,
                   size: 18,
                 ),
               ],

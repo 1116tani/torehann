@@ -6,20 +6,21 @@ import '../../providers/health_provider.dart';
 import '../providers/settings_provider.dart';
 import '../../widgets/health/health_widgets.dart';
 import '../widgets/common/custom_header.dart';
+import '../../constants/app_colors.dart';
 
 class HealthPage extends ConsumerWidget {
   const HealthPage({super.key});
-  static const _scaffoldBackground = Color(0xFF1C1610);
-  static const _titleColor = Color(0xFFF5EDD8);
   static const _defaultPadding = EdgeInsets.all(16);
-  static const _sectionTitleStyle = TextStyle(
-    color: _titleColor,
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
+    final sectionTitleStyle = TextStyle(
+      color: colors.textPrimary,
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    );
+
     final health = ref.watch(healthProvider.select((value) => value.health));
     final selectedPeriod = ref.watch(healthProvider.select((value) => value.selectedPeriod));
     final graphData = ref.watch(healthProvider.select((value) => value.graphData));
@@ -51,7 +52,7 @@ class HealthPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: _scaffoldBackground,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -65,75 +66,75 @@ class HealthPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-              HealthPeriodTab(
-                selectedPeriod: selectedPeriod,
-                onChanged: notifier.changePeriod,
-              ),
-              const SizedBox(height: 20),
-              HealthEnergyBanner(
-                energy: energy,
-                message: energyMessage,
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: HealthRingChart(
-                  stepProgress: stepProgress,
-                  distanceProgress: distanceProgress,
-                  calorieProgress: calorieProgress,
+                    HealthPeriodTab(
+                      selectedPeriod: selectedPeriod,
+                      onChanged: notifier.changePeriod,
+                    ),
+                    const SizedBox(height: 20),
+                    HealthEnergyBanner(
+                      energy: energy,
+                      message: energyMessage,
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: HealthRingChart(
+                        stepProgress: stepProgress,
+                        distanceProgress: distanceProgress,
+                        calorieProgress: calorieProgress,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text('今日の詳細情報', style: sectionTitleStyle),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: HealthRecordCard(
+                            title: '歩いた距離',
+                            value: '${health.distanceKm.toStringAsFixed(1)} km',
+                            subtitle: '今日の冒険距離',
+                            icon: Icons.route,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: HealthRecordCard(
+                            title: '消費カロリー',
+                            value: '${health.calories} kcal',
+                            subtitle: '消費エネルギー',
+                            icon: Icons.local_fire_department,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    HealthRecordCard(
+                      title: 'アクティブ時間',
+                      value: '${health.activeMinutes} 分',
+                      subtitle: 'しっかり歩いた時間',
+                      icon: Icons.timer,
+                    ),
+                    const SizedBox(height: 32),
+                    Text('期間の合計統計', style: sectionTitleStyle),
+                    const SizedBox(height: 14),
+                    HealthSummaryRow(
+                      steps: summary.totalSteps,
+                      distanceKm: summary.totalDistanceKm,
+                      calories: summary.totalCalories,
+                    ),
+                    const SizedBox(height: 32),
+                    Text('歩数グラフ', style: sectionTitleStyle),
+                    const SizedBox(height: 14),
+                    HealthBarChart(values: graphData),
+                    const SizedBox(height: 32),
+                    Text('獲得した記録', style: sectionTitleStyle),
+                    const SizedBox(height: 14),
+                    ...topics.map((topic) => HealthTopicCard(topic: topic)),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
-              const SizedBox(height: 32),
-              const Text('今日の詳細情報', style: _sectionTitleStyle),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: HealthRecordCard(
-                      title: '歩いた距離',
-                      value: '${health.distanceKm.toStringAsFixed(1)} km',
-                      subtitle: '今日の冒険距離',
-                      icon: Icons.route,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: HealthRecordCard(
-                      title: '消費カロリー',
-                      value: '${health.calories} kcal',
-                      subtitle: '消費エネルギー',
-                      icon: Icons.local_fire_department,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              HealthRecordCard(
-                title: 'アクティブ時間',
-                value: '${health.activeMinutes} 分',
-                subtitle: 'しっかり歩いた時間',
-                icon: Icons.timer,
-              ),
-              const SizedBox(height: 32),
-              const Text('期間の合計統計', style: _sectionTitleStyle),
-              const SizedBox(height: 14),
-              HealthSummaryRow(
-                steps: summary.totalSteps,
-                distanceKm: summary.totalDistanceKm,
-                calories: summary.totalCalories,
-              ),
-              const SizedBox(height: 32),
-              const Text('歩数グラフ', style: _sectionTitleStyle),
-              const SizedBox(height: 14),
-              HealthBarChart(values: graphData),
-              const SizedBox(height: 32),
-              const Text('獲得した記録', style: _sectionTitleStyle),
-              const SizedBox(height: 14),
-              ...topics.map((topic) => HealthTopicCard(topic: topic)),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
+            ),
           ],
         ),
       ),

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../constants/app_colors.dart';
 
 class RoomIdBadge extends StatelessWidget {
   final String roomId;
@@ -13,21 +14,22 @@ class RoomIdBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 20,
         vertical: 16,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFB8860B),
+          color: colors.primary,
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFB8860B).withValues(alpha: 0.15),
+            color: colors.primary.withValues(alpha: 0.15),
             blurRadius: 14,
             spreadRadius: 1,
           ),
@@ -37,10 +39,10 @@ class RoomIdBadge extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             'ROOM ID',
             style: TextStyle(
-              color: Color(0xFFC8A97A),
+              color: colors.secondary,
               fontSize: 11,
               letterSpacing: 2,
               fontWeight: FontWeight.bold,
@@ -58,10 +60,10 @@ class RoomIdBadge extends StatelessWidget {
 
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('ルームIDをコピーしたよ'),
-                    duration: Duration(seconds: 1),
-                    backgroundColor: Color(0xFF2C2318),
+                  SnackBar(
+                    content: const Text('ルームIDをコピーしたよ'),
+                    duration: const Duration(seconds: 1),
+                    backgroundColor: colors.surface,
                   ),
                 );
               }
@@ -73,10 +75,10 @@ class RoomIdBadge extends StatelessWidget {
                 vertical: 10,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF1C1610),
+                color: colors.background,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: const Color(0xFF5C4033),
+                  color: colors.border,
                   width: 1,
                 ),
               ),
@@ -86,8 +88,8 @@ class RoomIdBadge extends StatelessWidget {
                 children: [
                   Text(
                     roomId,
-                    style: const TextStyle(
-                      color: Color(0xFFF5EDD8),
+                    style: TextStyle(
+                      color: colors.textPrimary,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 6,
@@ -96,9 +98,9 @@ class RoomIdBadge extends StatelessWidget {
 
                   const SizedBox(width: 10),
 
-                  const Icon(
+                  Icon(
                     Icons.copy_rounded,
-                    color: Color(0xFFC8A97A),
+                    color: colors.secondary,
                     size: 18,
                   ),
                 ],
@@ -108,10 +110,10 @@ class RoomIdBadge extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          const Text(
+          Text(
             'タップでコピー',
             style: TextStyle(
-              color: Color(0xFF7A5C3A),
+              color: colors.textMuted,
               fontSize: 10,
             ),
           ),

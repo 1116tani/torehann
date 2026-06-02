@@ -1,6 +1,7 @@
 // lib/widgets/settings/settings_tile.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class SettingsTile extends StatelessWidget {
   final IconData icon;
@@ -8,7 +9,7 @@ class SettingsTile extends StatelessWidget {
   final String subtitle;
   final String? valueText; // 現在設定されている値を右側に表示（例：「デフォルト」「3.0 km」など）
   final VoidCallback onTap;
-  final Color titleColor;
+  final Color? titleColor;
 
   const SettingsTile({
     super.key,
@@ -17,20 +18,23 @@ class SettingsTile extends StatelessWidget {
     required this.subtitle,
     this.valueText,
     required this.onTap,
-    this.titleColor = const Color(0xFFF5EDD8), // 幻想的なオフホワイト
+    this.titleColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final effectiveTitleColor = titleColor ?? colors.textPrimary;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318), // 深いダークブラウン
+        color: colors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF4A3728), width: 1.0),
+        border: Border.all(color: colors.border, width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -50,13 +54,13 @@ class SettingsTile extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1C1610),
+                    color: colors.surfaceLight,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF5C4033), width: 0.5),
+                    border: Border.all(color: colors.border, width: 0.5),
                   ),
                   child: Icon(
                     icon,
-                    color: const Color(0xFFC8A97A), // 金色
+                    color: colors.primary,
                     size: 24,
                   ),
                 ),
@@ -70,7 +74,7 @@ class SettingsTile extends StatelessWidget {
                       Text(
                         title,
                         style: TextStyle(
-                          color: titleColor,
+                          color: effectiveTitleColor,
                           fontSize: 17, // 大きめ
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
@@ -79,8 +83,8 @@ class SettingsTile extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          color: Color(0xFF8B7355), // 落ち着いたくすんだブラウン
+                        style: TextStyle(
+                          color: colors.textMuted,
                           fontSize: 13,
                           height: 1.3,
                         ),
@@ -98,16 +102,16 @@ class SettingsTile extends StatelessWidget {
                         padding: const EdgeInsets.only(right: 8),
                         child: Text(
                           valueText!,
-                          style: const TextStyle(
-                            color: Color(0xFFC8A97A),
+                          style: TextStyle(
+                            color: colors.primary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    const Icon(
+                    Icon(
                       Icons.chevron_right,
-                      color: Color(0xFF7A5C3A),
+                      color: colors.textMuted,
                       size: 20,
                     ),
                   ],

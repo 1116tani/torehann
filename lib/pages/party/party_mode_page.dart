@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../constants/app_colors.dart';
 import '../../router/route_names.dart';
 import '../../widgets/party/party_action_button.dart';
 import '../../widgets/common/custom_header.dart';
@@ -12,8 +13,10 @@ class PartyModePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610),
+      backgroundColor: colors.background,
 
       body: SafeArea(
         child: Column(
@@ -32,18 +35,18 @@ class PartyModePage extends StatelessWidget {
                     const SizedBox(height: 20),
 
                     // ── タイトル ──
-                    const Icon(
+                    Icon(
                       Icons.groups_rounded,
                       size: 64,
-                      color: Color(0xFFC8A97A),
+                      color: colors.primary,
                     ),
 
                     const SizedBox(height: 12),
 
-                    const Text(
+                    Text(
                       'パーティ冒険',
                       style: TextStyle(
-                        color: Color(0xFFF5EDD8),
+                        color: colors.textPrimary,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
@@ -52,11 +55,11 @@ class PartyModePage extends StatelessWidget {
 
                     const SizedBox(height: 8),
 
-                    const Text(
+                    Text(
                       '仲間と一緒に、\n物語の続きを歩こう。',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFFC8A97A),
+                        color: colors.secondary,
                         fontSize: 13,
                         height: 1.6,
                       ),
@@ -69,28 +72,28 @@ class PartyModePage extends StatelessWidget {
                 padding: const EdgeInsets.all(18),
 
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2C2318),
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: const Color(0xFF4A3728),
+                    color: colors.border,
                     width: 1,
                   ),
                 ),
 
                 child: Column(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.auto_awesome,
                       size: 40,
-                      color: Color(0xFFB8860B),
+                      color: colors.primary,
                     ),
 
                     const SizedBox(height: 14),
 
-                    const Text(
+                    Text(
                       '新しくパーティを作る',
                       style: TextStyle(
-                        color: Color(0xFFF5EDD8),
+                        color: colors.textPrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -98,11 +101,11 @@ class PartyModePage extends StatelessWidget {
 
                     const SizedBox(height: 8),
 
-                    const Text(
+                    Text(
                       'ルームIDを発行して\n仲間を招待できるよ',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF7A5C3A),
+                        color: colors.textMuted,
                         fontSize: 12,
                         height: 1.6,
                       ),
@@ -128,28 +131,28 @@ class PartyModePage extends StatelessWidget {
                 padding: const EdgeInsets.all(18),
 
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2C2318),
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: const Color(0xFF4A3728),
+                    color: colors.border,
                     width: 1,
                   ),
                 ),
 
                 child: Column(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.travel_explore_rounded,
                       size: 40,
-                      color: Color(0xFF57D6C9),
+                      color: colors.secondary,
                     ),
 
                     const SizedBox(height: 14),
 
-                    const Text(
+                    Text(
                       '友達のパーティに参加',
                       style: TextStyle(
-                        color: Color(0xFFF5EDD8),
+                        color: colors.textPrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -157,11 +160,11 @@ class PartyModePage extends StatelessWidget {
 
                     const SizedBox(height: 8),
 
-                    const Text(
+                    Text(
                       'ルームIDやQRコードから\n冒険へ合流できるよ',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF7A5C3A),
+                        color: colors.textMuted,
                         fontSize: 12,
                         height: 1.6,
                       ),
@@ -183,10 +186,10 @@ class PartyModePage extends StatelessWidget {
               const Spacer(),
 
               // ── フッター ──
-              const Text(
-                '2〜5人で一緒に冒険できます',
-                style: TextStyle(
-                  color: Color(0xFF5C4033),
+Text(
+                      '2〜5人で一緒に冒険できます',
+                      style: TextStyle(
+                        color: colors.textMuted,
                   fontSize: 11,
                   letterSpacing: 0.5,
                 ),

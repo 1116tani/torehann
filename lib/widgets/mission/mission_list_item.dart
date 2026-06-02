@@ -1,7 +1,7 @@
 // lib/widgets/mission/mission_list_item.dart
 
 import 'package:flutter/material.dart';
-
+import '../../constants/app_colors.dart';
 import '../../models/mission_model.dart';
 import 'mission_progress_bar.dart';
 
@@ -17,18 +17,19 @@ class MissionListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final isCompleted = mission.status == MissionStatus.completed;
     final isClaimed = mission.status == MissionStatus.claimed;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isCompleted
-              ? const Color(0xFFB8860B)
-              : const Color(0xFF4A3728),
+              ? colors.primary
+              : colors.border,
           width: isCompleted ? 1.0 : 0.5,
         ),
         boxShadow: [
@@ -54,16 +55,16 @@ class MissionListItem extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3D2B1F),
+                    color: colors.surfaceLight,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: const Color(0xFF5C4033),
+                      color: colors.border,
                       width: 0.5,
                     ),
                   ),
                   child: Icon(
                     mission.icon,
-                    color: const Color(0xFFC8A97A),
+                    color: colors.secondary,
                     size: 24,
                   ),
                 ),
@@ -84,7 +85,7 @@ class MissionListItem extends StatelessWidget {
                             child: Icon(
                               Icons.star_rounded,
                               size: 14,
-                              color: Color(0xFFFFD700),
+                              color: AppColors.warning,
                             ),
                           ),
                         ),
@@ -94,8 +95,8 @@ class MissionListItem extends StatelessWidget {
 
                       Text(
                         mission.title,
-                        style: const TextStyle(
-                          color: Color(0xFFF5EDD8),
+                        style: TextStyle(
+                          color: colors.textPrimary,
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
@@ -105,8 +106,8 @@ class MissionListItem extends StatelessWidget {
 
                       Text(
                         mission.description,
-                        style: const TextStyle(
-                          color: Color(0xFFC8A97A),
+                        style: TextStyle(
+                          color: colors.secondary,
                           fontSize: 12,
                           height: 1.5,
                         ),
@@ -131,10 +132,10 @@ class MissionListItem extends StatelessWidget {
                 vertical: 10,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF1C1610),
+                color: colors.surfaceLight,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF4A3728),
+                  color: colors.border,
                   width: 0.5,
                 ),
               ),
@@ -143,7 +144,7 @@ class MissionListItem extends StatelessWidget {
                   const Icon(
                     Icons.auto_awesome,
                     size: 18,
-                    color: Color(0xFFFFD700),
+                    color: AppColors.warning,
                   ),
 
                   const SizedBox(width: 8),
@@ -181,12 +182,12 @@ class MissionListItem extends StatelessWidget {
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isClaimed
-                      ? const Color(0xFF3D2B1F)
-                      : const Color(0xFFB8860B),
+                      ? colors.surfaceLight
+                      : colors.primary,
 
-                  disabledBackgroundColor: const Color(0xFF3D2B1F),
+                  disabledBackgroundColor: colors.surfaceLight,
 
-                  foregroundColor: Colors.white,
+                  foregroundColor: isClaimed ? colors.textPrimary : Colors.white,
 
                   elevation: isCompleted ? 6 : 0,
 
@@ -241,6 +242,7 @@ class _TypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final isDaily = type == MissionType.daily;
 
     return Container(
@@ -250,15 +252,15 @@ class _TypeBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isDaily
-            ? const Color(0xFF2D5A3D)
-            : const Color(0xFF3A2D5A),
+            ? colors.surfaceLight.withValues(alpha: 0.5)
+            : colors.surface.withValues(alpha: 0.5),
 
         borderRadius: BorderRadius.circular(999),
 
         border: Border.all(
           color: isDaily
-              ? const Color(0xFF57D6C9)
-              : const Color(0xFFB388FF),
+              ? AppColors.success
+              : colors.primary,
           width: 0.5,
         ),
       ),
@@ -266,8 +268,8 @@ class _TypeBadge extends StatelessWidget {
         isDaily ? 'DAILY' : 'WEEKLY',
         style: TextStyle(
           color: isDaily
-              ? const Color(0xFF57D6C9)
-              : const Color(0xFFB388FF),
+              ? AppColors.success
+              : colors.primary,
           fontSize: 9,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
