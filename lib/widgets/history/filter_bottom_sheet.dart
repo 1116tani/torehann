@@ -28,43 +28,52 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     final screenHeight = MediaQuery.of(context).size.height;
     final colors = AppColors.of(context);
 
-    return Container(
-      height: screenHeight * 0.8,
-      decoration: BoxDecoration(
-        color: colors.background,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: screenHeight * 0.85,
       ),
-      child: Column(
-        children: [
-          // Handle bar
-          _buildHandleBar(colors),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colors.background,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              _buildHandleBar(colors),
 
-          // Header
-          _buildHeader(colors),
+              // Header
+              _buildHeader(colors),
 
-          // Filter options
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSection(colors, '状態', _buildStatusFilters()),
-                  const SizedBox(height: 24),
-                  _buildSection(colors, '時間帯', _buildTimeOfDayFilters()),
-                  const SizedBox(height: 24),
-                  _buildSection(colors, '天候', _buildWeatherFilters()),
-                  const SizedBox(height: 24),
-                  _buildSection(colors, '写真', _buildPhotoFilters()),
-                  const SizedBox(height: 100),
-                ],
+              // Filter options
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildSection(colors, '状態', _buildStatusFilters()),
+                      const SizedBox(height: 24),
+                      _buildSection(colors, '時間帯', _buildTimeOfDayFilters()),
+                      const SizedBox(height: 24),
+                      _buildSection(colors, '天候', _buildWeatherFilters()),
+                      const SizedBox(height: 24),
+                      _buildSection(colors, '写真', _buildPhotoFilters()),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
 
-          // Bottom buttons
-          _buildBottomButtons(colors),
-        ],
+              // Bottom buttons
+              _buildBottomButtons(colors),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -179,10 +188,10 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? colors.primary : colors.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected
                 ? colors.primary
@@ -196,7 +205,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             color: isSelected
                 ? colors.background
                 : colors.textPrimary,
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -223,7 +232,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             child: GestureDetector(
               onTap: _handleReset,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
                   color: colors.surface,
                   borderRadius: BorderRadius.circular(12),
@@ -234,7 +243,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: colors.primary,
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -246,7 +255,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             child: GestureDetector(
               onTap: _handleApply,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
                   color: colors.primary,
                   borderRadius: BorderRadius.circular(12),
@@ -256,7 +265,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: colors.background,
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

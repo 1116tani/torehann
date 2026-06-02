@@ -123,120 +123,83 @@ class HistoryPage extends ConsumerWidget {
     final colors = AppColors.of(context);
     return Center(
       child: Padding(
-        padding:
-            const EdgeInsets.all(
-          24,
-        ),
-
+        padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize:
-              MainAxisSize.min,
-
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 90,
-              height: 90,
-
-              decoration:
-                  BoxDecoration(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
                 color: colors.surface,
-
-                shape:
-                    BoxShape.circle,
-
-                border:
-                    Border.all(
+                shape: BoxShape.circle,
+                border: Border.all(
                   color: colors.border,
                 ),
               ),
-
               child: const Center(
                 child: Text(
                   '📜',
-
-                  style:
-                      TextStyle(
-                    fontSize:
-                        42,
+                  style: TextStyle(
+                    fontSize: 52,
                   ),
                 ),
               ),
             ),
-
             const SizedBox(
               height: 24,
             ),
-
             Text(
               'まだ冒険の記録がありません',
-
               style: TextStyle(
                 color: colors.textPrimary,
-
-                fontSize: 18,
-
-                fontWeight:
-                    FontWeight.bold,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(
-              height: 10,
+              height: 12,
             ),
-
             Text(
               '地図はまだ白紙です。\n最初の冒険へ出発しましょう。',
-
-              textAlign:
-                  TextAlign.center,
-
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: colors.textSecondary,
-
-                fontSize: 13,
-
+                fontSize: 14,
                 height: 1.7,
               ),
             ),
-
             const SizedBox(
-              height: 28,
+              height: 32,
             ),
-
             ElevatedButton.icon(
               onPressed: () {
                 context.go(
-                  AppRoutes
-                      .adventureSetting,
+                  AppRoutes.adventureSetting,
                 );
               },
-
               icon: const Icon(
                 Icons.explore_rounded,
+                size: 22,
               ),
-
               label: const Text(
                 '冒険に出発する',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-
-              style:
-                  ElevatedButton.styleFrom(
+              style: ElevatedButton.styleFrom(
                 backgroundColor: colors.primary,
-
                 foregroundColor: Theme.of(context).brightness == Brightness.dark
                     ? AppColors.textDark
                     : Colors.white,
-
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 26,
-                  vertical: 14,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
                 ),
-
-                shape:
-                    RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
                     14,
                   ),
                 ),

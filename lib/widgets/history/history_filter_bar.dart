@@ -19,36 +19,37 @@ class HistoryFilterBar extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1行目: 絞り込みボタン（左）と並び順（右）
-          Row(
-            children: [
-              // 絞り込みボタン
-              _buildFilterButton(context, state.activeFilters.length),
-              const Spacer(),
-              // 並び順
-              _buildSortOrderRow(context, state, notifier),
-            ],
-          ),
-
-          // 2行目以降: フィルターチップ（適用中のみ）
-          if (state.activeFilters.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.start,
-              children: state.activeFilters.map((filter) {
-                return _buildFilterChip(
-                  context: context,
-                  filter: filter,
-                  onRemove: () => notifier.toggleFilter(filter),
-                );
-              }).toList(),
+          // 左側: 絞り込みボタンとフィルターチップ
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildFilterButton(context, state.activeFilters.length),
+                if (state.activeFilters.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.start,
+                    children: state.activeFilters.map((filter) {
+                      return _buildFilterChip(
+                        context: context,
+                        filter: filter,
+                        onRemove: () => notifier.toggleFilter(filter),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
+          const SizedBox(width: 12),
+          // 右側: 並び順
+          _buildSortOrderRow(context, state, notifier),
         ],
       ),
     );
@@ -64,7 +65,7 @@ class HistoryFilterBar extends ConsumerWidget {
       key: _sortOrderKey,
       onTap: () => _showSortOrderMenu(context, state, notifier),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         decoration: BoxDecoration(
           color: colors.surface,
           borderRadius: BorderRadius.circular(12),
@@ -77,12 +78,12 @@ class HistoryFilterBar extends ConsumerWidget {
               _getSortOrderLabel(state.sortOrder),
               style: TextStyle(
                 color: colors.textPrimary,
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(width: 6),
-            Icon(Icons.expand_more, size: 18, color: colors.primary),
+            Icon(Icons.expand_more, size: 20, color: colors.primary),
           ],
         ),
       ),
@@ -96,7 +97,7 @@ class HistoryFilterBar extends ConsumerWidget {
   }) {
     final colors = AppColors.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: colors.primary,
         borderRadius: BorderRadius.circular(16),
@@ -108,7 +109,7 @@ class HistoryFilterBar extends ConsumerWidget {
             _getFilterLabel(filter),
             style: TextStyle(
               color: colors.background,
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -117,7 +118,7 @@ class HistoryFilterBar extends ConsumerWidget {
             onTap: onRemove,
             child: Icon(
               Icons.close_rounded,
-              size: 14,
+              size: 16,
               color: colors.background,
             ),
           ),
@@ -131,7 +132,7 @@ class HistoryFilterBar extends ConsumerWidget {
     return GestureDetector(
       onTap: () => _showFilterBottomSheet(context),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         decoration: BoxDecoration(
           color: colors.surface,
           borderRadius: BorderRadius.circular(12),
@@ -140,13 +141,13 @@ class HistoryFilterBar extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.tune_rounded, size: 18, color: colors.primary),
+            Icon(Icons.tune_rounded, size: 20, color: colors.primary),
             const SizedBox(width: 8),
             Text(
               filterCount > 0 ? '絞り込み($filterCount)' : '絞り込み',
               style: TextStyle(
                 color: colors.primary,
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
