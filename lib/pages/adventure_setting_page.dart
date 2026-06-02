@@ -10,6 +10,7 @@ import '../constants/app_sizes.dart';
 import '../constants/app_text_styles.dart';
 
 import '../providers/adventure_provider.dart';
+import '../providers/route_provider.dart';
 
 import '../widgets/common/custom_header.dart';
 
@@ -26,12 +27,16 @@ class AdventureSettingPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(adventureProvider);
+    final routeSelectState = ref.watch(routeSelectProvider);
+    final isGenerating = state.isGenerating || routeSelectState.isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.background,
 
       body: SafeArea(
-        child: Stack(
+        child: AbsorbPointer(
+          absorbing: isGenerating,
+          child: Stack(
           children: [
             // ─────────────────────────────
             // 🌌 Background
@@ -185,7 +190,7 @@ class AdventureSettingPage extends ConsumerWidget {
             // ─────────────────────────────
             // 🌙 Loading Overlay
             // ─────────────────────────────
-            if (state.isGenerating)
+            if (isGenerating)
               Container(
                 color: Colors.black.withValues(alpha: 0.45),
 
@@ -219,18 +224,9 @@ class AdventureSettingPage extends ConsumerWidget {
                         const SizedBox(height: AppSizes.p20),
 
                         Text(
-                          'AIが冒険ルートを生成中...',
+                          'トレにゃんが冒険ルートを生成中...',
                           style: AppTextStyles.titleSmall.copyWith(
                             fontSize: 18,
-                          ),
-                        ),
-
-                        const SizedBox(height: AppSizes.p8),
-
-                        Text(
-                          '街の記憶を探しています',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -241,7 +237,8 @@ class AdventureSettingPage extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 

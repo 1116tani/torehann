@@ -82,9 +82,11 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
   }
 
   Future<void> _selectPlace(PlaceItem placeItem) async {
+    debugPrint('*** Torehann Debug: _selectPlace called. name=${placeItem.name}, placeId=${placeItem.placeId}');
     final selectedText = placeItem.fullText.isNotEmpty
         ? placeItem.fullText
         : placeItem.name;
+    debugPrint('*** Torehann Debug: selectedText=$selectedText');
     _controller.text = selectedText;
     ref.read(placesProvider.notifier).clear();
     FocusScope.of(context).unfocus();
@@ -97,6 +99,7 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
       final detail = await ref
           .read(placesRepositoryProvider)
           .getPlaceDetail(placeItem.placeId);
+      debugPrint('*** Torehann Debug: detail success. name=${detail.name}, lat=${detail.lat}, lng=${detail.lng}');
       ref
           .read(adventureProvider.notifier)
           .setDestinationWithCoordinates(
@@ -104,7 +107,8 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
             lat: detail.lat,
             lng: detail.lng,
           );
-    } catch (_) {
+    } catch (e) {
+      debugPrint('*** Torehann Debug: detail error or dummy. exception=$e');
       ref.read(adventureProvider.notifier).setDestination(selectedText);
     }
   }
@@ -343,7 +347,10 @@ class _SuggestionBox extends StatelessWidget {
           for (int index = 0; index < visiblePlaces.length; index++) ...[
             _SuggestionTile(
               place: visiblePlaces[index],
-              onTap: () => onSelect(visiblePlaces[index]),
+              onTap: () {
+                debugPrint('*** Torehann Debug: _SuggestionBox tile onTap fired. Index: $index, Name: ${visiblePlaces[index].name}');
+                onSelect(visiblePlaces[index]);
+              },
             ),
             if (index != visiblePlaces.length - 1)
               const Divider(height: 1, thickness: 1, color: AppColors.divider),
@@ -385,68 +392,80 @@ class _SuggestionTile extends StatelessWidget {
 
   const _SuggestionTile({required this.place, required this.onTap});
 
+  String _formatDistance(int? meters) {
+    if (meters == null) return '';
+    if (meters >= 1000) {
+      return '${(meters / 1000).toStringAsFixed(1)} km';
+    }
+    return '$meters m';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.p16,
-            vertical: 12,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.background.withValues(alpha: 0.55),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.glassBorder),
-                ),
-                child: const Icon(
-                  Icons.location_on_outlined,
-                  size: 21,
-                  color: AppColors.secondary,
-                ),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) {
+        debugPrint('*** Torehann Debug: _SuggestionTile GestureDetector onTapDown fired. Place: ${place.name}');
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSizes.p16,
+          vertical: 12,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.background.withValues(alpha: 0.55),
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.glassBorder),
               ),
-              const SizedBox(width: AppSizes.p12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              child: const Icon(
+                Icons.location_on_outlined,
+                size: 21,
+                color: AppColors.secondary,
+              ),
+            ),
+            const SizedBox(width: AppSizes.p12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    place.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (place.address.isNotEmpty || place.distanceMeters != null) ...[
+                    const SizedBox(height: 4),
                     Text(
-                      place.name,
+                      [
+                        if (place.distanceMeters != null) _formatDistance(place.distanceMeters),
+                        if (place.address.isNotEmpty) place.address,
+                      ].join(' · '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.bold,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textMuted,
                       ),
                     ),
-                    if (place.address.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        place.address,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-              const SizedBox(width: AppSizes.p12),
-              const Icon(
-                Icons.north_west_rounded,
-                size: 22,
-                color: AppColors.textMuted,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: AppSizes.p12),
+            const Icon(
+              Icons.north_west_rounded,
+              size: 22,
+              color: AppColors.textMuted,
+            ),
+          ],
         ),
       ),
     );

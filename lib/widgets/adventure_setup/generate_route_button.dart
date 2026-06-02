@@ -155,7 +155,7 @@ class GenerateRouteButton extends ConsumerWidget {
           opacity: canGenerate ? 1.0 : 0.7,
           child: Text(
             canGenerate
-                ? '今の気分に合わせて、AIが街の物語を編みはじめるよ。'
+                ? '今の気分に合わせて、トレにゃんが街の物語を編みはじめるよ。'
                 : '目的地を入力するか、おまかせモードを選んでね。',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall.copyWith(

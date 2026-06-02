@@ -11,12 +11,14 @@ class PlaceSuggestion {
   final String mainText;
   final String secondaryText;
   final String fullText;
+  final int? distanceMeters;
 
   const PlaceSuggestion({
     required this.placeId,
     required this.mainText,
     required this.secondaryText,
     required this.fullText,
+    this.distanceMeters,
   });
 
   factory PlaceSuggestion.fromAutocompleteJson(Map<String, dynamic> json) {
@@ -27,12 +29,16 @@ class PlaceSuggestion {
     final fullText = prediction['text']?['text'] ?? mainText;
     final placeId =
         prediction['placeId'] ?? _placeIdFromName(prediction['place']);
+    final distanceMeters = prediction['distanceMeters'] != null
+        ? (prediction['distanceMeters'] as num).toInt()
+        : null;
 
     return PlaceSuggestion(
       placeId: placeId,
       mainText: mainText.isNotEmpty ? mainText : fullText,
       secondaryText: secondaryText,
       fullText: fullText,
+      distanceMeters: distanceMeters,
     );
   }
 
@@ -84,7 +90,8 @@ class PlacesService {
         'includeQueryPredictions': false,
       };
 
-      if (latitude != null && longitude != null) {
+      final hasLocation = latitude != null && longitude != null;
+      if (hasLocation) {
         requestBody['locationBias'] = {
           'circle': {
             'center': {'latitude': latitude, 'longitude': longitude},
@@ -94,18 +101,21 @@ class PlacesService {
         requestBody['origin'] = {'latitude': latitude, 'longitude': longitude};
       }
 
+      final fieldMask = [
+        'suggestions.placePrediction.placeId',
+        'suggestions.placePrediction.place',
+        'suggestions.placePrediction.text.text',
+        'suggestions.placePrediction.structuredFormat.mainText.text',
+        'suggestions.placePrediction.structuredFormat.secondaryText.text',
+        if (hasLocation) 'suggestions.placePrediction.distanceMeters',
+      ].join(',');
+
       final response = await http.post(
         uri,
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': _apiKey,
-          'X-Goog-FieldMask': [
-            'suggestions.placePrediction.placeId',
-            'suggestions.placePrediction.place',
-            'suggestions.placePrediction.text.text',
-            'suggestions.placePrediction.structuredFormat.mainText.text',
-            'suggestions.placePrediction.structuredFormat.secondaryText.text',
-          ].join(','),
+          'X-Goog-FieldMask': fieldMask,
         },
         body: jsonEncode(requestBody),
       );
@@ -180,36 +190,42 @@ class PlacesService {
         mainText: '$normalizedInputから名古屋駅',
         secondaryText: '経路検索',
         fullText: '$normalizedInputから名古屋駅',
+        distanceMeters: 1800,
       ),
       PlaceSuggestion(
         placeId: '',
         mainText: '$normalizedInput 駐車場',
         secondaryText: '目的地候補',
         fullText: '$normalizedInput 駐車場',
+        distanceMeters: 300,
       ),
       PlaceSuggestion(
         placeId: '',
         mainText: '$normalizedInput 居酒屋',
         secondaryText: '目的地候補',
         fullText: '$normalizedInput 居酒屋',
+        distanceMeters: 750,
       ),
       PlaceSuggestion(
         placeId: '',
         mainText: '$normalizedInput 飲食店',
         secondaryText: '目的地候補',
         fullText: '$normalizedInput 飲食店',
+        distanceMeters: 1200,
       ),
       PlaceSuggestion(
         placeId: '',
         mainText: '$normalizedInput ランチ',
         secondaryText: '目的地候補',
         fullText: '$normalizedInput ランチ',
+        distanceMeters: 450,
       ),
       PlaceSuggestion(
         placeId: '',
         mainText: '$normalizedInput ラーメン',
         secondaryText: '目的地候補',
         fullText: '$normalizedInput ラーメン',
+        distanceMeters: 900,
       ),
     ];
   }
