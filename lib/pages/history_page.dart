@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../constants/app_colors.dart';
 import '../providers/history_provider.dart';
 import '../router/route_names.dart';
 
@@ -26,9 +27,10 @@ class HistoryPage extends ConsumerWidget {
     final filtered =
         state.filteredHistories;
 
+    final colors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor:
-          const Color(0xFF1C1610),
+      backgroundColor: colors.background,
 
       body: SafeArea(
         child: Column(
@@ -118,6 +120,7 @@ class HistoryPage extends ConsumerWidget {
   Widget _buildEmpty(
     BuildContext context,
   ) {
+    final colors = AppColors.of(context);
     return Center(
       child: Padding(
         padding:
@@ -136,20 +139,14 @@ class HistoryPage extends ConsumerWidget {
 
               decoration:
                   BoxDecoration(
-                color:
-                    const Color(
-                  0xFF2C2318,
-                ),
+                color: colors.surface,
 
                 shape:
                     BoxShape.circle,
 
                 border:
                     Border.all(
-                  color:
-                      const Color(
-                    0xFF5C4033,
-                  ),
+                  color: colors.border,
                 ),
               ),
 
@@ -170,13 +167,11 @@ class HistoryPage extends ConsumerWidget {
               height: 24,
             ),
 
-            const Text(
+            Text(
               'まだ冒険の記録がありません',
 
               style: TextStyle(
-                color: Color(
-                  0xFFF5EDD8,
-                ),
+                color: colors.textPrimary,
 
                 fontSize: 18,
 
@@ -189,16 +184,14 @@ class HistoryPage extends ConsumerWidget {
               height: 10,
             ),
 
-            const Text(
+            Text(
               '地図はまだ白紙です。\n最初の冒険へ出発しましょう。',
 
               textAlign:
                   TextAlign.center,
 
               style: TextStyle(
-                color: Color(
-                  0xFF7A5C3A,
-                ),
+                color: colors.textSecondary,
 
                 fontSize: 13,
 
@@ -228,13 +221,11 @@ class HistoryPage extends ConsumerWidget {
 
               style:
                   ElevatedButton.styleFrom(
-                backgroundColor:
-                    const Color(
-                  0xFFB8860B,
-                ),
+                backgroundColor: colors.primary,
 
-                foregroundColor:
-                    Colors.white,
+                foregroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.textDark
+                    : Colors.white,
 
                 padding:
                     const EdgeInsets.symmetric(

@@ -1,6 +1,7 @@
 // lib/widgets/route/route_spot_list.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import '../../models/spot_model.dart';
 
 class RouteSpotList extends StatelessWidget {
@@ -10,17 +11,18 @@ class RouteSpotList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.explore_outlined, color: Color(0xFFC8A97A), size: 14),
+            Icon(Icons.explore_outlined, color: colors.secondary, size: 14),
             const SizedBox(width: 8),
             Text(
               'SPOTS TO VISIT',
               style: TextStyle(
-                color: const Color(0xFFC8A97A).withValues(alpha: 0.7),
+                color: colors.secondary.withValues(alpha: 0.7),
                 fontSize: 10,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 2.0,
@@ -34,7 +36,7 @@ class RouteSpotList extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
           itemCount: spots.length,
-          separatorBuilder: (context, index) => _buildConnector(),
+          separatorBuilder: (context, index) => _buildConnector(context),
           itemBuilder: (context, index) {
             final spot = spots[index];
             final hasSubtitle = spot.aiStoryName.isNotEmpty && spot.aiStoryName != spot.name;
@@ -46,8 +48,8 @@ class RouteSpotList extends StatelessWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFC8A97A),
+                  decoration: BoxDecoration(
+                    color: colors.secondary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -62,8 +64,8 @@ class RouteSpotList extends StatelessWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFFF5EDD8),
+                        style: TextStyle(
+                          color: colors.textPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -75,7 +77,7 @@ class RouteSpotList extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: const Color(0xFFF5EDD8).withValues(alpha: 0.6),
+                            color: colors.textSecondary.withValues(alpha: 0.6),
                             fontSize: 12,
                           ),
                         ),
@@ -88,14 +90,14 @@ class RouteSpotList extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1C1610),
+                      color: colors.surface,
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFF4A3728), width: 0.5),
+                      border: Border.all(color: colors.border, width: 0.5),
                     ),
                     child: Text(
                       spot.category,
-                      style: const TextStyle(
-                        color: Color(0xFF8B7355),
+                      style: TextStyle(
+                        color: colors.textMuted,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -110,7 +112,8 @@ class RouteSpotList extends StatelessWidget {
     );
   }
 
-  Widget _buildConnector() {
+  Widget _buildConnector(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(left: 3.5), // ドットの中央に合わせる
       child: Align(
@@ -118,9 +121,10 @@ class RouteSpotList extends StatelessWidget {
         child: Container(
           width: 1.0,
           height: 12,
-          color: const Color(0xFF7A5C3A), // ドットを繋ぐ縦線
+          color: colors.border, // ドットを繋ぐ縦線
         ),
       ),
     );
   }
 }
+

@@ -37,13 +37,14 @@ class CustomScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final body = Padding(
       padding: padding ?? const EdgeInsets.all(AppSizes.p16),
       child: child,
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
 
       extendBody: true,
 

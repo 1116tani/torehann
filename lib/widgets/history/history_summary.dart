@@ -16,6 +16,7 @@ class HistorySummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(
         AppSizes.p16,
@@ -30,12 +31,12 @@ class HistorySummary extends StatelessWidget {
       ),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
 
         borderRadius: BorderRadius.circular(20),
 
         border: Border.all(
-          color: const Color(0xFF5C4033),
+          color: colors.border,
           width: 1,
         ),
 
@@ -51,11 +52,11 @@ class HistorySummary extends StatelessWidget {
       child: Column(
         children: [
           // ── タイトル ──
-          const Text(
+          Text(
             'ADVENTURE LOG',
 
             style: TextStyle(
-              color: AppColors.primary,
+              color: colors.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               letterSpacing: 2.4,
@@ -64,11 +65,11 @@ class HistorySummary extends StatelessWidget {
 
           const SizedBox(height: 6),
 
-          const Text(
+          Text(
             '冒険の軌跡',
 
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
               fontSize: 13.5,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.0,
@@ -92,7 +93,7 @@ class HistorySummary extends StatelessWidget {
               Container(
                 width: 1,
                 height: 56,
-                color: const Color(0xFF4A3728),
+                color: colors.divider,
               ),
 
               Expanded(
@@ -129,12 +130,13 @@ class _SummaryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       children: [
         Icon(
           icon,
           size: 24,
-          color: AppColors.primary,
+          color: colors.primary,
         ),
 
         const SizedBox(height: 8),
@@ -142,8 +144,8 @@ class _SummaryItem extends StatelessWidget {
         Text(
           label,
 
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: colors.textPrimary,
             fontSize: 12.5,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.8,
@@ -163,8 +165,8 @@ class _SummaryItem extends StatelessWidget {
             Text(
               value,
 
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: colors.textPrimary,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 height: 1,
@@ -182,8 +184,8 @@ class _SummaryItem extends StatelessWidget {
               child: Text(
                 unit,
 
-                style: const TextStyle(
-                  color: AppColors.secondary,
+                style: TextStyle(
+                  color: colors.secondary,
                   fontSize: 13,
                   fontWeight:
                       FontWeight.bold,

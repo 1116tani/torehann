@@ -82,11 +82,9 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
   }
 
   Future<void> _selectPlace(PlaceItem placeItem) async {
-    debugPrint('*** Torehann Debug: _selectPlace called. name=${placeItem.name}, placeId=${placeItem.placeId}');
     final selectedText = placeItem.fullText.isNotEmpty
         ? placeItem.fullText
         : placeItem.name;
-    debugPrint('*** Torehann Debug: selectedText=$selectedText');
     _controller.text = selectedText;
     ref.read(placesProvider.notifier).clear();
     FocusScope.of(context).unfocus();
@@ -99,7 +97,6 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
       final detail = await ref
           .read(placesRepositoryProvider)
           .getPlaceDetail(placeItem.placeId);
-      debugPrint('*** Torehann Debug: detail success. name=${detail.name}, lat=${detail.lat}, lng=${detail.lng}');
       ref
           .read(adventureProvider.notifier)
           .setDestinationWithCoordinates(
@@ -107,8 +104,7 @@ class _DestinationInputState extends ConsumerState<DestinationInput> {
             lat: detail.lat,
             lng: detail.lng,
           );
-    } catch (e) {
-      debugPrint('*** Torehann Debug: detail error or dummy. exception=$e');
+    } catch (_) {
       ref.read(adventureProvider.notifier).setDestination(selectedText);
     }
   }
@@ -189,6 +185,8 @@ class _DestinationTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     return GestureDetector(
       onTap: () {
         if (isRandomMode) {
@@ -209,31 +207,32 @@ class _DestinationTextField extends StatelessWidget {
                 onEnableInput();
               }
             },
-            style: AppTextStyles.bodyLarge,
+            style: textStyles.bodyLarge.copyWith(color: colors.textPrimary),
             decoration: InputDecoration(
               hintText: '駅名・街・スポット名を入力',
-              prefixIcon: const Icon(
+              hintStyle: textStyles.bodyLarge.copyWith(color: colors.textMuted),
+              prefixIcon: Icon(
                 Icons.search_rounded,
-                color: AppColors.textMuted,
+                color: colors.textMuted,
               ),
               filled: true,
-              fillColor: AppColors.surfaceLight,
+              fillColor: colors.surfaceLight,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSizes.p16,
                 vertical: AppSizes.p16,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: colors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: colors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                borderSide: const BorderSide(
-                  color: AppColors.primary,
+                borderSide: BorderSide(
+                  color: colors.primary,
                   width: 1.5,
                 ),
               ),
@@ -256,6 +255,8 @@ class _RandomDestinationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final selectedForeground = AppColors.textDark;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -264,15 +265,15 @@ class _RandomDestinationButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppSizes.radiusL),
-          color: isRandomMode ? AppColors.primary : const Color(0xFF2C2318),
+          color: isRandomMode ? colors.primary : colors.surfaceLight,
           border: Border.all(
-            color: isRandomMode ? AppColors.primaryLight : AppColors.border,
+            color: isRandomMode ? colors.primaryLight : colors.border,
             width: 1.2,
           ),
           boxShadow: isRandomMode
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.25),
+                    color: colors.primary.withValues(alpha: 0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -284,9 +285,7 @@ class _RandomDestinationButton extends StatelessWidget {
           children: [
             Icon(
               Icons.casino_rounded,
-              color: isRandomMode
-                  ? AppColors.textDark
-                  : AppColors.textSecondary,
+              color: isRandomMode ? selectedForeground : colors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -294,8 +293,8 @@ class _RandomDestinationButton extends StatelessWidget {
               '目的地をおまかせする',
               style: TextStyle(
                 color: isRandomMode
-                    ? AppColors.textDark
-                    : AppColors.textSecondary,
+                    ? selectedForeground
+                    : colors.textSecondary,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.1,
@@ -316,9 +315,10 @@ class _SuggestionBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     if (state.isLoading) {
       return _SuggestionShell(
-        child: const SizedBox(
+        child: SizedBox(
           height: 48,
           child: Center(
             child: SizedBox(
@@ -326,7 +326,7 @@ class _SuggestionBox extends StatelessWidget {
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AppColors.secondary,
+                color: colors.secondary,
               ),
             ),
           ),
@@ -347,13 +347,10 @@ class _SuggestionBox extends StatelessWidget {
           for (int index = 0; index < visiblePlaces.length; index++) ...[
             _SuggestionTile(
               place: visiblePlaces[index],
-              onTap: () {
-                debugPrint('*** Torehann Debug: _SuggestionBox tile onTap fired. Index: $index, Name: ${visiblePlaces[index].name}');
-                onSelect(visiblePlaces[index]);
-              },
+              onTap: () => onSelect(visiblePlaces[index]),
             ),
             if (index != visiblePlaces.length - 1)
-              const Divider(height: 1, thickness: 1, color: AppColors.divider),
+              Divider(height: 1, thickness: 1, color: colors.divider),
           ],
         ],
       ),
@@ -368,16 +365,17 @@ class _SuggestionShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Material(
       color: Colors.transparent,
       elevation: 12,
-      shadowColor: Colors.black.withValues(alpha: 0.35),
+      shadowColor: colors.textPrimary.withValues(alpha: 0.22),
       borderRadius: BorderRadius.circular(AppSizes.radiusL),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusL),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: child,
@@ -392,82 +390,73 @@ class _SuggestionTile extends StatelessWidget {
 
   const _SuggestionTile({required this.place, required this.onTap});
 
-  String _formatDistance(int? meters) {
-    if (meters == null) return '';
-    if (meters >= 1000) {
-      return '${(meters / 1000).toStringAsFixed(1)} km';
-    }
-    return '$meters m';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: (_) {
-        debugPrint('*** Torehann Debug: _SuggestionTile GestureDetector onTapDown fired. Place: ${place.name}');
-        onTap();
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSizes.p16,
-          vertical: 12,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppColors.background.withValues(alpha: 0.55),
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.glassBorder),
+    final colors = AppColors.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.p16,
+            vertical: 12,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: colors.background.withValues(alpha: 0.55),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.glassBorder),
+                ),
+                child: Icon(
+                  Icons.location_on_outlined,
+                  size: 21,
+                  color: colors.secondary,
+                ),
               ),
-              child: const Icon(
-                Icons.location_on_outlined,
-                size: 21,
-                color: AppColors.secondary,
-              ),
-            ),
-            const SizedBox(width: AppSizes.p12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    place.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (place.address.isNotEmpty || place.distanceMeters != null) ...[
-                    const SizedBox(height: 4),
+              const SizedBox(width: AppSizes.p12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      [
-                        if (place.distanceMeters != null) _formatDistance(place.distanceMeters),
-                        if (place.address.isNotEmpty) place.address,
-                      ].join(' · '),
+                      place.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textMuted,
+                      style: AppTextStyles.of(context).bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
                       ),
                     ),
+                    if (place.address.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        place.address,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.of(context).bodySmall.copyWith(
+                          color: colors.textMuted,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            const SizedBox(width: AppSizes.p12),
-            const Icon(
-              Icons.north_west_rounded,
-              size: 22,
-              color: AppColors.textMuted,
-            ),
-          ],
+              const SizedBox(width: AppSizes.p12),
+              Icon(
+                Icons.north_west_rounded,
+                size: 22,
+                color: colors.textMuted,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+

@@ -45,10 +45,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMapStyle();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final themeMode = ref.read(settingsProvider).themeMode;
+      _loadMapStyle(themeMode);
+    });
   }
 
-  Future<void> _loadMapStyle() async {
+  Future<void> _loadMapStyle(String themeMode) async {
+    if (themeMode == 'daylight') {
+      if (mounted) {
+        setState(() {
+          _mapStyle = null;
+        });
+      }
+      return;
+    }
     try {
       final style = await rootBundle.loadString('assets/map_styles/dark_fantasy_map.json');
       if (mounted) {
@@ -91,6 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ─────────────────────────────
 
   void _showMapStyleSheet() {
+    final colors = AppColors.of(context);
     showModalBottomSheet(
       context: context,
 
@@ -101,11 +113,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
 
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: colors.surface,
 
             borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
 
-            border: Border.all(color: AppColors.border, width: 1.5),
+            border: Border.all(color: colors.border, width: 1.5),
           ),
 
           child: SafeArea(
@@ -120,7 +132,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   height: 5,
 
                   decoration: BoxDecoration(
-                    color: AppColors.textMuted.withValues(alpha: 0.4),
+                    color: colors.textMuted.withValues(alpha: 0.4),
 
                     borderRadius: BorderRadius.circular(999),
                   ),
@@ -129,10 +141,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 20),
 
                 // 🧭 ヘッダーを追加してリッチに見やすく
-                const Text(
+                Text(
                   '🧭 地図スタイル切り替え',
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: colors.primary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.0,
@@ -203,7 +215,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final locationAsync = ref.watch(locationProvider);
+    final themeModeSetting = ref.watch(settingsProvider.select((s) => s.themeMode));
+    final isDark = themeModeSetting != 'daylight';
+    final colors = AppColors.of(context);
     final mapStyleSetting = ref.watch(settingsProvider.select((s) => s.mapStyle));
+
+    ref.listen<String>(settingsProvider.select((s) => s.themeMode), (prev, next) {
+      if (prev != next) {
+        _loadMapStyle(next);
+      }
+    });
 
     // ─────────────────────────────
     // 📍 初回位置取得
@@ -230,10 +251,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final elementOpacity = _sheetPosition > 0.42 ? 0.0 : 1.0;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
 
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
 
         body: Stack(
           children: [
@@ -263,7 +284,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               buildingsEnabled: true,
 
-              style: mapStyleSetting == 'game' ? _mapStyle : null,
+              style: (mapStyleSetting == 'game' && isDark) ? _mapStyle : null,
 
               onMapCreated: (controller) {
                 _mapController = controller;
@@ -382,6 +403,7 @@ class _MapStyleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Material(
       color: Colors.transparent,
 
@@ -399,13 +421,13 @@ class _MapStyleTile extends StatelessWidget {
 
           decoration: BoxDecoration(
             color: selected
-                ? AppColors.primary.withValues(alpha: 0.16)
-                : AppColors.surfaceLight,
+                ? colors.primary.withValues(alpha: 0.16)
+                : colors.surfaceLight,
 
             borderRadius: BorderRadius.circular(18),
 
             border: Border.all(
-              color: selected ? AppColors.primary : AppColors.border,
+              color: selected ? colors.primary : colors.border,
               width: selected ? 2.0 : 1.0,
             ),
           ),
@@ -416,7 +438,7 @@ class _MapStyleTile extends StatelessWidget {
                 icon,
                 size: 28.0, // アイコンを大きく表示
 
-                color: selected ? AppColors.primary : AppColors.textSecondary,
+                color: selected ? colors.primary : colors.textSecondary,
               ),
 
               const SizedBox(width: 16.0),
@@ -426,7 +448,7 @@ class _MapStyleTile extends StatelessWidget {
                   title,
 
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     fontSize: 16.0, // フォントサイズを大きく表示
                     fontWeight: FontWeight.bold,
                   ),
@@ -434,9 +456,9 @@ class _MapStyleTile extends StatelessWidget {
               ),
 
               if (selected)
-                const Icon(
+                Icon(
                   Icons.check_rounded,
-                  color: AppColors.primary,
+                  color: colors.primary,
                   size: 24.0,
                 ),
             ],
@@ -446,3 +468,4 @@ class _MapStyleTile extends StatelessWidget {
     );
   }
 }
+

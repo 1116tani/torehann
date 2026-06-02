@@ -59,6 +59,8 @@ class _WeatherChipContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
 
@@ -68,11 +70,11 @@ class _WeatherChipContent extends StatelessWidget {
       ),
 
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
 
         borderRadius: BorderRadius.circular(AppSizes.radiusFull),
 
-        border: Border.all(color: isError ? AppColors.error : AppColors.border),
+        border: Border.all(color: isError ? AppColors.error : colors.border),
       ),
 
       child: Row(
@@ -82,12 +84,12 @@ class _WeatherChipContent extends StatelessWidget {
           // 🌤 Icon
           // ───────────────────
           if (isLoading)
-            const SizedBox(
+            SizedBox(
               width: 18,
               height: 18,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AppColors.secondary,
+                color: colors.secondary,
               ),
             )
           else
@@ -102,18 +104,18 @@ class _WeatherChipContent extends StatelessWidget {
           // 🌡 Weather Text
           // ───────────────────
           if (isLoading)
-            _label('天候を観測中...', AppColors.textMuted)
+            _label(context, '天候を観測中...', colors.textMuted)
           else if (isError)
-            _label('天候データ取得失敗', AppColors.error)
+            _label(context, '天候データ取得失敗', AppColors.error)
           else ...[
-            _label(weather!.localizedDescription, AppColors.textPrimary),
+            _label(context, weather!.localizedDescription, colors.textPrimary),
 
             const SizedBox(width: AppSizes.p8),
 
             Text(
               weather!.temperatureLabel,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.secondary,
+              style: textStyles.bodyMedium.copyWith(
+                color: colors.secondary,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -122,11 +124,10 @@ class _WeatherChipContent extends StatelessWidget {
       ),
     );
   }
-
-  Widget _label(String text, Color color) {
+  Widget _label(BuildContext context, String text, Color color) {
     return Text(
       text,
-      style: AppTextStyles.bodyMedium.copyWith(
+      style: AppTextStyles.of(context).bodyMedium.copyWith(
         color: color,
         fontWeight: FontWeight.w600,
       ),

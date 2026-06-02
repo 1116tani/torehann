@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../constants/app_gradients.dart';
 import '../../constants/app_radius.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_text_styles.dart';
@@ -17,16 +18,14 @@ class LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       height: double.infinity,
 
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF211912), Color(0xFF16120F)],
-        ),
+      decoration: BoxDecoration(
+        gradient: AppGradients.background(isDark),
       ),
 
       child: Center(
@@ -45,13 +44,13 @@ class LoadingView extends StatelessWidget {
               ),
 
               decoration: BoxDecoration(
-                color: AppColors.sheetBackground,
+                color: colors.background.withValues(alpha: 0.9),
 
                 borderRadius: BorderRadius.circular(AppRadius.xl),
 
-                border: Border.all(color: AppColors.glassBorder),
+                border: Border.all(color: colors.glassBorder),
 
-                boxShadow: AppShadows.glass,
+                boxShadow: AppShadows.glass(isDark),
               ),
 
               child: Column(
@@ -68,11 +67,11 @@ class LoadingView extends StatelessWidget {
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
 
-                      valueColor: const AlwaysStoppedAnimation(
-                        AppColors.primary,
+                      valueColor: AlwaysStoppedAnimation(
+                        colors.primary,
                       ),
 
-                      backgroundColor: AppColors.surfaceLight,
+                      backgroundColor: colors.surfaceLight,
                     ),
                   ),
 
@@ -85,7 +84,7 @@ class LoadingView extends StatelessWidget {
                     message,
 
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
 
                       letterSpacing: 0.4,
                     ),
@@ -95,7 +94,10 @@ class LoadingView extends StatelessWidget {
 
                   const SizedBox(height: AppSizes.p12),
 
-                  Text('しばらくお待ちください...', style: AppTextStyles.caption),
+                  Text(
+                    'しばらくお待ちください...',
+                    style: AppTextStyles.caption.copyWith(color: colors.textMuted),
+                  ),
                 ],
               ),
             ),

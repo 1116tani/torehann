@@ -32,6 +32,8 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDisabled = onPressed == null || isLoading;
 
     final buttonChild = AnimatedContainer(
@@ -42,18 +44,18 @@ class CustomButton extends StatelessWidget {
       height: AppSizes.buttonHeight,
 
       decoration: BoxDecoration(
-        gradient: isDisabled ? null : AppGradients.gold,
+        gradient: isDisabled ? null : AppGradients.gold(isDark),
 
-        color: isDisabled ? AppColors.surfaceLight : null,
+        color: isDisabled ? colors.surfaceLight : null,
 
         borderRadius: BorderRadius.circular(AppRadius.full),
 
         border: Border.all(
-          color: isDisabled ? AppColors.border : AppColors.primaryDark,
+          color: isDisabled ? colors.border : colors.primaryDark,
           width: 1,
         ),
 
-        boxShadow: isDisabled ? null : AppShadows.goldGlow,
+        boxShadow: isDisabled ? null : AppShadows.goldGlow(isDark),
       ),
 
       child: Material(
@@ -85,7 +87,7 @@ class CustomButton extends StatelessWidget {
                           icon,
                           size: AppSizes.iconS,
                           color: isDisabled
-                              ? AppColors.textMuted
+                              ? colors.textMuted
                               : AppColors.textDark,
                         ),
 
@@ -97,7 +99,7 @@ class CustomButton extends StatelessWidget {
 
                         style: AppTextStyles.button.copyWith(
                           color: isDisabled
-                              ? AppColors.textMuted
+                              ? colors.textMuted
                               : AppColors.textDark,
                         ),
                       ),

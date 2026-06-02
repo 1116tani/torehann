@@ -27,6 +27,8 @@ class EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSizes.p24),
@@ -40,13 +42,13 @@ class EmptyView extends StatelessWidget {
           ),
 
           decoration: BoxDecoration(
-            color: AppColors.sheetBackground,
+            color: colors.background.withValues(alpha: 0.9),
 
             borderRadius: BorderRadius.circular(AppRadius.xl),
 
-            border: Border.all(color: AppColors.glassBorder),
+            border: Border.all(color: colors.glassBorder),
 
-            boxShadow: AppShadows.glass,
+            boxShadow: AppShadows.glass(isDark),
           ),
 
           child: Column(
@@ -63,14 +65,14 @@ class EmptyView extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
 
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: colors.primary.withValues(alpha: 0.12),
 
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.28),
+                    color: colors.primary.withValues(alpha: 0.28),
                   ),
                 ),
 
-                child: Icon(icon, size: 34, color: AppColors.primary),
+                child: Icon(icon, size: 34, color: colors.primary),
               ),
 
               const SizedBox(height: AppSizes.p24),
@@ -81,7 +83,7 @@ class EmptyView extends StatelessWidget {
               Text(
                 title,
 
-                style: AppTextStyles.titleSmall,
+                style: AppTextStyles.titleSmall.copyWith(color: colors.textPrimary),
 
                 textAlign: TextAlign.center,
               ),
@@ -95,7 +97,7 @@ class EmptyView extends StatelessWidget {
                 Text(
                   message!,
 
-                  style: AppTextStyles.bodyMedium,
+                  style: AppTextStyles.bodyMedium.copyWith(color: colors.textSecondary),
 
                   textAlign: TextAlign.center,
                 ),

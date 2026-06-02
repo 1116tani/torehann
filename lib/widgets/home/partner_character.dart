@@ -26,6 +26,7 @@ class PartnerCharacter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
 
@@ -46,7 +47,7 @@ class PartnerCharacter extends StatelessWidget {
 
             borderRadius: BorderRadius.circular(AppRadius.xl),
 
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+            border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
 
             boxShadow: [
               BoxShadow(
@@ -66,7 +67,7 @@ class PartnerCharacter extends StatelessWidget {
                 characterName,
 
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.primaryDark,
+                  color: colors.primaryDark,
 
                   fontWeight: FontWeight.bold,
 
@@ -108,7 +109,7 @@ class PartnerCharacter extends StatelessWidget {
 
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.primary.withValues(alpha: 0.25),
+                    colors.primary.withValues(alpha: 0.25),
 
                     Colors.transparent,
                   ],
@@ -125,19 +126,19 @@ class PartnerCharacter extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
 
-                      color: AppColors.surfaceLight,
+                      color: colors.surfaceLight,
 
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3),
+                        color: colors.primary.withValues(alpha: 0.3),
                       ),
                     ),
 
-                    child: const Icon(
+                    child: Icon(
                       Icons.auto_awesome_rounded,
 
                       size: 56,
 
-                      color: AppColors.primary,
+                      color: colors.primary,
                     ),
                   )
                 : Image.asset(

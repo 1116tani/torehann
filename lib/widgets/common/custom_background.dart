@@ -32,17 +32,19 @@ class CustomBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Stack(
       children: [
         // ─────────────────────────────
         // 🌌 Base Background
         // ─────────────────────────────
-        Container(decoration: const BoxDecoration(gradient: AppGradients.dark)),
+        Container(decoration: BoxDecoration(gradient: AppGradients.background(isDark))),
 
         // ─────────────────────────────
         // ✨ 暖色セピアレイヤー
         // ─────────────────────────────
-        Container(color: const Color(0x221A140F)),
+        Container(color: isDark ? const Color(0x221A140F) : const Color(0x0A8B7355)),
 
         // ─────────────────────────────
         // 🌫 ガラスぼかし
@@ -58,17 +60,17 @@ class CustomBackground extends StatelessWidget {
         // ─────────────────────────────
         if (useOverlayGradient)
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0x802B2118),
+                  isDark ? const Color(0x802B2118) : const Color(0x33D0C0A0),
                   Colors.transparent,
                   Colors.transparent,
-                  Color(0x992B2118),
+                  isDark ? const Color(0x992B2118) : const Color(0x44D0C0A0),
                 ],
-                stops: [0.0, 0.18, 0.72, 1.0],
+                stops: const [0.0, 0.18, 0.72, 1.0],
               ),
             ),
           ),
@@ -78,12 +80,15 @@ class CustomBackground extends StatelessWidget {
         // ─────────────────────────────
         if (useVignette)
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: RadialGradient(
                 center: Alignment.center,
                 radius: 1.15,
-                colors: [Colors.transparent, Color(0x662B2118)],
-                stops: [0.72, 1.0],
+                colors: [
+                  Colors.transparent,
+                  isDark ? const Color(0x662B2118) : const Color(0x44D0C0A0),
+                ],
+                stops: const [0.72, 1.0],
               ),
             ),
           ),
@@ -91,7 +96,7 @@ class CustomBackground extends StatelessWidget {
         // ─────────────────────────────
         // 🔮 Decorative Overlay
         // ─────────────────────────────
-        ?overlay,
+        if (overlay != null) overlay!,
 
         // ─────────────────────────────
         // 📜 Main Content

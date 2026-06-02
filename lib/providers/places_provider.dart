@@ -16,14 +16,12 @@ class PlaceItem {
   final String name;
   final String address;
   final String fullText;
-  final int? distanceMeters;
 
   const PlaceItem({
     required this.placeId,
     required this.name,
     required this.address,
     required this.fullText,
-    this.distanceMeters,
   });
 
   factory PlaceItem.fromSuggestion(PlaceSuggestion s) {
@@ -32,7 +30,6 @@ class PlaceItem {
       name: s.mainText,
       address: s.secondaryText,
       fullText: s.fullText,
-      distanceMeters: s.distanceMeters,
     );
   }
 }
@@ -94,24 +91,9 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
         longitude: longitude,
       );
 
-      final sortedSuggestions = List<PlaceSuggestion>.from(suggestions);
-      sortedSuggestions.sort((a, b) {
-        final distA = a.distanceMeters;
-        final distB = b.distanceMeters;
-        if (distA != null && distB != null) {
-          return distA.compareTo(distB);
-        } else if (distA != null) {
-          return -1;
-        } else if (distB != null) {
-          return 1;
-        } else {
-          return 0;
-        }
-      });
-
       state = state.copyWith(
         isLoading: false,
-        places: sortedSuggestions.map(PlaceItem.fromSuggestion).take(6).toList(),
+        places: suggestions.map(PlaceItem.fromSuggestion).take(6).toList(),
       );
     } catch (e) {
       state = state.copyWith(

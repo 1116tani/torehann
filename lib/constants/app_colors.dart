@@ -2,170 +2,179 @@
 
 import 'package:flutter/material.dart';
 
-class AppColors {
-  // ─────────────────────────────────
-  // 🏰 背景・基盤（ダークセピア・ウッド）
-  // ─────────────────────────────────
+class AppColors extends ThemeExtension<AppColors> {
+  final Color background;
+  final Color surface;
+  final Color surfaceLight;
+  final Color border;
+  final Color divider;
+  final Color primary;
+  final Color primaryLight;
+  final Color primaryDark;
+  final Color secondary;
+  final Color speechBubble;
+  final Color speechAccent;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+  final Color textDisabled;
+  final Color glass;
+  final Color glassBorder;
+  final Color selectedItem;
 
-  /// アプリ全体のベースとなる濃い闇・木色（漆黒の夜）
-  static const Color background = Color(0xFF15110D);
+  const AppColors({
+    required this.background,
+    required this.surface,
+    required this.surfaceLight,
+    required this.border,
+    required this.divider,
+    required this.primary,
+    required this.primaryLight,
+    required this.primaryDark,
+    required this.secondary,
+    required this.speechBubble,
+    required this.speechAccent,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.textDisabled,
+    required this.glass,
+    required this.glassBorder,
+    required this.selectedItem,
+  });
 
-  /// 羊皮紙カードやダイアログ等のベースになるセピアブラウン
-  static const Color surface = Color(0xFF33271D);
+  @override
+  ThemeExtension<AppColors> copyWith({
+    Color? background,
+    Color? surface,
+    Color? surfaceLight,
+    Color? border,
+    Color? divider,
+    Color? primary,
+    Color? primaryLight,
+    Color? primaryDark,
+    Color? secondary,
+    Color? speechBubble,
+    Color? speechAccent,
+    Color? textPrimary,
+    Color? textSecondary,
+    Color? textMuted,
+    Color? textDisabled,
+    Color? glass,
+    Color? glassBorder,
+    Color? selectedItem,
+  }) {
+    return AppColors(
+      background: background ?? this.background,
+      surface: surface ?? this.surface,
+      surfaceLight: surfaceLight ?? this.surfaceLight,
+      border: border ?? this.border,
+      divider: divider ?? this.divider,
+      primary: primary ?? this.primary,
+      primaryLight: primaryLight ?? this.primaryLight,
+      primaryDark: primaryDark ?? this.primaryDark,
+      secondary: secondary ?? this.secondary,
+      speechBubble: speechBubble ?? this.speechBubble,
+      speechAccent: speechAccent ?? this.speechAccent,
+      textPrimary: textPrimary ?? this.textPrimary,
+      textSecondary: textSecondary ?? this.textSecondary,
+      textMuted: textMuted ?? this.textMuted,
+      textDisabled: textDisabled ?? this.textDisabled,
+      glass: glass ?? this.glass,
+      glassBorder: glassBorder ?? this.glassBorder,
+      selectedItem: selectedItem ?? this.selectedItem,
+    );
+  }
 
-  /// 少し浮かせたいUIや、明るめのウッドパーツ
-  static const Color surfaceLight = Color(0xFF463426);
+  @override
+  ThemeExtension<AppColors> lerp(ThemeExtension<AppColors>? other, double t) {
+    if (other is! AppColors) return this;
+    return AppColors(
+      background: Color.lerp(background, other.background, t)!,
+      surface: Color.lerp(surface, other.surface, t)!,
+      surfaceLight: Color.lerp(surfaceLight, other.surfaceLight, t)!,
+      border: Color.lerp(border, other.border, t)!,
+      divider: Color.lerp(divider, other.divider, t)!,
+      primary: Color.lerp(primary, other.primary, t)!,
+      primaryLight: Color.lerp(primaryLight, other.primaryLight, t)!,
+      primaryDark: Color.lerp(primaryDark, other.primaryDark, t)!,
+      secondary: Color.lerp(secondary, other.secondary, t)!,
+      speechBubble: Color.lerp(speechBubble, other.speechBubble, t)!,
+      speechAccent: Color.lerp(speechAccent, other.speechAccent, t)!,
+      textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
+      textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
+      textMuted: Color.lerp(textMuted, other.textMuted, t)!,
+      textDisabled: Color.lerp(textDisabled, other.textDisabled, t)!,
+      glass: Color.lerp(glass, other.glass, t)!,
+      glassBorder: Color.lerp(glassBorder, other.glassBorder, t)!,
+      selectedItem: Color.lerp(selectedItem, other.selectedItem, t)!,
+    );
+  }
 
-  /// 枠線や区切り線に使うヴィンテージな茶色
-  static const Color border = Color(0xFF5C4033);
-  static const Color divider = Color(0xFF4A3728);
+  static const dark = AppColors(
+    background: Color(0xFF15110D),
+    surface: Color(0xFF33271D),
+    surfaceLight: Color(0xFF463426),
+    border: Color(0xFF5C4033),
+    divider: Color(0xFF4A3728),
+    primary: Color(0xFFD6B06A),
+    primaryLight: Color(0xFFF6D28F),
+    primaryDark: Color(0xFFB8860B),
+    secondary: Color(0xFFC8A97A),
+    speechBubble: Color(0xFFF1DFC2),
+    speechAccent: Color(0xFFD6B06A),
+    textPrimary: Color(0xFFF8F5EE),
+    textSecondary: Color(0xFFD2CCC2),
+    textMuted: Color(0xFF9E9689),
+    textDisabled: Color(0xFF6B6560),
+    glass: Color(0x18FFFFFF),
+    glassBorder: Color(0x33FFFFFF),
+    selectedItem: Color(0xFF4A3520),
+  );
 
-  // ─────────────────────────────────
-  // ✨ メインカラー（アンティークゴールド）
-  // ─────────────────────────────────
+  static const light = AppColors(
+    background: Color(0xFFF4E8CE),
+    surface: Color(0xFFFFFAEF),
+    surfaceLight: Color(0xFFF9EFD9),
 
-  /// 高貴なメインの金色（ロゴや重要ボタン用）
-  static const Color primary = Color(0xFFD6B06A);
+    border: Color(0xFFD8C59D),
+    divider: Color(0xFFE6D6B5),
 
-  /// ハイライトや光るエフェクトに使う明るめの金
-  static const Color primaryLight = Color(0xFFF6D28F);
+    primary: Color(0xFFB8860B),
+    primaryLight: Color(0xFFD6B06A),
+    primaryDark: Color(0xFF8B6B00),
 
-  /// 深みのあるダークゴールド（グラデーションの影用）
-  static const Color primaryDark = Color(0xFFB8860B);
+    secondary: Color(0xFF7C6440),
 
-  /// サブで使う落ち着いたセピアゴールド
-  static const Color secondary = Color(0xFFC8A97A);
+    speechBubble: Color(0xFFFFFAEF),
+    speechAccent: Color(0xFFB8860B),
 
-  /// オトモ吹き出し
-  static const Color speechBubble = Color(0xFFF1DFC2);
+    textPrimary: Color(0xFF2D2417),
+    textSecondary: Color(0xFF5F523F),
+    textMuted: Color(0xFF8A7B61),
+    textDisabled: Color(0xFFB7AA92),
 
-  /// 吹き出しタイトル
-  static const Color speechAccent = Color(0xFFD6B06A);
+    glass: Color(0x22FFF6E2),
+    glassBorder: Color(0x44B8860B),
 
-  /// BottomSheet背景
-  static const Color sheetBackground = Color(0xE62A1F18);
+    selectedItem: Color(0xFFF4E6C5),
+  );
 
-  // ─────────────────────────────────
-  // 📜 Text Colors
-  // 可読性最優先
-  // ─────────────────────────────────
+  // Helper method
+  static AppColors of(BuildContext context) {
+    return Theme.of(context).extension<AppColors>() ?? dark;
+  }
 
-  /// メイン文字
-  static const Color textPrimary = Color(0xFFF8F5EE);
-
-  /// サブ文字
-  static const Color textSecondary = Color(0xFFD2CCC2);
-
-  /// 補助文字
-  static const Color textMuted = Color(0xFF9E9689);
-
-  /// 明るい背景上の文字
-  static const Color textDark = Color(0xFF1A1A1A);
-
-  /// 押せないボタン・グレーアウト（Tier B以降の機能）
-  static const Color disabled = Color(0xFF4A4440);
-
-  /// 無効テキスト
-  static const Color textDisabled = Color(0xFF6B6560);
-
-  /// 選択中のモード・気分ボタン背景
-  static const Color selectedItem = Color(0xFF4A3520);
-
-  /// 未選択の難易度テキスト（今より明るく）
-  static const Color modeTextUnselected = Color(0xFFB8A898);
-
-  /// おまかせ選択時の目的地入力を暗くする色
-  static const Color inputDisabledBg = Color(0xFF1E1810);
-
-  // ─────────────────────────────────
-  // 🌍 Map / Adventure Accent
-  // 地図・冒険感用
-  // ─────────────────────────────────
-
-  /// 水・魔力・ルート
-  static const Color accentBlue = Color(0xFF6BA8FF);
-
-  /// 成功・アクティブ
-  static const Color accentGreen = Color(0xFF57D6C9);
-
-  /// 発見・特殊地点
-  static const Color accentPurple = Color(0xFF9D7CFF);
-
-  // ─────────────────────────────────
-  // ⚠ Status
-  // ─────────────────────────────────
-
+  // Common colors that don't change
   static const Color success = Color(0xFF62E6B8);
-
   static const Color warning = Color(0xFFFFC857);
-
   static const Color error = Color(0xFFFF7B7B);
-
-  // ─────────────────────────────────
-  // 🏅 Rank Colors
-  // ─────────────────────────────────
-
-  static const Color bronze = Color(0xFFCD7F32);
-
-  static const Color silver = Color(0xFFC0C0C0);
-
-  static const Color gold = Color(0xFFFFD700);
-
-  // ─────────────────────────────────
-  // 🌫 Overlay / Glass
-  // ─────────────────────────────────
-
-  /// マップ暗転
-  static const Color overlayDark = Color(0xAA000000);
-
-  /// 強め暗転
-  static const Color overlayHeavy = Color(0xDD000000);
-
-  /// ガラスUI
-  static const Color glass = Color(0x18FFFFFF);
-
-  /// ガラス境界線
-  static const Color glassBorder = Color(0x33FFFFFF);
-
-  /// 薄い白サーフェス
-  static const Color glassSurface = Color(0x10FFFFFF);
-
-  // ─────────────────────────────────
-  // 📜 Parchment
-  // 絵巻物・Result用
-  // ─────────────────────────────────
-
-  /// 羊皮紙
+  static const Color textDark = Color(0xFF1A1A1A);
   static const Color parchment = Color(0xFFF3E7C9);
-
-  /// 古い紙
   static const Color parchmentDark = Color(0xFFE0D0AA);
 
-  // ─────────────────────────────────
-  // 🌅 Gradients
-  // ─────────────────────────────────
-
-  /// ゴールドUI
-  static const List<Color> goldGradient = [
-    Color(0xFFFFE0A3),
-    Color(0xFFD6B06A),
-  ];
-
-  /// ダークカード
-  static const List<Color> darkGradient = [
-    Color(0xFF2A2A2A),
-    Color(0xFF171717),
-  ];
-
-  /// 魔力・探索
-  static const List<Color> adventureGradient = [
-    Color(0xFF6BA8FF),
-    Color(0xFF57D6C9),
-  ];
-
-  /// 危険地帯
-  static const List<Color> dangerGradient = [
-    Color(0xFFFF7B7B),
-    Color(0xFF9E2A2B),
-  ];
+  // Ranks (Legacy support)
+  static const Color bronze = Color(0xFFCD7F32);
+  static const Color silver = Color(0xFFC0C0C0);
+  static const Color gold = Color(0xFFFFD700);
 }

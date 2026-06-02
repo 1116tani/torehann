@@ -29,9 +29,11 @@ class AdventureSettingPage extends ConsumerWidget {
     final state = ref.watch(adventureProvider);
     final routeSelectState = ref.watch(routeSelectProvider);
     final isGenerating = state.isGenerating || routeSelectState.isLoading;
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
 
       body: SafeArea(
         child: AbsorbPointer(
@@ -48,9 +50,9 @@ class AdventureSettingPage extends ConsumerWidget {
                   end: Alignment.bottomCenter,
 
                   colors: [
-                    AppColors.background,
-                    AppColors.surface,
-                    AppColors.background,
+                    colors.background,
+                    colors.surface,
+                    colors.background,
                   ],
                 ),
               ),
@@ -92,13 +94,13 @@ class AdventureSettingPage extends ConsumerWidget {
                           padding: const EdgeInsets.all(AppSizes.p16),
 
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceLight,
+                            color: colors.surfaceLight,
 
                             borderRadius: BorderRadius.circular(
                               AppSizes.radiusL,
                             ),
 
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: colors.border),
                           ),
 
                           child: const Column(
@@ -174,9 +176,9 @@ class AdventureSettingPage extends ConsumerWidget {
                 ),
 
                 decoration: BoxDecoration(
-                  color: AppColors.background.withValues(alpha: 0.96),
+                  color: colors.background.withValues(alpha: 0.96),
 
-                  border: Border(top: BorderSide(color: AppColors.border)),
+                  border: Border(top: BorderSide(color: colors.border)),
                 ),
 
                 child: GenerateRouteButton(
@@ -192,7 +194,7 @@ class AdventureSettingPage extends ConsumerWidget {
             // ─────────────────────────────
             if (isGenerating)
               Container(
-                color: Colors.black.withValues(alpha: 0.45),
+                color: colors.background.withValues(alpha: isDark ? 0.78 : 0.72),
 
                 child: Center(
                   child: Container(
@@ -203,11 +205,11 @@ class AdventureSettingPage extends ConsumerWidget {
                     padding: const EdgeInsets.all(AppSizes.p24),
 
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: colors.surface,
 
                       borderRadius: BorderRadius.circular(AppSizes.radiusXL),
 
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: colors.border),
                     ),
 
                     child: Column(
@@ -225,8 +227,9 @@ class AdventureSettingPage extends ConsumerWidget {
 
                         Text(
                           'トレにゃんが冒険ルートを生成中...',
-                          style: AppTextStyles.titleSmall.copyWith(
+                          style: AppTextStyles.of(context).titleSmall.copyWith(
                             fontSize: 18,
+                            color: colors.textPrimary,
                           ),
                         ),
                       ],
@@ -254,6 +257,7 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
 
@@ -261,9 +265,10 @@ class _SectionTitle extends StatelessWidget {
         Text(
           title,
 
-          style: AppTextStyles.titleMedium.copyWith(
+          style: AppTextStyles.of(context).titleMedium.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w700,
+            color: colors.textPrimary,
           ),
         ),
 
@@ -272,8 +277,8 @@ class _SectionTitle extends StatelessWidget {
         Text(
           subtitle,
 
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+          style: AppTextStyles.of(context).bodySmall.copyWith(
+            color: colors.textSecondary,
             letterSpacing: 1.5,
           ),
         ),
@@ -281,3 +286,4 @@ class _SectionTitle extends StatelessWidget {
     );
   }
 }
+

@@ -15,6 +15,7 @@ class LocationStatusCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statusAsync = ref.watch(locationStatusProvider);
     final labelAsync = ref.watch(currentLocationLabelProvider);
+    final colors = AppColors.of(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -22,9 +23,9 @@ class LocationStatusCard extends ConsumerWidget {
         vertical: AppSizes.p16,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusL),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         children: [
@@ -47,25 +48,33 @@ class LocationStatusCard extends ConsumerWidget {
               data: (status) {
                 switch (status) {
                   case LocationStatus.loading:
-                    return _label('現在地を取得しています...', AppColors.textMuted);
+                    return _label(
+                      context,
+                      '現在地を取得しています...',
+                      colors.textMuted,
+                    );
 
                   case LocationStatus.success:
                     return labelAsync.when(
                       data: (label) =>
-                          _label('現在地：$label', AppColors.textPrimary),
-                      loading: () => _label('位置情報を確認中...', AppColors.textMuted),
-                      error: (_, _) => _label('現在地を取得できません', AppColors.error),
+                          _label(context, '現在地：$label', colors.textPrimary),
+                      loading: () =>
+                          _label(context, '位置情報を確認中...', colors.textMuted),
+                      error: (_, _) =>
+                          _label(context, '現在地を取得できません', AppColors.error),
                     );
 
                   case LocationStatus.error:
-                    return _label('現在地を取得できません', AppColors.error);
+                    return _label(context, '現在地を取得できません', AppColors.error);
 
                   case LocationStatus.disabled:
-                    return _label('GPSがOFFになっています', AppColors.warning);
+                    return _label(context, 'GPSがOFFになっています', AppColors.warning);
                 }
               },
-              loading: () => _label('現在地を取得しています...', AppColors.textMuted),
-              error: (_, _) => _label('現在地を取得できません', AppColors.error),
+              loading: () =>
+                  _label(context, '現在地を取得しています...', colors.textMuted),
+              error: (_, _) =>
+                  _label(context, '現在地を取得できません', AppColors.error),
             ),
           ),
 
@@ -81,9 +90,9 @@ class LocationStatusCard extends ConsumerWidget {
                         ref.invalidate(currentLocationProvider);
                         ref.invalidate(locationStatusProvider);
                       },
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.refresh_rounded,
-                        color: AppColors.secondary,
+                        color: colors.secondary,
                       ),
                     );
                   }
@@ -97,12 +106,13 @@ class LocationStatusCard extends ConsumerWidget {
     );
   }
 
-  Widget _label(String text, Color color) {
+
+  Widget _label(BuildContext context, String text, Color color) {
     return Text(
       text,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: AppTextStyles.bodyMedium.copyWith(
+      style: AppTextStyles.of(context).bodyMedium.copyWith(
         color: color,
         fontWeight: FontWeight.w600,
       ),
@@ -121,15 +131,16 @@ class _StatusIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final (icon, color) = switch (status) {
       LocationStatus.loading => (
         Icons.gps_not_fixed_rounded,
-        AppColors.textMuted,
+        colors.textMuted,
       ),
 
       LocationStatus.success => (
         Icons.gps_fixed_rounded,
-        AppColors.accentGreen,
+        AppColors.success,
       ),
 
       LocationStatus.error => (Icons.gps_off_rounded, AppColors.error),
@@ -144,6 +155,7 @@ class _StatusIcon extends StatelessWidget {
   }
 }
 
+
 // ─────────────────────────────
 // 🌙 Loading Icon
 // ─────────────────────────────
@@ -153,13 +165,15 @@ class _LoadingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
+    final colors = AppColors.of(context);
+    return SizedBox(
       width: AppSizes.iconM,
       height: AppSizes.iconM,
       child: CircularProgressIndicator(
         strokeWidth: 2.2,
-        color: AppColors.secondary,
+        color: colors.secondary,
       ),
     );
   }
 }
+

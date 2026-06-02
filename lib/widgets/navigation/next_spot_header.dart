@@ -22,13 +22,14 @@ class NextSpotHeader extends StatelessWidget {
     if (nextSpot == null) {
       return const SizedBox.shrink();
     }
+    final navConstants = NavigationUiConstants.of(context);
 
     final title = nextSpot!.aiStoryName.isNotEmpty
         ? nextSpot!.aiStoryName
         : nextSpot!.name;
 
     return Material(
-      color: NavigationUiConstants.cream,
+      color: navConstants.cream,
       elevation: 6,
       shadowColor: Colors.black26,
       borderRadius: BorderRadius.circular(16),
@@ -37,15 +38,15 @@ class NextSpotHeader extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: NavigationUiConstants.creamBorder),
+          border: Border.all(color: navConstants.creamBorder),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('次のスポット', style: NavigationUiConstants.serifCaption),
+            Text('次のスポット', style: navConstants.serifCaption),
             const SizedBox(height: 4),
-            Text(title, style: NavigationUiConstants.serifTitle),
+            Text(title, style: navConstants.serifTitle),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -75,19 +76,20 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final navConstants = NavigationUiConstants.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: NavigationUiConstants.sepia.withValues(alpha: 0.12),
+        color: navConstants.sepia.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: NavigationUiConstants.sepia),
+          Icon(icon, size: 14, color: navConstants.sepia),
           const SizedBox(width: 4),
-          Text(label, style: NavigationUiConstants.serifCaption.copyWith(
-            color: NavigationUiConstants.sepia,
+          Text(label, style: navConstants.serifCaption.copyWith(
+            color: navConstants.sepia,
             fontWeight: FontWeight.w600,
           )),
         ],

@@ -25,6 +25,7 @@ class NavigationDraggableSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final navConstants = NavigationUiConstants.of(context);
     final nextName = nextSpot == null
         ? 'ゴール到達'
         : (nextSpot!.aiStoryName.isNotEmpty
@@ -33,7 +34,7 @@ class NavigationDraggableSheet extends StatelessWidget {
     final distance = distanceLabel;
 
     return Material(
-      color: NavigationUiConstants.cream,
+      color: navConstants.cream,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       elevation: 12,
       child: ListView(
@@ -46,24 +47,24 @@ class NavigationDraggableSheet extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: NavigationUiConstants.sepia.withValues(alpha: 0.35),
+                color: navConstants.sepia.withValues(alpha: 0.35),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          Text('現在地から', style: NavigationUiConstants.serifCaption),
+          Text('現在地から', style: navConstants.serifCaption),
           const SizedBox(height: 4),
-          Text(nextName, style: NavigationUiConstants.serifTitle),
+          Text(nextName, style: navConstants.serifTitle),
           const SizedBox(height: 6),
           Text(
             '残り $distance',
-            style: NavigationUiConstants.serifBody.copyWith(
-              color: NavigationUiConstants.sepia,
+            style: navConstants.serifBody.copyWith(
+              color: navConstants.sepia,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 20),
-          Text('チェックポイント', style: NavigationUiConstants.serifCaption),
+          Text('チェックポイント', style: navConstants.serifCaption),
           const SizedBox(height: 10),
           ...allSpots.map((spot) {
             final visited = visitedSpotIds.contains(spot.id);
@@ -83,8 +84,8 @@ class NavigationDraggableSheet extends StatelessWidget {
                         : Icons.radio_button_off,
                     size: 18,
                     color: visited
-                        ? NavigationUiConstants.sepia
-                        : NavigationUiConstants.textMuted,
+                        ? navConstants.sepia
+                        : navConstants.textMuted,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -93,7 +94,7 @@ class NavigationDraggableSheet extends StatelessWidget {
                       children: [
                         Text(
                           label,
-                          style: NavigationUiConstants.serifBody.copyWith(
+                          style: navConstants.serifBody.copyWith(
                             fontWeight:
                                 isNext ? FontWeight.w700 : FontWeight.w400,
                           ),
@@ -102,7 +103,7 @@ class NavigationDraggableSheet extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             spot.aiFlavorText,
-                            style: NavigationUiConstants.serifCaption,
+                            style: navConstants.serifCaption,
                           ),
                         ],
                       ],
@@ -118,14 +119,14 @@ class NavigationDraggableSheet extends StatelessWidget {
             icon: const Icon(Icons.logout_rounded, size: 18),
             label: Text(
               '冒険をやめる',
-              style: NavigationUiConstants.serifBody.copyWith(
+              style: navConstants.serifBody.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: NavigationUiConstants.textDark,
+              foregroundColor: navConstants.textDark,
               side: BorderSide(
-                color: NavigationUiConstants.sepia.withValues(alpha: 0.5),
+                color: navConstants.sepia.withValues(alpha: 0.5),
               ),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(

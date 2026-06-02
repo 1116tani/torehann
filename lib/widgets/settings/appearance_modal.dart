@@ -21,7 +21,11 @@ class AppearanceModal extends ConsumerWidget {
           // ── マップスタイル ──
           const Text(
             'マップスタイル',
-            style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Color(0xFFC8A97A),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           _buildSegmentedControl<String>(
@@ -38,7 +42,11 @@ class AppearanceModal extends ConsumerWidget {
           // ── 文字サイズ ──
           const Text(
             '文字サイズ',
-            style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Color(0xFFC8A97A),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           _buildSegmentedControl<String>(
@@ -55,15 +63,20 @@ class AppearanceModal extends ConsumerWidget {
           // ── アプリテーマ ──
           const Text(
             'アプリテーマ',
-            style: TextStyle(color: Color(0xFFC8A97A), fontSize: 14, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Color(0xFFC8A97A),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           _buildSegmentedControl<String>(
-            currentValue: settings.themeMode,
+            currentValue: settings.themeMode == 'daylight'
+                ? 'daylight'
+                : 'adventure',
             options: [
-              {'value': 'default', 'label': 'デフォルト'},
-              {'value': 'white', 'label': 'ホワイト'},
-              {'value': 'black', 'label': 'ブラック'},
+              {'value': 'adventure', 'label': 'ゲームモード'},
+              {'value': 'daylight', 'label': 'ホワイトモード'},
             ],
             onChanged: notifier.setThemeMode,
           ),
@@ -88,17 +101,23 @@ class AppearanceModal extends ConsumerWidget {
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFF1C1610),
+                color: isSelected
+                    ? const Color(0xFFC8A97A)
+                    : const Color(0xFF1C1610),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFFC8A97A) : const Color(0xFF4A3728),
+                  color: isSelected
+                      ? const Color(0xFFC8A97A)
+                      : const Color(0xFF4A3728),
                 ),
               ),
               child: Center(
                 child: Text(
                   opt['label'] as String,
                   style: TextStyle(
-                    color: isSelected ? const Color(0xFF1C1610) : const Color(0xFFF5EDD8),
+                    color: isSelected
+                        ? const Color(0xFF1C1610)
+                        : const Color(0xFFF5EDD8),
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),

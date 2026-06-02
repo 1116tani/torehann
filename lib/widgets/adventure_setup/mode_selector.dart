@@ -61,6 +61,8 @@ class _ModeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textStyles = AppTextStyles.of(context);
     return Material(
       color: Colors.transparent,
 
@@ -78,12 +80,12 @@ class _ModeCard extends StatelessWidget {
           ),
 
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.selectedItem : AppColors.surface,
+            color: isSelected ? colors.selectedItem : colors.surface,
 
             borderRadius: BorderRadius.circular(AppSizes.radiusL),
 
             border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.border,
+              color: isSelected ? colors.primary : colors.border,
 
               width: isSelected ? 1.6 : 1,
             ),
@@ -99,10 +101,10 @@ class _ModeCard extends StatelessWidget {
                     Text(
                       mode.label,
 
-                      style: AppTextStyles.titleSmall.copyWith(
+                      style: textStyles.titleSmall.copyWith(
                         color: isSelected
-                            ? AppColors.textPrimary
-                            : AppColors.modeTextUnselected,
+                            ? colors.textPrimary
+                            : colors.textMuted,
                       ),
                     ),
 
@@ -111,10 +113,10 @@ class _ModeCard extends StatelessWidget {
                     Text(
                       mode.distanceRange,
 
-                      style: AppTextStyles.caption.copyWith(
+                      style: textStyles.caption.copyWith(
                         color: isSelected
-                            ? AppColors.textSecondary
-                            : AppColors.textMuted,
+                            ? colors.textSecondary
+                            : colors.textMuted,
                       ),
                     ),
                   ],
@@ -122,9 +124,9 @@ class _ModeCard extends StatelessWidget {
               ),
 
               if (isSelected)
-                const Icon(
+                Icon(
                   Icons.check_circle_rounded,
-                  color: AppColors.primary,
+                  color: colors.primary,
                   size: 22,
                 ),
             ],
