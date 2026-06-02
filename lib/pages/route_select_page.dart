@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../constants/app_colors.dart';
 import '../models/route_model.dart';
+import '../models/spot_model.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/route_provider.dart';
 import '../providers/settings_provider.dart';
@@ -28,6 +29,7 @@ class RouteSelectPage extends ConsumerStatefulWidget {
 class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
   String? _mapStyle;
   bool _isRouteSheetExpanded = true;
+  bool _isSpotPanelExpanded = true;
 
   static const _carouselHeight = 340.0;
   static const _collapsedSheetHeight = 86.0;
@@ -82,7 +84,10 @@ class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
         (_isRouteSheetExpanded ? _carouselHeight : _collapsedSheetHeight) +
         _buttonAreaHeight;
 
-    ref.listen<String>(settingsProvider.select((s) => s.themeMode), (prev, next) {
+    ref.listen<String>(settingsProvider.select((s) => s.themeMode), (
+      prev,
+      next,
+    ) {
       if (prev != next) {
         _loadMapStyle(next);
       }
@@ -169,12 +174,246 @@ class _RouteSelectPageState extends ConsumerState<RouteSelectPage> {
                               },
                       ),
                     ),
+
+                  if (hasRoutes && selectedRoute != null)
+                    Positioned(
+                      left: 14,
+                      top: 14,
+                      child: _RouteSpotPanel(
+                        route: selectedRoute,
+                        isExpanded: _isSpotPanelExpanded,
+                        onTap: () {
+                          setState(() {
+                            _isSpotPanelExpanded = !_isSpotPanelExpanded;
+                          });
+                        },
+                      ),
+                    ),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RouteSpotPanel extends StatelessWidget {
+  final RouteModel route;
+  final bool isExpanded;
+  final VoidCallback onTap;
+
+  const _RouteSpotPanel({
+    required this.route,
+    required this.isExpanded,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final spots = route.generatedSpots;
+    if (spots.isEmpty) return const SizedBox.shrink();
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        width: isExpanded ? 148 : 52,
+        height: isExpanded ? 148 : 52,
+        decoration: BoxDecoration(
+          color: colors.surface.withValues(alpha: 0.84),
+          borderRadius: BorderRadius.circular(isExpanded ? 18 : 999),
+          border: Border.all(color: colors.border.withValues(alpha: 0.85)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.22),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 160),
+          child: isExpanded
+              ? _ExpandedSpotPanel(routeTitle: route.themeName, spots: spots)
+              : _CollapsedSpotPanel(count: spots.length),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpandedSpotPanel extends StatelessWidget {
+  final String routeTitle;
+  final List<SpotModel> spots;
+
+  const _ExpandedSpotPanel({required this.routeTitle, required this.spots});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final visibleSpots = spots.take(3).toList();
+
+    return Padding(
+      key: const ValueKey('expanded_spots'),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'SPOTS TO VISIT',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: colors.secondary,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.keyboard_arrow_left_rounded,
+                color: colors.secondary,
+                size: 16,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            routeTitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              height: 1.05,
+            ),
+          ),
+          const SizedBox(height: 7),
+          for (var i = 0; i < visibleSpots.length; i++) ...[
+            _SpotLine(
+              index: i,
+              label: visibleSpots[i].aiStoryName.isNotEmpty
+                  ? visibleSpots[i].aiStoryName
+                  : visibleSpots[i].name,
+            ),
+            if (i != visibleSpots.length - 1) const SizedBox(height: 5),
+          ],
+          if (spots.length > visibleSpots.length) ...[
+            const Spacer(),
+            Text(
+              '+${spots.length - visibleSpots.length} more',
+              style: TextStyle(
+                color: colors.textMuted,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ] else
+            const Spacer(),
+        ],
+      ),
+    );
+  }
+}
+
+class _CollapsedSpotPanel extends StatelessWidget {
+  final int count;
+
+  const _CollapsedSpotPanel({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
+    return Center(
+      key: const ValueKey('collapsed_spots'),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(Icons.explore_outlined, color: colors.secondary, size: 24),
+          Positioned(
+            right: -9,
+            top: -9,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 18),
+              height: 18,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: colors.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: colors.surface, width: 1.5),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  color: colors.background,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SpotLine extends StatelessWidget {
+  final int index;
+  final String label;
+
+  const _SpotLine({required this.index, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final prefix = index == 0 ? 'S' : '$index';
+
+    return Row(
+      children: [
+        Container(
+          width: 19,
+          height: 19,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: colors.background.withValues(alpha: 0.72),
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            prefix,
+            style: TextStyle(
+              color: colors.primary,
+              fontSize: 9,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              height: 1.1,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -384,11 +623,7 @@ class _CollapsedRouteSummary extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.route_rounded,
-                color: colors.secondary,
-                size: 24,
-              ),
+              Icon(Icons.route_rounded, color: colors.secondary, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
