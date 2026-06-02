@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_durations.dart';
 import '../constants/app_sizes.dart';
+import '../utils/map_style_loader.dart';
 
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
@@ -52,16 +53,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _loadMapStyle(String themeMode) async {
-    if (themeMode == 'daylight') {
-      if (mounted) {
-        setState(() {
-          _mapStyle = null;
-        });
-      }
-      return;
-    }
     try {
-      final style = await rootBundle.loadString('assets/map_styles/dark_fantasy_map.json');
+      final style = await loadGoogleMapStyle(themeMode);
       if (mounted) {
         setState(() {
           _mapStyle = style;
@@ -69,6 +62,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     } catch (e) {
       debugPrint('Error loading map style: $e');
+      if (mounted) {
+        setState(() {
+          _mapStyle = null;
+        });
+      }
     }
   }
 
@@ -284,7 +282,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               buildingsEnabled: true,
 
-              style: (mapStyleSetting == 'game' && isDark) ? _mapStyle : null,
+              style: mapStyleSetting == 'game' ? _mapStyle : null,
 
               onMapCreated: (controller) {
                 _mapController = controller;

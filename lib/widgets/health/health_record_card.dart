@@ -1,5 +1,6 @@
 //lib/widgets/health/health_record_card.dart
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class HealthRecordCard extends StatelessWidget {
   final String title;
@@ -17,13 +18,14 @@ class HealthRecordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: const Color(0xFF5C4033),
+          color: colors.border,
           width: 0.5,
         ),
       ),
@@ -33,12 +35,12 @@ class HealthRecordCard extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: const Color(0xFF3D2B1F),
+              color: colors.surfaceLight,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFFB8860B),
+              color: colors.primary,
             ),
           ),
 
@@ -50,8 +52,8 @@ class HealthRecordCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Color(0xFF7A5C3A),
+                  style: TextStyle(
+                    color: colors.textMuted,
                     fontSize: 11,
                   ),
                 ),
@@ -60,8 +62,8 @@ class HealthRecordCard extends StatelessWidget {
 
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: Color(0xFFF5EDD8),
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -71,8 +73,8 @@ class HealthRecordCard extends StatelessWidget {
 
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFFC8A97A),
+                  style: TextStyle(
+                    color: colors.secondary,
                     fontSize: 11,
                   ),
                 ),

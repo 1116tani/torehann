@@ -17,6 +17,7 @@ import '../providers/result_provider.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/settings_provider.dart';
 import '../router/route_names.dart';
+import '../utils/map_style_loader.dart';
 
 class ResultPage extends ConsumerStatefulWidget {
   final bool isFromHistory;
@@ -43,21 +44,16 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   Future<void> _loadMapStyle(String themeMode) async {
-    if (themeMode == 'daylight') {
-      if (mounted) {
-        setState(() => _mapStyle = null);
-      }
-      return;
-    }
     try {
-      final style = await rootBundle.loadString(
-        'assets/map_styles/dark_fantasy_map.json',
-      );
+      final style = await loadGoogleMapStyle(themeMode);
       if (mounted) {
         setState(() => _mapStyle = style);
       }
     } catch (e) {
       debugPrint('Error loading map style: $e');
+      if (mounted) {
+        setState(() => _mapStyle = null);
+      }
     }
   }
 
@@ -137,7 +133,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     ref.listen<String>(settingsProvider.select((s) => s.themeMode), (prev, next) {
       if (prev != next) {
@@ -349,7 +344,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
 
   Widget _buildSummarySection(BuildContext context, AdventureResult result) {
     final colors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final levelState = ref.watch(levelProvider);
     final dateStr = DateFormat('yyyy/MM/dd').format(result.completedAt);
     final remainingXp = levelState.nextLevelXp - levelState.currentLevelXp;
@@ -519,7 +513,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
 
   Widget _buildMapSection(BuildContext context, AdventureResult result) {
     final colors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final navState = ref.read(navigationProvider);
     final routePoints = navState.currentRoute?.generatedSpots
             .map((s) => LatLng(s.lat, s.lng))
@@ -647,7 +640,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
 
   void _openFullscreenMap(BuildContext context, LatLng startPoint, Set<Marker> markers, Set<Polyline> polylines) {
     final colors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog<void>(
       context: context,
       builder: (context) => Dialog.fullscreen(

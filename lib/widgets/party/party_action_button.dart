@@ -1,6 +1,7 @@
 // lib/widgets/party/party_action_button.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class PartyActionButton extends StatelessWidget {
   final String text;
@@ -18,6 +19,7 @@ class PartyActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 180),
       opacity: isEnabled ? 1.0 : 0.45,
@@ -33,24 +35,23 @@ class PartyActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
 
             gradient: isEnabled
-                ? const LinearGradient(
+                ? LinearGradient(
                     colors: [
-                      Color(0xFFB8860B),
-                      Color(0xFFD4AF37),
+                      colors.primary,
+                      colors.primary.withValues(alpha: 0.8),
                     ],
                   )
-                : const LinearGradient(
+                : LinearGradient(
                     colors: [
-                      Color(0xFF4A3728),
-                      Color(0xFF3A2A1F),
+                      colors.border,
+                      colors.border.withValues(alpha: 0.7),
                     ],
                   ),
 
             boxShadow: isEnabled
                 ? [
                     BoxShadow(
-                      color: const Color(0xFFB8860B)
-                          .withValues(alpha: 0.28),
+                      color: colors.primary.withValues(alpha: 0.28),
                       blurRadius: 14,
                       offset: const Offset(0, 5),
                     ),

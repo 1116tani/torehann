@@ -4,13 +4,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../constants/app_sizes.dart';
+import '../../constants/app_colors.dart';
 
-enum TorenyanState {
-  idle,
-  loading,
-  error,
-  success,
-}
+enum TorenyanState { idle, loading, error, success }
 
 class TorenyanLines {
   static const idle = [
@@ -20,20 +16,11 @@ class TorenyanLines {
     '面白い場所、見つかるかも',
   ];
 
-  static const loading = [
-    '街の記憶を探してるよ…',
-    'いい冒険になりそう',
-  ];
+  static const loading = ['街の記憶を探してるよ…', 'いい冒険になりそう'];
 
-  static const error = [
-    '街の記憶が見つからなかったみたい…',
-    '少し休んでからもう一度探そう？',
-  ];
+  static const error = ['街の記憶が見つからなかったみたい…', '少し休んでからもう一度探そう？'];
 
-  static const success = [
-    '面白いルートが見つかったよ！さあ歩こう！',
-    '今日の冒険に出発だね！',
-  ];
+  static const success = ['面白いルートが見つかったよ！さあ歩こう！', '今日の冒険に出発だね！'];
 
   static List<String> getLines(TorenyanState state) {
     return switch (state) {
@@ -79,12 +66,15 @@ class _TorenyanState extends State<Torenyan> {
   @override
   void didUpdateWidget(Torenyan oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Compare customLines content or state
-    bool linesChanged = oldWidget.state != widget.state ||
+    bool linesChanged =
+        oldWidget.state != widget.state ||
         oldWidget.customLines != widget.customLines;
 
-    if (!linesChanged && oldWidget.customLines != null && widget.customLines != null) {
+    if (!linesChanged &&
+        oldWidget.customLines != null &&
+        widget.customLines != null) {
       if (oldWidget.customLines!.length != widget.customLines!.length) {
         linesChanged = true;
       } else {
@@ -138,7 +128,7 @@ class _TorenyanState extends State<Torenyan> {
     }
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void onTapUp(TapUpDetails details) {
     if (widget.enableTap) {
       setState(() => _scale = 1.0);
     }
@@ -154,9 +144,13 @@ class _TorenyanState extends State<Torenyan> {
   Widget build(BuildContext context) {
     final bottomOffset = widget.showSpeechBubble ? 32.0 : 0.0;
     // 吹き出しスペースを確保した全体の高さを定義
-    final totalHeight = widget.showSpeechBubble ? (widget.size + 120.0) : widget.size;
+    final totalHeight = widget.showSpeechBubble
+        ? (widget.size + 120.0)
+        : widget.size;
     // 吹き出しがねこの横幅を超えて描画できるように横幅は 240.0 と widget.size の大きい方にする
-    final totalWidth = widget.showSpeechBubble ? math.max(240.0, widget.size) : widget.size;
+    final totalWidth = widget.showSpeechBubble
+        ? math.max(240.0, widget.size)
+        : widget.size;
 
     return SizedBox(
       width: totalWidth,
@@ -188,20 +182,28 @@ class _TorenyanState extends State<Torenyan> {
             Positioned(
               bottom: bottomOffset + widget.size - 12.0, // ねこの頭頂部から12dp重ねる
               left: 0,
-              child: _buildSpeechBubble(),
+              child: _buildSpeechBubble(context),
             ),
 
           // 🐱 タッチ判定エリア (ねこ本体の上部65%のみに限定し、下のボタンの邪魔をしない)
           if (widget.enableTap)
             Positioned(
-              bottom: bottomOffset + widget.size * (widget.showSpeechBubble ? 0.35 : 0.0),
+              bottom:
+                  bottomOffset +
+                  widget.size * (widget.showSpeechBubble ? 0.35 : 0.0),
               left: 0,
               width: widget.size,
-              height: widget.showSpeechBubble ? widget.size * 0.65 : widget.size,
+              height: widget.showSpeechBubble
+                  ? widget.size * 0.65
+                  : widget.size,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTapDown: _onTapDown,
-                onTapUp: _onTapUp,
+                onTapUp: (details) {
+                  if (widget.enableTap) {
+                    setState(() => _scale = 1.0);
+                  }
+                },
                 onTapCancel: _onTapCancel,
                 onTap: _changeLine,
                 child: const SizedBox.expand(),
@@ -212,11 +214,16 @@ class _TorenyanState extends State<Torenyan> {
     );
   }
 
-  Widget _buildSpeechBubble() {
+  Widget _buildSpeechBubble(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
+      onTapUp: (details) {
+        if (widget.enableTap) {
+          setState(() => _scale = 1.0);
+        }
+      },
       onTapCancel: _onTapCancel,
       onTap: _changeLine,
       child: Stack(
@@ -231,15 +238,12 @@ class _TorenyanState extends State<Torenyan> {
             ),
             constraints: const BoxConstraints(maxWidth: 240),
             decoration: BoxDecoration(
-              color: const Color(0xFF2C2318), // 深いゲームUI調のダークブラウン
-              border: Border.all(
-                color: const Color(0xFFC8A97A), // 気品あるゴールドのフチ
-                width: 2.0,
-              ),
+              color: colors.speechBubble,
+              border: Border.all(color: colors.speechAccent, width: 2.0),
               borderRadius: BorderRadius.circular(20), // 丸み強め
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.35),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -248,8 +252,8 @@ class _TorenyanState extends State<Torenyan> {
             child: Text(
               _currentLine,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFFF5EDD8), // 温かみのあるクリームゴールド
+              style: TextStyle(
+                color: colors.speechText,
                 fontSize: 13.0,
                 fontWeight: FontWeight.bold,
                 height: 1.35,
@@ -268,16 +272,10 @@ class _TorenyanState extends State<Torenyan> {
                 width: 12.0,
                 height: 12.0,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2C2318),
+                  color: colors.speechBubble,
                   border: Border(
-                    bottom: BorderSide(
-                      color: const Color(0xFFC8A97A),
-                      width: 2.0,
-                    ),
-                    right: BorderSide(
-                      color: const Color(0xFFC8A97A),
-                      width: 2.0,
-                    ),
+                    bottom: BorderSide(color: colors.speechAccent, width: 2.0),
+                    right: BorderSide(color: colors.speechAccent, width: 2.0),
                   ),
                 ),
               ),

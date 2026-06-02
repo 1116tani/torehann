@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../constants/app_colors.dart';
 import '../../models/friend_model.dart';
 
 class FriendRequestTile extends StatelessWidget {
@@ -19,16 +20,15 @@ class FriendRequestTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
-
+        color: colors.surface,
         borderRadius: BorderRadius.circular(18),
-
         border: Border.all(
-          color: const Color(0xFF5C4033),
+          color: colors.border,
           width: 0.8,
         ),
       ),
@@ -45,17 +45,15 @@ class FriendRequestTile extends StatelessWidget {
 
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF3D2B1F),
-
+                color: colors.surfaceLight,
                 border: Border.all(
-                  color: const Color(0xFFC8A97A),
+                  color: colors.secondary,
                   width: 1,
                 ),
               ),
-
-              child: const Icon(
+              child: Icon(
                 Icons.person,
-                color: Color(0xFFC8A97A),
+                color: colors.secondary,
                 size: 26,
               ),
             ),
@@ -69,8 +67,8 @@ class FriendRequestTile extends StatelessWidget {
                 children: [
                   Text(
                     friend.name,
-                    style: const TextStyle(
-                      color: Color(0xFFF5EDD8),
+                    style: TextStyle(
+                      color: colors.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -78,10 +76,10 @@ class FriendRequestTile extends StatelessWidget {
 
                   const SizedBox(height: 4),
 
-                  const Text(
+                  Text(
                     '一緒に冒険したいみたい。',
                     style: TextStyle(
-                      color: Color(0xFFC8A97A),
+                      color: colors.secondary,
                       fontSize: 11,
                     ),
                   ),
@@ -90,10 +88,10 @@ class FriendRequestTile extends StatelessWidget {
 
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.route,
                         size: 13,
-                        color: Color(0xFF7A5C3A),
+                        color: colors.textMuted,
                       ),
 
                       const SizedBox(width: 4),
@@ -106,8 +104,8 @@ class FriendRequestTile extends StatelessWidget {
 
                           overflow: TextOverflow.ellipsis,
 
-                          style: const TextStyle(
-                            color: Color(0xFF7A5C3A),
+                          style: TextStyle(
+                            color: colors.textMuted,
                             fontSize: 10,
                           ),
                         ),
@@ -134,14 +132,14 @@ class FriendRequestTile extends StatelessWidget {
                     ),
 
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB8860B),
+                      color: colors.primary,
                       borderRadius: BorderRadius.circular(20),
                     ),
 
-                    child: const Text(
+                    child: Text(
                       '承認',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: colors.background,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
@@ -162,19 +160,18 @@ class FriendRequestTile extends StatelessWidget {
                     ),
 
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4A2A2A),
+                      color: colors.surfaceLight,
                       borderRadius: BorderRadius.circular(20),
-
                       border: Border.all(
-                        color: const Color(0xFF7A3A3A),
+                        color: colors.border,
                         width: 0.5,
                       ),
                     ),
 
-                    child: const Text(
+                    child: Text(
                       '見送る',
                       style: TextStyle(
-                        color: Color(0xFFD59A9A),
+                        color: colors.textMuted,
                         fontSize: 10,
                       ),
                     ),

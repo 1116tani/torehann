@@ -1,6 +1,7 @@
 // lib/widgets/settings/save_button.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class SaveButton extends StatelessWidget {
   final bool isSaving;
@@ -14,12 +15,13 @@ class SaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1C1610), // 背景ダークブラウン
+      decoration: BoxDecoration(
+        color: colors.surface,
         border: Border(
-          top: BorderSide(color: Color(0xFF4A3728), width: 1.0),
+          top: BorderSide(color: colors.border, width: 1.0),
         ),
       ),
       child: SizedBox(
@@ -27,23 +29,23 @@ class SaveButton extends StatelessWidget {
         height: 60, // 大きめ
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFC8A97A), // 金色
-            foregroundColor: const Color(0xFF1C1610),
-            disabledBackgroundColor: const Color(0xFF2C2318),
+            backgroundColor: colors.primary,
+            foregroundColor: AppColors.textDark,
+            disabledBackgroundColor: colors.surfaceLight,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: Color(0xFF4A3728), width: 0.5),
+              side: BorderSide(color: colors.border, width: 0.5),
             ),
             elevation: 4,
           ),
           onPressed: isSaving ? null : onPressed,
           child: isSaving
-              ? const SizedBox(
+              ? SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    color: Color(0xFF1C1610),
+                    color: AppColors.textDark,
                   ),
                 )
               : const Text(

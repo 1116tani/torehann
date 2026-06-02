@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../constants/app_colors.dart';
 import '../../providers/friend_provider.dart';
 import '../../widgets/friend/friend_card.dart';
 import '../../widgets/friend/friend_request_tile.dart';
@@ -42,12 +43,12 @@ class _FriendPageState extends ConsumerState<FriendPage>
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final state = ref.watch(friendProvider);
     final notifier = ref.read(friendProvider.notifier);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610),
-
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -64,30 +65,25 @@ class _FriendPageState extends ConsumerState<FriendPage>
 
               child: Container(
                 height: 42,
-
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2C2318),
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colors.border, width: 0.8),
                 ),
-
                 child: TabBar(
                   controller: _tabController,
                   indicatorSize: TabBarIndicatorSize.tab,
-
                   indicator: BoxDecoration(
-                    color: const Color(0xFFC8A97A).withValues(alpha: 0.15),
+                    color: colors.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFFC8A97A).withValues(alpha: 0.55),
+                      color: colors.primary.withValues(alpha: 0.55),
                       width: 1,
                     ),
                   ),
-
                   dividerColor: Colors.transparent,
-
-                  labelColor: Colors.white,
-                  unselectedLabelColor:
-                      const Color(0xFFC8A97A),
+                  labelColor: colors.textPrimary,
+                  unselectedLabelColor: colors.secondary,
 
                   labelStyle: const TextStyle(
                     fontSize: 14,
@@ -124,11 +120,10 @@ class _FriendPageState extends ConsumerState<FriendPage>
                   padding: const EdgeInsets.all(16),
 
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2C2318),
+                    color: colors.surface,
                     borderRadius: BorderRadius.circular(18),
-
                     border: Border.all(
-                      color: const Color(0xFF4A3728),
+                      color: colors.border,
                     ),
                   ),
 
@@ -145,7 +140,7 @@ class _FriendPageState extends ConsumerState<FriendPage>
                       Container(
                         width: 1,
                         height: 36,
-                        color: const Color(0xFF4A3728),
+                        color: colors.border,
                       ),
 
                       _SummaryItem(
@@ -208,35 +203,30 @@ class _FriendPageState extends ConsumerState<FriendPage>
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
-
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2C2318),
-
-                    borderRadius:
-                        BorderRadius.circular(20),
-
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: const Color(0xFFB8860B),
+                      color: colors.primary,
                       width: 0.8,
                     ),
                   ),
 
                   child: Column(
                     children: [
-                      const Text(
+                      Text(
                         'あなたの冒険者コード',
                         style: TextStyle(
-                          color: Color(0xFFC8A97A),
+                          color: colors.secondary,
                           fontSize: 12,
                         ),
                       ),
 
                       const SizedBox(height: 14),
-
-                      const Text(
+                      Text(
                         '58241',
                         style: TextStyle(
-                          color: Color(0xFFF5EDD8),
+                          color: colors.textPrimary,
                           fontSize: 34,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 6,
@@ -277,10 +267,7 @@ class _FriendPageState extends ConsumerState<FriendPage>
 
                               style:
                                   OutlinedButton.styleFrom(
-                                foregroundColor:
-                                    const Color(
-                                  0xFFC8A97A,
-                                ),
+                                foregroundColor: colors.secondary,
 
                                 side: const BorderSide(
                                   color:
@@ -306,13 +293,8 @@ class _FriendPageState extends ConsumerState<FriendPage>
 
                               style:
                                   ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(
-                                  0xFFB8860B,
-                                ),
-
-                                foregroundColor:
-                                    Colors.white,
+                                backgroundColor: colors.primary,
+                                foregroundColor: colors.background,
                               ),
                             ),
                           ),

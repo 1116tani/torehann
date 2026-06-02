@@ -1,6 +1,7 @@
 // lib/widgets/health/health_summary_row.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import 'health_stat_card.dart';
 
 class HealthSummaryRow extends StatelessWidget {
@@ -17,6 +18,7 @@ class HealthSummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       children: [
         Expanded(

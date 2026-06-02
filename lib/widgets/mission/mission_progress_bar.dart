@@ -1,6 +1,7 @@
 // lib/widgets/mission/mission_progress_bar.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class MissionProgressBar extends StatelessWidget {
   final double progress;
@@ -18,6 +19,7 @@ class MissionProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final clamped = progress.clamp(0.0, 1.0);
 
     return Column(
@@ -29,8 +31,8 @@ class MissionProgressBar extends StatelessWidget {
           children: [
             Text(
               _progressText(),
-              style: const TextStyle(
-                color: Color(0xFFC8A97A),
+              style: TextStyle(
+                color: colors.secondary,
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
               ),
@@ -38,8 +40,8 @@ class MissionProgressBar extends StatelessWidget {
 
             Text(
               '${(clamped * 100).toInt()}%',
-              style: const TextStyle(
-                color: Color(0xFF7A5C3A),
+              style: TextStyle(
+                color: colors.textMuted,
                 fontSize: 10,
               ),
             ),
@@ -57,7 +59,7 @@ class MissionProgressBar extends StatelessWidget {
               Container(
                 height: 10,
                 width: double.infinity,
-                color: const Color(0xFF1C1610),
+                color: colors.background,
               ),
 
               // 進捗
@@ -69,15 +71,13 @@ class MissionProgressBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFFB8860B),
-                      const Color(0xFFFFD700).withValues(alpha: 0.9),
+                      colors.primary,
+                      colors.primary.withValues(alpha: 0.9),
                     ],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(
-                        0xFFFFD700,
-                      ).withValues(alpha: 0.35),
+                      color: colors.primary.withValues(alpha: 0.35),
                       blurRadius: 10,
                     ),
                   ],

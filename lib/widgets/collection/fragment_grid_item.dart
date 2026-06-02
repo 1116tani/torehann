@@ -1,29 +1,34 @@
 // lib/widgets/collection/fragment_grid_item.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import '../../models/fragment_model.dart';
 import '../../providers/collection_provider.dart';
 
 class FragmentGridItem extends StatelessWidget {
-  final CollectionItemUIModel item; // 👈 修正したUI用モデルに変更
+  final CollectionItemUIModel item;
 
   const FragmentGridItem({super.key, required this.item});
 
   /// レアリティに応じた枠やフォントの色を返すよ
-  Color _getRarityColor() {
-    if (!item.isUnlocked) return const Color(0xFF5C4033); // 未取得はくすんだ木の色
+  Color _getRarityColor(BuildContext context) {
+    final colors = AppColors.of(context);
+    if (!item.isUnlocked) return colors.border; // 未取得はボーダー色
     switch (item.rarity) {
       case FragmentRarity.normal:
-        return const Color(0xFFC8A97A); // ノーマルは暖かみのある木漏れ日色
+        return const Color(0xFFC8A97A); // ノーマル
       case FragmentRarity.rare:
-        return const Color(0xFF6B9EE1); // レアは街の風景に溶け込む神秘的なブルー
+        return const Color(0xFF6B9EE1); // レア
       case FragmentRarity.legend:
-        return const Color(0xFFFFD700); // レジェンドは物語を彩る黄金色
+        return AppColors.gold; // レジェンド
     }
   }
 
   /// 宝物の詳細を表示するダイアログだよ
   void _showItemDetails(BuildContext context) {
+    final colors = AppColors.of(context);
+    final rarityColor = _getRarityColor(context);
+
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -38,13 +43,13 @@ class FragmentGridItem extends StatelessWidget {
               width: MediaQuery.of(context).size.width * 0.85,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFF2C2318), // 落ち着いたブラウン
+                color: colors.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _getRarityColor(), width: item.isUnlocked ? 2 : 1),
+                border: Border.all(color: rarityColor, width: item.isUnlocked ? 2 : 1),
                 boxShadow: item.isUnlocked
                     ? [
                         BoxShadow(
-                          color: _getRarityColor().withValues(alpha: 0.3),
+                          color: rarityColor.withValues(alpha: 0.3),
                           blurRadius: 15,
                         ),
                       ]
@@ -57,7 +62,7 @@ class FragmentGridItem extends StatelessWidget {
                   Text(
                     item.isUnlocked ? item.name : '？？？',
                     style: TextStyle(
-                      color: item.isUnlocked ? _getRarityColor() : const Color(0xFF7A5C3A),
+                      color: item.isUnlocked ? rarityColor : colors.textMuted,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
@@ -66,16 +71,16 @@ class FragmentGridItem extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // 📊 進捗・レアリティバッジ表示
-                  _buildSubTitle(),
-                  const Divider(
-                    color: Color(0xFF5C4033),
+                  _buildSubTitle(context),
+                  Divider(
+                    color: colors.divider,
                     height: 32,
                     thickness: 1,
                   ),
 
                   // 💡 段階解放テキスト部分
                   if (!item.isUnlocked) ...[
-                    // 未取得時のメッセージ（お散歩へのモチベーションを高めるよ！）
+                    // 未取得時のメッセージ
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Text(
@@ -83,8 +88,8 @@ class FragmentGridItem extends StatelessWidget {
                             ? 'まだ見ぬ街の記憶。どうやら「${item.conditionHint}」の近くで気配を感じるようだ……。'
                             : 'まだ見ぬ日常の断片。街を歩き回ることで、ふと見つかるかもしれない。',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Color(0xFF7A5C3A),
+                        style: TextStyle(
+                          color: colors.textMuted,
                           fontSize: 14,
                           height: 1.5,
                           fontStyle: FontStyle.italic,
@@ -105,7 +110,7 @@ class FragmentGridItem extends StatelessWidget {
                             // 🔓 / 🔒 アイコンの表示
                             Icon(
                               isUnlocked ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
-                              color: isUnlocked ? _getRarityColor() : const Color(0xFF5C4033),
+                              color: isUnlocked ? rarityColor : colors.textDisabled,
                               size: 16,
                             ),
                             const SizedBox(width: 12),
@@ -116,7 +121,7 @@ class FragmentGridItem extends StatelessWidget {
                                   Text(
                                     isUnlocked ? item.descriptions[index] : '？？？？？？',
                                     style: TextStyle(
-                                      color: isUnlocked ? const Color(0xFFF5EDD8) : const Color(0xFF5C4033),
+                                      color: isUnlocked ? colors.textPrimary : colors.textDisabled,
                                       fontSize: 14,
                                       height: 1.5,
                                     ),
@@ -127,8 +132,8 @@ class FragmentGridItem extends StatelessWidget {
                                       padding: const EdgeInsets.only(top: 4),
                                       child: Text(
                                         'あと ${threshold - item.currentCount} 個スタックで解放',
-                                        style: const TextStyle(
-                                          color: Color(0xFF8B7355),
+                                        style: TextStyle(
+                                          color: colors.secondary,
                                           fontSize: 11,
                                         ),
                                       ),
@@ -147,11 +152,12 @@ class FragmentGridItem extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4A3728),
-                      foregroundColor: const Color(0xFFC8A97A),
+                      backgroundColor: colors.surfaceLight,
+                      foregroundColor: colors.primary,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: colors.border),
                       ),
                     ),
                     child: const Text('図鑑を閉じる'),
@@ -166,41 +172,45 @@ class FragmentGridItem extends StatelessWidget {
   }
 
   /// ダイアログのサブタイトル部分を生成するよ
-  Widget _buildSubTitle() {
+  Widget _buildSubTitle(BuildContext context) {
+    final colors = AppColors.of(context);
     if (!item.isUnlocked) {
-      return const Text(
+      return Text(
         '【 未獲得 】',
-        style: TextStyle(color: Color(0xFF7A5C3A), fontSize: 13),
+        style: TextStyle(color: colors.textMuted, fontSize: 13),
       );
     }
     if (item.rarity == FragmentRarity.legend) {
       return const Text(
         '【 レジェンド・物語の完結 】',
-        style: TextStyle(color: Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold),
+        style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold),
       );
     }
     return Text(
       '収集状況: ${item.progressString} （総所持数: ${item.currentCount}個）',
-      style: const TextStyle(color: Color(0xFFC8A97A), fontSize: 13),
+      style: TextStyle(color: colors.secondary, fontSize: 13),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final rarityColor = _getRarityColor(context);
+
     return GestureDetector(
       onTap: () => _showItemDetails(context),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1C1610),
+          color: colors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _getRarityColor(),
+            color: rarityColor,
             width: item.isUnlocked ? 1.5 : 0.5,
           ),
           boxShadow: item.isUnlocked
               ? [
                   BoxShadow(
-                    color: _getRarityColor().withValues(alpha: 0.15),
+                    color: rarityColor.withValues(alpha: 0.15),
                     blurRadius: 6,
                     spreadRadius: 1,
                   ),
@@ -209,11 +219,11 @@ class FragmentGridItem extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // 💎 中央のアイコン（未取得なら「？」、取得済みならキラリと光るダイヤアイコン）
+            // 💎 中央のアイコン
             Center(
               child: Icon(
                 item.isUnlocked ? Icons.diamond_outlined : Icons.question_mark_rounded,
-                color: _getRarityColor().withValues(alpha: item.isUnlocked ? 1.0 : 0.2),
+                color: rarityColor.withValues(alpha: item.isUnlocked ? 1.0 : 0.2),
                 size: 36,
               ),
             ),
@@ -227,14 +237,14 @@ class FragmentGridItem extends StatelessWidget {
                 item.isUnlocked ? item.name : '？？？',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: item.isUnlocked ? const Color(0xFFF5EDD8) : const Color(0xFF5C4033),
+                  color: item.isUnlocked ? colors.textPrimary : colors.textDisabled,
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
 
-            // 🔢 右上のスタック数バッジ（レジェンド以外の取得済みアイテムのみ表示）
+            // 🔢 右上のスタック数バッジ
             if (item.isUnlocked && item.rarity != FragmentRarity.legend)
               Positioned(
                 top: 6,
@@ -242,14 +252,14 @@ class FragmentGridItem extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4A3728),
+                    color: colors.surfaceLight,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: _getRarityColor(), width: 0.5),
+                    border: Border.all(color: rarityColor, width: 0.5),
                   ),
                   child: Text(
                     'x${item.currentCount}',
-                    style: const TextStyle(
-                      color: Color(0xFFF5EDD8),
+                    style: TextStyle(
+                      color: colors.textPrimary,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),

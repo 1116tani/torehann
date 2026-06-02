@@ -1,6 +1,7 @@
 // lib/widgets/settings/hobby_tag_selector.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class HobbyTagSelector extends StatelessWidget {
   final List<String> selectedTags; // 選択中のタグ一覧
@@ -36,6 +37,7 @@ class HobbyTagSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     // 💡 上限に達しているかどうかをチェック！
     final isMaxReached = selectedTags.length >= maxTags;
 
@@ -48,8 +50,8 @@ class HobbyTagSelector extends StatelessWidget {
           children: [
             Text(
               '好みの属性を刻む（最大$maxTags個）', // 💡 世界観に合わせて少しリッチな表現に
-              style: const TextStyle(
-                color: Color(0xFF7A5C3A),
+              style: TextStyle(
+                color: colors.textSecondary,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -58,9 +60,7 @@ class HobbyTagSelector extends StatelessWidget {
               '${selectedTags.length} / $maxTags',
               style: TextStyle(
                 // 上限に達したら少し色を変えてお知らせするよ
-                color: isMaxReached
-                    ? const Color(0xFFCD7F32)
-                    : const Color(0xFFB8860B),
+                color: isMaxReached ? colors.primary : colors.primaryDark,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -85,22 +85,20 @@ class HobbyTagSelector extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFFB8860B) // 選択時は輝くゴールド
-                    : const Color(0xFF2C2318), // 未選択時は渋いブラウン
+                color: isSelected ? colors.primary : colors.surface,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFFFFD700)
+                      ? colors.primary
                       : isDisabled
-                      ? const Color(0xFF3D2B1F) // 無効時は境界線も暗く
-                      : const Color(0xFF7A5C3A),
+                          ? colors.textMuted
+                          : colors.border,
                   width: isSelected ? 1.5 : 1.0,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: const Color(0xFFB8860B).withValues(alpha: 0.4),
+                          color: colors.primary.withOpacity(0.4),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -113,7 +111,7 @@ class HobbyTagSelector extends StatelessWidget {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(20),
                   onTap: isDisabled ? null : () => onToggle(label),
-                  splashColor: const Color(0xFFF5EDD8).withValues(alpha: 0.2),
+                  splashColor: colors.textPrimary.withOpacity(0.2),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
@@ -129,11 +127,7 @@ class HobbyTagSelector extends StatelessWidget {
                           Text(
                             label,
                             style: TextStyle(
-                              color: isSelected
-                                  ? const Color(
-                                      0xFF1C1610,
-                                    ) // 選択時は背景が金だから文字は黒っぽく！
-                                  : const Color(0xFFC8A97A),
+                              color: isSelected ? AppColors.textDark : colors.textPrimary,
                               fontSize: 13,
                               fontWeight: isSelected
                                   ? FontWeight.bold
@@ -144,12 +138,12 @@ class HobbyTagSelector extends StatelessWidget {
                           AnimatedSize(
                             duration: const Duration(milliseconds: 200),
                             child: isSelected
-                                ? const Padding(
-                                    padding: EdgeInsets.only(left: 4),
+                                ? Padding(
+                                    padding: const EdgeInsets.only(left: 4),
                                     child: Icon(
                                       Icons.check_circle,
                                       size: 14,
-                                      color: Color(0xFF1C1610),
+                                      color: AppColors.textDark,
                                     ),
                                   )
                                 : const SizedBox.shrink(),

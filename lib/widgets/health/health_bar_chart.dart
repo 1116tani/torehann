@@ -1,5 +1,6 @@
 //lib/widgets/health/health_bar_chart.dart
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class HealthBarChart extends StatelessWidget {
   final List<double> values;
@@ -11,13 +12,14 @@ class HealthBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final maxValue = values.reduce((a, b) => a > b ? a : b);
 
     return Container(
       height: 220,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
@@ -35,15 +37,15 @@ class HealthBarChart extends StatelessWidget {
                     duration: const Duration(milliseconds: 400),
                     height: 140 * ratio,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB8860B),
+                      color: colors.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     value.toInt().toString(),
-                    style: const TextStyle(
-                      color: Color(0xFFC8A97A),
+                    style: TextStyle(
+                      color: colors.secondary,
                       fontSize: 10,
                     ),
                   ),

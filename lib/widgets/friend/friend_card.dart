@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../constants/app_colors.dart';
 import '../../models/friend_model.dart';
 
 class FriendCard extends StatelessWidget {
@@ -16,23 +17,21 @@ class FriendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
-
+        color: colors.surface,
         borderRadius: BorderRadius.circular(18),
-
         border: Border.all(
-          color: _borderColor(friend.status),
+          color: _borderColor(friend.status, colors),
           width: 0.8,
         ),
-
         boxShadow: friend.isOnline
             ? [
                 BoxShadow(
-                  color: _shadowColor(friend.status),
+                  color: _shadowColor(friend.status, colors),
                   blurRadius: 10,
                   spreadRadius: 0.5,
                 ),
@@ -52,20 +51,17 @@ class FriendCard extends StatelessWidget {
                 Container(
                   width: 56,
                   height: 56,
-
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF3D2B1F),
-
+                    color: colors.surfaceLight,
                     border: Border.all(
-                      color: _borderColor(friend.status),
+                      color: _borderColor(friend.status, colors),
                       width: 1.2,
                     ),
                   ),
-
-                  child: const Icon(
+                  child: Icon(
                     Icons.person,
-                    color: Color(0xFFC8A97A),
+                    color: colors.secondary,
                     size: 28,
                   ),
                 ),
@@ -79,11 +75,10 @@ class FriendCard extends StatelessWidget {
                     height: 12,
 
                     decoration: BoxDecoration(
-                      color: _statusDotColor(friend.status),
+                      color: _statusDotColor(friend.status, colors),
                       shape: BoxShape.circle,
-
                       border: Border.all(
-                        color: const Color(0xFF2C2318),
+                        color: colors.surface,
                         width: 2,
                       ),
                     ),
@@ -105,8 +100,8 @@ class FriendCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           friend.name,
-                          style: const TextStyle(
-                            color: Color(0xFFF5EDD8),
+                          style: TextStyle(
+                            color: colors.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
@@ -126,9 +121,8 @@ class FriendCard extends StatelessWidget {
                     friend.favoriteAreas.isEmpty
                         ? '未知のエリアを探索中'
                         : 'よく行く: ${friend.favoriteAreas.join(' / ')}',
-
-                    style: const TextStyle(
-                      color: Color(0xFFC8A97A),
+                    style: TextStyle(
+                      color: colors.secondary,
                       fontSize: 11,
                     ),
                   ),
@@ -138,18 +132,18 @@ class FriendCard extends StatelessWidget {
                   // 歩数
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.directions_walk,
                         size: 14,
-                        color: Color(0xFFB8860B),
+                        color: colors.primary,
                       ),
 
                       const SizedBox(width: 4),
 
                       Text(
                         '最近 ${friend.recentSteps.toString()}歩',
-                        style: const TextStyle(
-                          color: Color(0xFF7A5C3A),
+                        style: TextStyle(
+                          color: colors.textMuted,
                           fontSize: 11,
                         ),
                       ),
@@ -164,24 +158,20 @@ class FriendCard extends StatelessWidget {
             // ── 招待ボタン ──
             GestureDetector(
               onTap: onInvite,
-
               child: Container(
                 width: 42,
                 height: 42,
-
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3D2B1F),
+                  color: colors.surfaceLight,
                   shape: BoxShape.circle,
-
                   border: Border.all(
-                    color: const Color(0xFFB8860B),
+                    color: colors.primary,
                     width: 0.8,
                   ),
                 ),
-
-                child: const Icon(
+                child: Icon(
                   Icons.add,
-                  color: Color(0xFFB8860B),
+                  color: colors.primary,
                 ),
               ),
             ),
@@ -193,42 +183,36 @@ class FriendCard extends StatelessWidget {
 
   // ── 色系 ─────────────────────────────
 
-  Color _borderColor(FriendStatus status) {
+  Color _borderColor(FriendStatus status, AppColors colors) {
     switch (status) {
       case FriendStatus.offline:
-        return const Color(0xFF4A3728);
-
+        return colors.border;
       case FriendStatus.exploring:
-        return const Color(0xFF57D6C9);
-
+        return AppColors.success;
       case FriendStatus.inParty:
-        return const Color(0xFFB8860B);
+        return AppColors.warning;
     }
   }
 
-  Color _shadowColor(FriendStatus status) {
+  Color _shadowColor(FriendStatus status, AppColors colors) {
     switch (status) {
       case FriendStatus.offline:
         return Colors.transparent;
-
       case FriendStatus.exploring:
-        return const Color(0xFF57D6C9).withValues(alpha: 0.15);
-
+        return AppColors.success.withValues(alpha: 0.15);
       case FriendStatus.inParty:
-        return const Color(0xFFB8860B).withValues(alpha: 0.18);
+        return AppColors.warning.withValues(alpha: 0.18);
     }
   }
 
-  Color _statusDotColor(FriendStatus status) {
+  Color _statusDotColor(FriendStatus status, AppColors colors) {
     switch (status) {
       case FriendStatus.offline:
-        return const Color(0xFF777777);
-
+        return colors.textDisabled;
       case FriendStatus.exploring:
-        return const Color(0xFF57D6C9);
-
+        return AppColors.success;
       case FriendStatus.inParty:
-        return const Color(0xFFB8860B);
+        return AppColors.warning;
     }
   }
 }
@@ -244,6 +228,7 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 8,
@@ -251,20 +236,18 @@ class _StatusBadge extends StatelessWidget {
       ),
 
       decoration: BoxDecoration(
-        color: _backgroundColor(status),
+        color: _backgroundColor(status, colors),
         borderRadius: BorderRadius.circular(20),
-
         border: Border.all(
-          color: _textColor(status),
+          color: _textColor(status, colors),
           width: 0.5,
         ),
       ),
 
       child: Text(
         _label(status),
-
         style: TextStyle(
-          color: _textColor(status),
+          color: _textColor(status, colors),
           fontSize: 10,
           fontWeight: FontWeight.bold,
         ),
@@ -285,29 +268,25 @@ class _StatusBadge extends StatelessWidget {
     }
   }
 
-  Color _backgroundColor(FriendStatus status) {
+  Color _backgroundColor(FriendStatus status, AppColors colors) {
     switch (status) {
       case FriendStatus.offline:
-        return const Color(0xFF4A3728).withValues(alpha: 0.25);
-
+        return colors.textDisabled.withValues(alpha: 0.25);
       case FriendStatus.exploring:
-        return const Color(0xFF57D6C9).withValues(alpha: 0.15);
-
+        return AppColors.success.withValues(alpha: 0.15);
       case FriendStatus.inParty:
-        return const Color(0xFFB8860B).withValues(alpha: 0.15);
+        return AppColors.warning.withValues(alpha: 0.15);
     }
   }
 
-  Color _textColor(FriendStatus status) {
+  Color _textColor(FriendStatus status, AppColors colors) {
     switch (status) {
       case FriendStatus.offline:
-        return const Color(0xFF999999);
-
+        return colors.textMuted;
       case FriendStatus.exploring:
-        return const Color(0xFF57D6C9);
-
+        return AppColors.success;
       case FriendStatus.inParty:
-        return const Color(0xFFB8860B);
+        return AppColors.warning;
     }
   }
 }

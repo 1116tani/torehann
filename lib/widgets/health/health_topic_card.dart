@@ -1,6 +1,7 @@
 // lib/widgets/health/health_topic_card.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import '../../models/health/health_topic_model.dart';
 
 class HealthTopicCard extends StatelessWidget {
@@ -13,16 +14,17 @@ class HealthTopicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
 
       padding: const EdgeInsets.all(14),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF5C4033),
+          color: colors.border,
           width: 0.6,
         ),
       ),
@@ -34,13 +36,13 @@ class HealthTopicCard extends StatelessWidget {
             height: 46,
 
             decoration: BoxDecoration(
-              color: const Color(0xFF3D2B1F),
+              color: colors.surfaceLight,
               shape: BoxShape.circle,
             ),
 
             child: Icon(
               topic.icon,
-              color: const Color(0xFFB8860B),
+              color: colors.primary,
               size: 22,
             ),
           ),
@@ -53,8 +55,8 @@ class HealthTopicCard extends StatelessWidget {
               children: [
                 Text(
                   topic.title,
-                  style: const TextStyle(
-                    color: Color(0xFFF5EDD8),
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -64,8 +66,8 @@ class HealthTopicCard extends StatelessWidget {
 
                 Text(
                   topic.description,
-                  style: const TextStyle(
-                    color: Color(0xFFC8A97A),
+                  style: TextStyle(
+                    color: colors.textSecondary,
                     fontSize: 12,
                     height: 1.5,
                   ),

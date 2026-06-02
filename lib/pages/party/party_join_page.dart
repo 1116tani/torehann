@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../constants/app_colors.dart';
 import '../../providers/party_provider.dart';
 import '../../widgets/party/party_action_button.dart';
 import '../../widgets/common/custom_header.dart';
@@ -64,8 +65,10 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1610),
+      backgroundColor: colors.background,
 
       body: SafeArea(
         child: Column(
@@ -83,11 +86,11 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
                   children: [
                     const SizedBox(height: 12),
 
-              const Text(
+              Text(
                 '仲間から受け取った\nルームコードを入力してね',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFFC8A97A),
+                  color: colors.secondary,
                   fontSize: 14,
                   height: 1.7,
                 ),
@@ -103,10 +106,10 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
                 ),
 
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2C2318),
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: const Color(0xFF5C4033),
+                    color: colors.border,
                   ),
                 ),
 
@@ -120,8 +123,8 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
                     LengthLimitingTextInputFormatter(5),
                   ],
 
-                  style: const TextStyle(
-                    color: Color(0xFFF5EDD8),
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 8,
@@ -129,12 +132,12 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
 
                   textAlign: TextAlign.center,
 
-                  decoration: const InputDecoration(
+                    decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: '00000',
 
                     hintStyle: TextStyle(
-                      color: Color(0xFF5C4033),
+                      color: colors.border,
                       letterSpacing: 8,
                     ),
                   ),
@@ -143,11 +146,11 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
 
               const SizedBox(height: 16),
 
-              const Text(
+              Text(
                 '5桁の数字を入力',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF7A5C3A),
+                  color: colors.textMuted,
                   fontSize: 11,
                 ),
               ),
@@ -168,37 +171,37 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
                   padding: const EdgeInsets.symmetric(vertical: 18),
 
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2C2318),
+                    color: colors.surface,
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                      color: const Color(0xFF4A3728),
+                      color: colors.border,
                     ),
                   ),
 
-                  child: const Column(
+                  child: Column(
                     children: [
                       Icon(
                         Icons.qr_code_scanner_rounded,
                         size: 34,
-                        color: Color(0xFFC8A97A),
+                        color: colors.primary,
                       ),
 
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
 
                       Text(
                         'QRコードで参加',
                         style: TextStyle(
-                          color: Color(0xFFF5EDD8),
+                          color: colors.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
 
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
 
                       Text(
                         'カメラで読み取ってすぐ接続',
                         style: TextStyle(
-                          color: Color(0xFF7A5C3A),
+                          color: colors.textMuted,
                           fontSize: 11,
                         ),
                       ),
@@ -211,19 +214,19 @@ class _PartyJoinPageState extends ConsumerState<PartyJoinPage> {
 
               // ── 接続中演出 ──
               if (_isConnecting) ...[
-                const Center(
+                Center(
                   child: Column(
                     children: [
                       CircularProgressIndicator(
-                        color: Color(0xFFB8860B),
+                        color: colors.primary,
                       ),
 
-                      SizedBox(height: 14),
+                      const SizedBox(height: 14),
 
                       Text(
                         '仲間たちの世界へ接続中...',
                         style: TextStyle(
-                          color: Color(0xFFC8A97A),
+                          color: colors.primary,
                           fontSize: 12,
                         ),
                       ),

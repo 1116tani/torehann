@@ -1,6 +1,7 @@
 // lib/widgets/health/health_period_tab.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import '../../providers/health_provider.dart';
 
 class HealthPeriodTab extends StatelessWidget {
@@ -15,14 +16,15 @@ class HealthPeriodTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF5C4033),
+          color: colors.border,
           width: 0.6,
         ),
       ),
@@ -42,12 +44,12 @@ class HealthPeriodTab extends StatelessWidget {
 
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFFC8A97A).withValues(alpha: 0.15)
+                      ? colors.primary.withValues(alpha: 0.15)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFFC8A97A).withValues(alpha: 0.55)
+                        ? colors.primary.withValues(alpha: 0.3)
                         : Colors.transparent,
                     width: 1.0,
                   ),
@@ -59,8 +61,8 @@ class HealthPeriodTab extends StatelessWidget {
 
                   style: TextStyle(
                     color: isSelected
-                        ? Colors.white
-                        : const Color(0xFFC8A97A),
+                        ? colors.primary
+                        : colors.textMuted,
 
                     fontSize: 13,
                     fontWeight: FontWeight.bold,

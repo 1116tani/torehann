@@ -1,6 +1,7 @@
 // lib/widgets/friend/search_bar.dart
 
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class FriendSearchBar extends StatelessWidget {
   final TextEditingController controller;
@@ -14,21 +15,23 @@ class FriendSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2318),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: const Color(0xFF5C4033),
+          color: colors.border,
           width: 0.6,
         ),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.search,
-            color: Color(0xFFC8A97A),
+            color: colors.secondary,
             size: 20,
           ),
 
@@ -37,14 +40,14 @@ class FriendSearchBar extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
-              style: const TextStyle(
-                color: Color(0xFFF5EDD8),
+              style: TextStyle(
+                color: colors.textPrimary,
                 fontSize: 13,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '冒険者IDを入力...',
                 hintStyle: TextStyle(
-                  color: Color(0xFF7A5C3A),
+                  color: colors.textMuted,
                   fontSize: 12,
                 ),
                 border: InputBorder.none,
@@ -60,13 +63,13 @@ class FriendSearchBar extends StatelessWidget {
                 vertical: 8,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFFB8860B),
+                color: colors.primary,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Text(
+              child: Text(
                 '検索',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: colors.background,
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                 ),
