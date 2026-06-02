@@ -21,6 +21,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color glass;
   final Color glassBorder;
   final Color selectedItem;
+  final Color routeLine;
 
   const AppColors({
     required this.background,
@@ -41,6 +42,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.glass,
     required this.glassBorder,
     required this.selectedItem,
+    required this.routeLine,
   });
 
   @override
@@ -63,6 +65,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? glass,
     Color? glassBorder,
     Color? selectedItem,
+    Color? routeLine,
   }) {
     return AppColors(
       background: background ?? this.background,
@@ -83,6 +86,7 @@ class AppColors extends ThemeExtension<AppColors> {
       glass: glass ?? this.glass,
       glassBorder: glassBorder ?? this.glassBorder,
       selectedItem: selectedItem ?? this.selectedItem,
+      routeLine: routeLine ?? this.routeLine,
     );
   }
 
@@ -108,6 +112,7 @@ class AppColors extends ThemeExtension<AppColors> {
       glass: Color.lerp(glass, other.glass, t)!,
       glassBorder: Color.lerp(glassBorder, other.glassBorder, t)!,
       selectedItem: Color.lerp(selectedItem, other.selectedItem, t)!,
+      routeLine: Color.lerp(routeLine, other.routeLine, t)!,
     );
   }
 
@@ -130,6 +135,7 @@ class AppColors extends ThemeExtension<AppColors> {
     glass: Color(0x18FFFFFF),
     glassBorder: Color(0x33FFFFFF),
     selectedItem: Color(0xFF4A3520),
+    routeLine: Color(0xFF2ECC71),
   );
 
   static const light = AppColors(
@@ -158,6 +164,7 @@ class AppColors extends ThemeExtension<AppColors> {
     glassBorder: Color(0x44B8860B),
 
     selectedItem: Color(0xFFF4E6C5),
+    routeLine: Color(0xFF00A86B),
   );
 
   // Helper method

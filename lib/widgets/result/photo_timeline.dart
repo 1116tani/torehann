@@ -1,5 +1,6 @@
 // lib/widgets/result/photo_timeline.dart
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/result_model.dart';
 
@@ -157,48 +158,63 @@ class _PhotoCard extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: 4 / 3,
 
-              child: Image.network(
-                photo.imageUrl,
-                fit: BoxFit.cover,
-
-                loadingBuilder: (
-                  context,
-                  child,
-                  progress,
-                ) {
-                  if (progress == null) {
-                    return child;
-                  }
-
-                  return Container(
-                    color: const Color(0xFF3D2B1F),
-
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFC8A97A),
-                        strokeWidth: 2,
-                      ),
+              child: photo.imageUrl.startsWith('http')
+                  ? Image.network(
+                      photo.imageUrl,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (
+                        context,
+                        child,
+                        progress,
+                      ) {
+                        if (progress == null) {
+                          return child;
+                        }
+                        return Container(
+                          color: const Color(0xFF3D2B1F),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFFC8A97A),
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (
+                        context,
+                        error,
+                        stackTrace,
+                      ) {
+                        return Container(
+                          color: const Color(0xFF3D2B1F),
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              color: Color(0xFF7A5C3A),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Image.file(
+                      File(photo.imageUrl),
+                      fit: BoxFit.cover,
+                      errorBuilder: (
+                        context,
+                        error,
+                        stackTrace,
+                      ) {
+                        return Container(
+                          color: const Color(0xFF3D2B1F),
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              color: Color(0xFF7A5C3A),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-
-                errorBuilder: (
-                  context,
-                  error,
-                  stackTrace,
-                ) {
-                  return Container(
-                    color: const Color(0xFF3D2B1F),
-
-                    child: const Center(
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        color: Color(0xFF7A5C3A),
-                      ),
-                    ),
-                  );
-                },
-              ),
             ),
           ),
 

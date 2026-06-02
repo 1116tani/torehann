@@ -15,7 +15,7 @@ class NavigationUiConstants {
   static const Color textDark = Color(0xFFF8F5EE); // 可読性抜群のクリームホワイト
   static const Color textMuted = Color(0xFFD2CCC2); // 補助用の明るいセピアグレー
 
-  static const double routeLineWidth = 5;
+  static const double routeLineWidth = 9;
   static const double arrivalRadiusMeters = 30;
   static const double offRouteThresholdMeters = 50;
 

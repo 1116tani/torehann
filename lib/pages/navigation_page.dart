@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:vibration/vibration.dart';
 
 import '../constants/app_colors.dart';
@@ -244,12 +245,6 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     if (!isLast) {
       _arrivalDialogOpen = false;
       ref.read(navigationProvider.notifier).checkInNextSpot();
-      _pendingArrivalSpotId = null;
-      _lastRouteFetchDestId = null;
-
-      if (_lastPosition != null) {
-        _maybeFetchRoute(_lastPosition!);
-      }
     }
   }
 
@@ -302,6 +297,36 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     if (_lastPosition == null) return;
     setState(() => _isFollowingUser = true);
     await _animateToUser(_lastPosition!, bearing: _compassHeading);
+  }
+
+  Future<void> _takePhoto() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1200,
+        maxHeight: 900,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        ref.read(navigationProvider.notifier).addCapturedPhoto(image.path);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('写真を冒険の記録に保存しました！'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Camera capture error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('カメラの起動に失敗しました: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _confirmQuit() async {
@@ -360,25 +385,6 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
   Set<Marker> _buildMarkers(NavigationState nav) {
     final markers = <Marker>{};
 
-    if (_lastPosition != null) {
-      markers.add(
-        Marker(
-          markerId: const MarkerId('user'),
-          position: LatLng(
-            _lastPosition!.latitude,
-            _lastPosition!.longitude,
-          ),
-          rotation: _compassHeading,
-          flat: true,
-          anchor: const Offset(0.5, 0.5),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueAzure,
-          ),
-          zIndexInt: 10,
-        ),
-      );
-    }
-
     final next = nav.nextSpot;
     if (next != null) {
       markers.add(
@@ -400,47 +406,19 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
   Set<Polyline> _buildPolylines() {
     if (_routePolyline.length < 2) return const {};
-    final navConstants = NavigationUiConstants.of(context);
+    final colors = AppColors.of(context);
 
     return {
       Polyline(
         polylineId: const PolylineId('walking_route'),
         points: _routePolyline,
-        color: navConstants.sepia,
+        color: colors.routeLine,
         width: NavigationUiConstants.routeLineWidth.toInt(),
         geodesic: false,
         startCap: Cap.roundCap,
         endCap: Cap.roundCap,
         jointType: JointType.round,
       ),
-    };
-  }
-
-  TorenyanNavMode _torenyanMode(NavigationState nav) {
-    if (nav.nextSpot == null) return TorenyanNavMode.arrived;
-    if (_isOffRoute) return TorenyanNavMode.offRoute;
-    return TorenyanNavMode.moving;
-  }
-
-  List<String> _torenyanLines(NavigationState nav) {
-    final mode = _torenyanMode(nav);
-    return switch (mode) {
-      TorenyanNavMode.moving => [
-          'この道を進めば、物語の続きが見えるよ',
-          '冒険の道中も、何か見つかるかもしれないね',
-          '一歩ずつ進んでいこう！',
-          '目的地まであと少しかな？',
-        ],
-      TorenyanNavMode.offRoute => [
-          '道から外れちゃった…戻ろうか',
-          'あれれ、どこに行くの？元の道に戻ろう',
-          'ちょっと寄り道？迷子にならないでね',
-        ],
-      TorenyanNavMode.arrived => [
-          '着いたね！ここで何か見つかるかも',
-          '目的地に到着！次のスポットを探そう',
-          'ここがチェックポイントだよ、お疲れ様！',
-        ],
     };
   }
 
@@ -484,14 +462,14 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               ? LatLng(nav.nextSpot!.lat, nav.nextSpot!.lng)
               : _defaultPosition);
 
-    final sheetSize = _sheetController.isAttached ? _sheetController.size : 0.12;
+    final sheetSize = _sheetController.isAttached ? _sheetController.size : 0.18;
     final bottomOffset = MediaQuery.sizeOf(context).height * sheetSize;
 
     return Scaffold(
       body: Stack(
         children: [
           GoogleMap(
-            myLocationEnabled: false,
+            myLocationEnabled: true,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
             compassEnabled: false,
@@ -524,23 +502,48 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                   nextSpot: nav.nextSpot,
                   distanceLabel: distanceLabel,
                   durationLabel: durationLabel,
+                  walkedDistanceKm: nav.walkedDistanceKm,
+                  steps: nav.steps,
                 ),
               ),
             ),
 
           if (!isCompleted && nav.nextSpot != null)
             Positioned(
-              top: 150,
+              top: 175,
               right: 16,
               child: SafeArea(
                 child: FloatingActionButton.extended(
-                  onPressed: () => _showArrivalDialog(nav.nextSpot!),
+                  onPressed: () {
+                    if (!nav.hasDeparted) {
+                      ref.read(navigationProvider.notifier).depart();
+                    } else if (!nav.isArrivedAtCurrentSpot) {
+                      _showArrivalDialog(nav.nextSpot!);
+                    } else {
+                      ref.read(navigationProvider.notifier).proceedToNextSpot();
+                      _pendingArrivalSpotId = null;
+                      _lastRouteFetchDestId = null;
+                      if (_lastPosition != null) {
+                        _maybeFetchRoute(_lastPosition!);
+                      }
+                    }
+                  },
                   backgroundColor: AppColors.of(context).primary,
                   foregroundColor: AppColors.of(context).background,
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text(
-                    '到着判定',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  icon: Icon(
+                    !nav.hasDeparted
+                        ? Icons.play_arrow_rounded
+                        : !nav.isArrivedAtCurrentSpot
+                            ? Icons.check_circle_outline
+                            : Icons.navigate_next_rounded,
+                  ),
+                  label: Text(
+                    !nav.hasDeparted
+                        ? '出発する'
+                        : !nav.isArrivedAtCurrentSpot
+                            ? '到着判定'
+                            : '次のスポットへ',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -552,6 +555,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
             child: NavigationMapControls(
               onCompass: _resetCompass,
               onRecenter: _recenter,
+              onCamera: _takePhoto,
             ),
           ),
 
@@ -563,22 +567,26 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                 size: 210,
                 enableTap: true,
                 showSpeechBubble: true,
-                customLines: _torenyanLines(nav),
+                customLines: nav.torenyanLines,
               ),
             ),
 
           DraggableScrollableSheet(
             controller: _sheetController,
-            initialChildSize: 0.12,
-            minChildSize: 0.12,
+            initialChildSize: 0.18,
+            minChildSize: 0.18,
             maxChildSize: 0.5,
             builder: (context, scrollController) {
               return NavigationDraggableSheet(
                 scrollController: scrollController,
                 nextSpot: nav.nextSpot,
                 distanceLabel: distanceLabel,
+                durationLabel: durationLabel,
                 allSpots: nav.routeSpots,
                 visitedSpotIds: nav.visitedSpotIds,
+                walkedDistanceKm: nav.walkedDistanceKm,
+                steps: nav.steps,
+                progress: nav.progress,
                 onQuit: _confirmQuit,
               );
             },

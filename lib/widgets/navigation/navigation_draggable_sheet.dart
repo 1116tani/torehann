@@ -9,8 +9,12 @@ class NavigationDraggableSheet extends StatelessWidget {
   final ScrollController scrollController;
   final SpotModel? nextSpot;
   final String distanceLabel;
+  final String durationLabel;
   final List<SpotModel> allSpots;
   final Set<String> visitedSpotIds;
+  final double walkedDistanceKm;
+  final int steps;
+  final double progress;
   final VoidCallback onQuit;
 
   const NavigationDraggableSheet({
@@ -18,10 +22,26 @@ class NavigationDraggableSheet extends StatelessWidget {
     required this.scrollController,
     required this.nextSpot,
     required this.distanceLabel,
+    required this.durationLabel,
     required this.allSpots,
     required this.visitedSpotIds,
+    required this.walkedDistanceKm,
+    required this.steps,
+    required this.progress,
     required this.onQuit,
   });
+
+  String _getOriginName() {
+    if (visitedSpotIds.isEmpty) return 'スタート地点';
+    SpotModel? lastVisited;
+    for (final spot in allSpots) {
+      if (visitedSpotIds.contains(spot.id)) {
+        lastVisited = spot;
+      }
+    }
+    if (lastVisited == null) return 'スタート地点';
+    return lastVisited.aiStoryName.isNotEmpty ? lastVisited.aiStoryName : lastVisited.name;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +51,8 @@ class NavigationDraggableSheet extends StatelessWidget {
         : (nextSpot!.aiStoryName.isNotEmpty
               ? nextSpot!.aiStoryName
               : nextSpot!.name);
-    final distance = distanceLabel;
+
+    final progressPercent = (progress * 100).round();
 
     return Material(
       color: navConstants.cream,
@@ -45,25 +66,89 @@ class NavigationDraggableSheet extends StatelessWidget {
             child: Container(
               width: 40,
               height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
+              margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
                 color: navConstants.sepia.withValues(alpha: 0.35),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          Text('現在地から', style: navConstants.serifCaption),
-          const SizedBox(height: 4),
-          Text(nextName, style: navConstants.serifTitle),
-          const SizedBox(height: 6),
-          Text(
-            '残り $distance',
-            style: navConstants.serifBody.copyWith(
-              color: navConstants.sepia,
-              fontWeight: FontWeight.w600,
-            ),
+          
+          // ── 現在地 ➜ 目的地 ─────────────────────
+          Row(
+            children: [
+              Icon(Icons.location_on_outlined, size: 16, color: navConstants.sepia),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  '${_getOriginName()} ➜ $nextName',
+                  style: navConstants.serifTitle.copyWith(fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // ── 統計情報グリッド ─────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '残り $distanceLabel (約 $durationLabel)',
+                style: navConstants.serifBody.copyWith(
+                  color: navConstants.sepia,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                '👣 $steps 歩  /  🐾 ${walkedDistanceKm.toStringAsFixed(2)} km',
+                style: navConstants.serifCaption.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // ── プログレスバー ──────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: navConstants.sepia.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: progress,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: navConstants.sepia,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '進行率 $progressPercent%',
+                style: navConstants.serifCaption.copyWith(
+                  color: navConstants.sepia,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
+
+          // ── チェックポイントリスト ─────────────────
           Text('チェックポイント', style: navConstants.serifCaption),
           const SizedBox(height: 10),
           ...allSpots.map((spot) {
@@ -99,6 +184,13 @@ class NavigationDraggableSheet extends StatelessWidget {
                                 isNext ? FontWeight.w700 : FontWeight.w400,
                           ),
                         ),
+                        if (spot.aiStoryName.isNotEmpty && isNext) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            '（${spot.name}）',
+                            style: navConstants.serifCaption.copyWith(fontSize: 12),
+                          ),
+                        ],
                         if (spot.aiFlavorText.isNotEmpty && isNext) ...[
                           const SizedBox(height: 4),
                           Text(

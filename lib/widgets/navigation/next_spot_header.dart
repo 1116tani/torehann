@@ -9,12 +9,16 @@ class NextSpotHeader extends StatelessWidget {
   final SpotModel? nextSpot;
   final String distanceLabel;
   final String durationLabel;
+  final double walkedDistanceKm;
+  final int steps;
 
   const NextSpotHeader({
     super.key,
     required this.nextSpot,
     required this.distanceLabel,
     required this.durationLabel,
+    required this.walkedDistanceKm,
+    required this.steps,
   });
 
   @override
@@ -24,9 +28,8 @@ class NextSpotHeader extends StatelessWidget {
     }
     final navConstants = NavigationUiConstants.of(context);
 
-    final title = nextSpot!.aiStoryName.isNotEmpty
-        ? nextSpot!.aiStoryName
-        : nextSpot!.name;
+    final hasStoryName = nextSpot!.aiStoryName.isNotEmpty;
+    final title = hasStoryName ? nextSpot!.aiStoryName : nextSpot!.name;
 
     return Material(
       color: navConstants.cream,
@@ -35,7 +38,7 @@ class NextSpotHeader extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: navConstants.creamBorder),
@@ -44,20 +47,42 @@ class NextSpotHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('次のスポット', style: navConstants.serifCaption),
+            Text('次のスポット', style: navConstants.serifCaption.copyWith(fontSize: 14)),
             const SizedBox(height: 4),
-            Text(title, style: navConstants.serifTitle),
-            const SizedBox(height: 10),
-            Row(
+            Text(
+              title,
+              style: navConstants.serifTitle.copyWith(fontSize: 22),
+            ),
+            if (hasStoryName) ...[
+              const SizedBox(height: 2),
+              Text(
+                '（${nextSpot!.name}）',
+                style: navConstants.serifCaption.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 _InfoChip(
                   icon: Icons.straighten_rounded,
-                  label: distanceLabel,
+                  label: '残り $distanceLabel',
                 ),
-                const SizedBox(width: 10),
                 _InfoChip(
                   icon: Icons.directions_walk_rounded,
-                  label: durationLabel,
+                  label: '約 $durationLabel',
+                ),
+                _InfoChip(
+                  icon: Icons.route_rounded,
+                  label: '${walkedDistanceKm.toStringAsFixed(2)} km',
+                ),
+                _InfoChip(
+                  icon: Icons.directions_run_rounded,
+                  label: '$steps 歩',
                 ),
               ],
             ),
@@ -78,7 +103,7 @@ class _InfoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final navConstants = NavigationUiConstants.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: navConstants.sepia.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
@@ -86,12 +111,16 @@ class _InfoChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: navConstants.sepia),
-          const SizedBox(width: 4),
-          Text(label, style: navConstants.serifCaption.copyWith(
-            color: navConstants.sepia,
-            fontWeight: FontWeight.w600,
-          )),
+          Icon(icon, size: 16, color: navConstants.sepia),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: navConstants.serifCaption.copyWith(
+              color: navConstants.sepia,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

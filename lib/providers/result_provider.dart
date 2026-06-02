@@ -2,6 +2,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/result_model.dart';
+import 'navigation_provider.dart';
 
 // ─────────────────────────────────────
 // 📦 State
@@ -78,11 +79,51 @@ class ResultNotifier extends Notifier<ResultState> {
     // 💡 本番ではFirebaseから取得
     await Future.delayed(const Duration(milliseconds: 800));
 
-    final dummy = AdventureResult.dummy();
+    final navState = ref.read(navigationProvider);
+    final baseDummy = AdventureResult.dummy();
+
+    final actualDistance = navState.isAdventureStarted || navState.walkedDistanceKm > 0
+        ? navState.walkedDistanceKm
+        : baseDummy.distanceKm;
+    final actualSteps = navState.isAdventureStarted || navState.steps > 0
+        ? navState.steps
+        : baseDummy.steps;
+
+    final actualPhotos = navState.isAdventureStarted && navState.capturedPhotos.isNotEmpty
+        ? navState.capturedPhotos
+            .map((path) => ResultPhoto(imageUrl: path, caption: '冒険中に撮影した景色'))
+            .toList()
+        : baseDummy.photos;
+
+    final durationMin = navState.adventureStartTime != null
+        ? DateTime.now().difference(navState.adventureStartTime!).inMinutes
+        : baseDummy.durationMinutes;
+
+    final updatedResult = AdventureResult(
+      id: baseDummy.id,
+      title: baseDummy.title,
+      subTitle: baseDummy.subTitle,
+      completedAt: DateTime.now(),
+      aiStory: baseDummy.aiStory,
+      closingMessage: baseDummy.closingMessage,
+      distanceKm: actualDistance,
+      steps: actualSteps,
+      calories: (actualSteps * 0.04).round(),
+      durationMinutes: durationMin > 0 ? durationMin : 1,
+      fragmentCount: navState.visitedSpotIds.length,
+      expGained: navState.visitedSpotIds.length * 50 + 100,
+      weather: baseDummy.weather,
+      themeIcon: baseDummy.themeIcon,
+      routeMapImageUrl: baseDummy.routeMapImageUrl,
+      photos: actualPhotos,
+      friends: baseDummy.friends,
+      fragments: baseDummy.fragments,
+      achievements: baseDummy.achievements,
+    );
 
     state = state.copyWith(
       isLoading: false,
-      result: dummy,
+      result: updatedResult,
     );
   }
 

@@ -7,11 +7,13 @@ import '../../constants/navigation_ui_constants.dart';
 class NavigationMapControls extends StatelessWidget {
   final VoidCallback onCompass;
   final VoidCallback onRecenter;
+  final VoidCallback onCamera;
 
   const NavigationMapControls({
     super.key,
     required this.onCompass,
     required this.onRecenter,
+    required this.onCamera,
   });
 
   @override
@@ -29,6 +31,12 @@ class NavigationMapControls extends StatelessWidget {
           icon: Icons.my_location_rounded,
           tooltip: '現在地に戻る',
           onPressed: onRecenter,
+        ),
+        const SizedBox(height: 10),
+        _NavFab(
+          icon: Icons.camera_alt_outlined,
+          tooltip: 'カメラ起動',
+          onPressed: onCamera,
         ),
       ],
     );
