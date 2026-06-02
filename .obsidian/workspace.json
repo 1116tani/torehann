@@ -4,24 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "4dbf65ec6378ae90",
+        "id": "4e098725fcfb0248",
         "type": "tabs",
         "children": [
           {
-            "id": "d36f3f29d6c3d615",
+            "id": "4d897d9a42e0fb99",
             "type": "leaf",
             "state": {
-              "type": "canvas",
-              "state": {
-                "file": "無題のファイル.canvas",
-                "viewState": {
-                  "x": 0,
-                  "y": 0,
-                  "zoom": 0
-                }
-              },
-              "icon": "lucide-layout-dashboard",
-              "title": "無題のファイル"
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "新規タブ"
             }
           }
         ]
@@ -44,7 +37,7 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": true
               },
               "icon": "lucide-folder-closed",
               "title": "ファイルエクスプローラ"
@@ -186,8 +179,9 @@
       "bases:新規ベースを作成": false
     }
   },
-  "active": "d36f3f29d6c3d615",
+  "active": "4d897d9a42e0fb99",
   "lastOpenFiles": [
+    "ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md",
     "2026-06-02.md",
     "無題のファイル.canvas"
   ]

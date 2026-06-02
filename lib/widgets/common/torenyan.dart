@@ -6,12 +6,7 @@ import 'package:flutter/material.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_colors.dart';
 
-enum TorenyanState {
-  idle,
-  loading,
-  error,
-  success,
-}
+enum TorenyanState { idle, loading, error, success }
 
 class TorenyanLines {
   static const idle = [
@@ -21,20 +16,11 @@ class TorenyanLines {
     '面白い場所、見つかるかも',
   ];
 
-  static const loading = [
-    '街の記憶を探してるよ…',
-    'いい冒険になりそう',
-  ];
+  static const loading = ['街の記憶を探してるよ…', 'いい冒険になりそう'];
 
-  static const error = [
-    '街の記憶が見つからなかったみたい…',
-    '少し休んでからもう一度探そう？',
-  ];
+  static const error = ['街の記憶が見つからなかったみたい…', '少し休んでからもう一度探そう？'];
 
-  static const success = [
-    '面白いルートが見つかったよ！さあ歩こう！',
-    '今日の冒険に出発だね！',
-  ];
+  static const success = ['面白いルートが見つかったよ！さあ歩こう！', '今日の冒険に出発だね！'];
 
   static List<String> getLines(TorenyanState state) {
     return switch (state) {
@@ -80,12 +66,15 @@ class _TorenyanState extends State<Torenyan> {
   @override
   void didUpdateWidget(Torenyan oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Compare customLines content or state
-    bool linesChanged = oldWidget.state != widget.state ||
+    bool linesChanged =
+        oldWidget.state != widget.state ||
         oldWidget.customLines != widget.customLines;
 
-    if (!linesChanged && oldWidget.customLines != null && widget.customLines != null) {
+    if (!linesChanged &&
+        oldWidget.customLines != null &&
+        widget.customLines != null) {
       if (oldWidget.customLines!.length != widget.customLines!.length) {
         linesChanged = true;
       } else {
@@ -155,9 +144,13 @@ class _TorenyanState extends State<Torenyan> {
   Widget build(BuildContext context) {
     final bottomOffset = widget.showSpeechBubble ? 32.0 : 0.0;
     // 吹き出しスペースを確保した全体の高さを定義
-    final totalHeight = widget.showSpeechBubble ? (widget.size + 120.0) : widget.size;
+    final totalHeight = widget.showSpeechBubble
+        ? (widget.size + 120.0)
+        : widget.size;
     // 吹き出しがねこの横幅を超えて描画できるように横幅は 240.0 と widget.size の大きい方にする
-    final totalWidth = widget.showSpeechBubble ? math.max(240.0, widget.size) : widget.size;
+    final totalWidth = widget.showSpeechBubble
+        ? math.max(240.0, widget.size)
+        : widget.size;
 
     return SizedBox(
       width: totalWidth,
@@ -195,10 +188,14 @@ class _TorenyanState extends State<Torenyan> {
           // 🐱 タッチ判定エリア (ねこ本体の上部65%のみに限定し、下のボタンの邪魔をしない)
           if (widget.enableTap)
             Positioned(
-              bottom: bottomOffset + widget.size * (widget.showSpeechBubble ? 0.35 : 0.0),
+              bottom:
+                  bottomOffset +
+                  widget.size * (widget.showSpeechBubble ? 0.35 : 0.0),
               left: 0,
               width: widget.size,
-              height: widget.showSpeechBubble ? widget.size * 0.65 : widget.size,
+              height: widget.showSpeechBubble
+                  ? widget.size * 0.65
+                  : widget.size,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTapDown: _onTapDown,
@@ -242,10 +239,7 @@ class _TorenyanState extends State<Torenyan> {
             constraints: const BoxConstraints(maxWidth: 240),
             decoration: BoxDecoration(
               color: colors.speechBubble,
-              border: Border.all(
-                color: colors.speechAccent,
-                width: 2.0,
-              ),
+              border: Border.all(color: colors.speechAccent, width: 2.0),
               borderRadius: BorderRadius.circular(20), // 丸み強め
               boxShadow: [
                 BoxShadow(
@@ -259,7 +253,7 @@ class _TorenyanState extends State<Torenyan> {
               _currentLine,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: colors.textPrimary,
+                color: colors.speechText,
                 fontSize: 13.0,
                 fontWeight: FontWeight.bold,
                 height: 1.35,
@@ -280,14 +274,8 @@ class _TorenyanState extends State<Torenyan> {
                 decoration: BoxDecoration(
                   color: colors.speechBubble,
                   border: Border(
-                    bottom: BorderSide(
-                      color: colors.speechAccent,
-                      width: 2.0,
-                    ),
-                    right: BorderSide(
-                      color: colors.speechAccent,
-                      width: 2.0,
-                    ),
+                    bottom: BorderSide(color: colors.speechAccent, width: 2.0),
+                    right: BorderSide(color: colors.speechAccent, width: 2.0),
                   ),
                 ),
               ),

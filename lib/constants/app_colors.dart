@@ -12,6 +12,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color primaryLight;
   final Color primaryDark;
   final Color secondary;
+  final Color speechText;
   final Color speechBubble;
   final Color speechAccent;
   final Color textPrimary;
@@ -32,6 +33,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.primaryLight,
     required this.primaryDark,
     required this.secondary,
+    required this.speechText,
     required this.speechBubble,
     required this.speechAccent,
     required this.textPrimary,
@@ -74,6 +76,7 @@ class AppColors extends ThemeExtension<AppColors> {
       primaryLight: primaryLight ?? this.primaryLight,
       primaryDark: primaryDark ?? this.primaryDark,
       secondary: secondary ?? this.secondary,
+      speechText: speechText ?? this.speechText,
       speechBubble: speechBubble ?? this.speechBubble,
       speechAccent: speechAccent ?? this.speechAccent,
       textPrimary: textPrimary ?? this.textPrimary,
@@ -99,6 +102,7 @@ class AppColors extends ThemeExtension<AppColors> {
       primaryLight: Color.lerp(primaryLight, other.primaryLight, t)!,
       primaryDark: Color.lerp(primaryDark, other.primaryDark, t)!,
       secondary: Color.lerp(secondary, other.secondary, t)!,
+      speechText: Color.lerp(speechText, other.speechText, t)!,
       speechBubble: Color.lerp(speechBubble, other.speechBubble, t)!,
       speechAccent: Color.lerp(speechAccent, other.speechAccent, t)!,
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
@@ -121,6 +125,7 @@ class AppColors extends ThemeExtension<AppColors> {
     primaryLight: Color(0xFFF6D28F),
     primaryDark: Color(0xFFB8860B),
     secondary: Color(0xFFC8A97A),
+    speechText: Color(0xFF2C2C2C),
     speechBubble: Color(0xFFF1DFC2),
     speechAccent: Color(0xFFD6B06A),
     textPrimary: Color(0xFFF8F5EE),
@@ -146,6 +151,7 @@ class AppColors extends ThemeExtension<AppColors> {
 
     secondary: Color(0xFF7C6440),
 
+    speechText: Color(0xFF2D2417),
     speechBubble: Color(0xFFFFFAEF),
     speechAccent: Color(0xFFB8860B),
 
