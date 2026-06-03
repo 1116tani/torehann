@@ -96,7 +96,7 @@ class NavigationDraggableSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       textStyle: navConstants.serifTitle.copyWith(
-                        fontSize: 18,
+                        fontSize: 20, // 💡 さらに大きく
                         fontWeight: FontWeight.bold,
                       ),
                       elevation: 4,
@@ -108,7 +108,7 @@ class NavigationDraggableSheet extends StatelessWidget {
                   // ── チェックポイントリスト（タイムライン風） ──────────────
                   Text(
                     '冒険の軌跡',
-                    style: navConstants.serifTitle.copyWith(fontSize: 18),
+                    style: navConstants.serifTitle.copyWith(fontSize: 20),
                   ),
                   const SizedBox(height: 16),
                   _buildCheckpointTimeline(context, navConstants),
@@ -118,13 +118,13 @@ class NavigationDraggableSheet extends StatelessWidget {
                   // ── 冒険終了ボタン ────────────────────────────
                   TextButton.icon(
                     onPressed: onQuit,
-                    icon: const Icon(Icons.close_rounded, size: 20),
+                    icon: const Icon(Icons.close_rounded, size: 22),
                     label: const Text('冒険を終了する'),
                     style: TextButton.styleFrom(
                       foregroundColor: navConstants.textMuted,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       textStyle: navConstants.serifBody.copyWith(
-                        fontSize: 14,
+                        fontSize: 16,
                         decoration: TextDecoration.underline,
                       ),
                     ),
@@ -142,7 +142,6 @@ class NavigationDraggableSheet extends StatelessWidget {
     if (nextSpot == null) return const SizedBox.shrink();
 
     final hasStoryName = nextSpot!.aiStoryName.isNotEmpty;
-    final title = hasStoryName ? nextSpot!.aiStoryName : nextSpot!.name;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +155,7 @@ class NavigationDraggableSheet extends StatelessWidget {
                 color: navConstants.sepia.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.auto_awesome, color: navConstants.sepia, size: 20),
+              child: Icon(Icons.auto_awesome, color: navConstants.sepia, size: 24),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -164,15 +163,15 @@ class NavigationDraggableSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
-                    style: navConstants.serifTitle.copyWith(fontSize: 18),
+                    nextSpot!.name,
+                    style: navConstants.serifTitle.copyWith(fontSize: 20),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (hasStoryName)
                     Text(
-                      nextSpot!.name,
-                      style: navConstants.serifCaption.copyWith(fontSize: 12),
+                      nextSpot!.aiStoryName,
+                      style: navConstants.serifCaption.copyWith(fontSize: 14),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -184,12 +183,12 @@ class NavigationDraggableSheet extends StatelessWidget {
         const SizedBox(height: 16),
         // ミニ進捗バー
         ClipRRect(
-          borderRadius: BorderRadius.circular(2),
+          borderRadius: BorderRadius.circular(3),
           child: LinearProgressIndicator(
             value: progress,
             backgroundColor: navConstants.sepia.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(navConstants.sepia),
-            minHeight: 4,
+            minHeight: 6, // 💡 少し太く
           ),
         ),
       ],
@@ -232,7 +231,7 @@ class NavigationDraggableSheet extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, color: navConstants.sepia, size: 24),
+          Icon(icon, color: navConstants.sepia, size: 28),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -242,7 +241,7 @@ class NavigationDraggableSheet extends StatelessWidget {
               Text(
                 value,
                 style: navConstants.serifTitle.copyWith(
-                  fontSize: 24,
+                  fontSize: 28, // 💡 さらに大きく
                   fontWeight: FontWeight.bold,
                   color: navConstants.sepia,
                 ),
@@ -250,7 +249,7 @@ class NavigationDraggableSheet extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 unit,
-                style: navConstants.serifCaption.copyWith(fontSize: 12),
+                style: navConstants.serifCaption.copyWith(fontSize: 14),
               ),
             ],
           ),
@@ -273,8 +272,8 @@ class NavigationDraggableSheet extends StatelessWidget {
               Column(
                 children: [
                   Container(
-                    width: 24,
-                    height: 24,
+                    width: 26,
+                    height: 26,
                     decoration: BoxDecoration(
                       color: isVisited
                           ? navConstants.sepia
@@ -290,12 +289,12 @@ class NavigationDraggableSheet extends StatelessWidget {
                       ),
                     ),
                     child: isVisited
-                        ? Icon(Icons.check, size: 14, color: navConstants.cream)
+                        ? Icon(Icons.check, size: 16, color: navConstants.cream)
                         : isNext
                             ? Center(
                                 child: Container(
-                                  width: 8,
-                                  height: 8,
+                                  width: 10,
+                                  height: 10,
                                   decoration: BoxDecoration(
                                     color: navConstants.sepia,
                                     shape: BoxShape.circle,
@@ -318,14 +317,15 @@ class NavigationDraggableSheet extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.only(bottom: 28),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        spot.aiStoryName.isNotEmpty ? spot.aiStoryName : spot.name,
+                        spot.name,
                         style: navConstants.serifBody.copyWith(
                           fontWeight: isNext ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 18,
                           color: isVisited || isNext
                               ? navConstants.textDark
                               : navConstants.textMuted,
@@ -333,9 +333,9 @@ class NavigationDraggableSheet extends StatelessWidget {
                       ),
                       if (spot.aiStoryName.isNotEmpty)
                         Text(
-                          spot.name,
+                          spot.aiStoryName,
                           style: navConstants.serifCaption.copyWith(
-                            fontSize: 12,
+                            fontSize: 14,
                           ),
                         ),
                     ],

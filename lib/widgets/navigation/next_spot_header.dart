@@ -39,7 +39,7 @@ class NextSpotHeader extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20), // 💡 Padding増加
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: navConstants.creamBorder, width: 1.5),
@@ -58,7 +58,7 @@ class NextSpotHeader extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12), // 💡 アイコン背景大きく
                   decoration: BoxDecoration(
                     color: navConstants.sepia,
                     shape: BoxShape.circle,
@@ -66,7 +66,7 @@ class NextSpotHeader extends StatelessWidget {
                   child: Icon(
                     _getInstructionIcon(instruction),
                     color: navConstants.cream,
-                    size: 28,
+                    size: 32, // 💡 アイコンサイズアップ
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -77,37 +77,37 @@ class NextSpotHeader extends StatelessWidget {
                       Text(
                         '$stepDistance$instruction',
                         style: navConstants.serifTitle.copyWith(
-                          fontSize: 20,
+                          fontSize: 24, // 💡 フォントサイズアップ
                           height: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           Icon(
                             Icons.flag_rounded,
-                            size: 14,
+                            size: 16,
                             color: navConstants.textMuted,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '残り $distanceLabel',
                             style: navConstants.serifCaption.copyWith(
-                              fontSize: 13,
+                              fontSize: 15, // 💡 フォントサイズアップ
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(width: 12),
                           Icon(
                             Icons.access_time_rounded,
-                            size: 14,
+                            size: 16,
                             color: navConstants.textMuted,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '約 $durationLabel',
                             style: navConstants.serifCaption.copyWith(
-                              fontSize: 13,
+                              fontSize: 15, // 💡 フォントサイズアップ
                               fontWeight: FontWeight.bold,
                             ),
                           ),
