@@ -4,20 +4,19 @@ import 'package:flutter/material.dart';
 
 import '../../constants/navigation_ui_constants.dart';
 import '../../models/spot_model.dart';
+import '../../models/walking_leg_result.dart';
 
 class NextSpotHeader extends StatelessWidget {
   final SpotModel? nextSpot;
   final String distanceLabel;
   final String durationLabel;
-  final double walkedDistanceKm;
-  final int steps;
+  final List<RouteStep> steps;
 
   const NextSpotHeader({
     super.key,
     required this.nextSpot,
     required this.distanceLabel,
     required this.durationLabel,
-    required this.walkedDistanceKm,
     required this.steps,
   });
 
@@ -28,61 +27,94 @@ class NextSpotHeader extends StatelessWidget {
     }
     final navConstants = NavigationUiConstants.of(context);
 
-    final hasStoryName = nextSpot!.aiStoryName.isNotEmpty;
-    final title = hasStoryName ? nextSpot!.aiStoryName : nextSpot!.name;
+    // 次の案内（最初のステップ）
+    final nextStep = steps.isNotEmpty ? steps.first : null;
+    final instruction = nextStep?.instruction ?? '目的地へ進む';
+    final stepDistance = nextStep != null ? '${nextStep.distanceMeters}m先 ' : '';
 
     return Material(
       color: navConstants.cream,
-      elevation: 6,
-      shadowColor: Colors.black26,
+      elevation: 8,
+      shadowColor: Colors.black45,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: navConstants.creamBorder),
+          border: Border.all(color: navConstants.creamBorder, width: 1.5),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              navConstants.cream,
+              navConstants.cream.withValues(alpha: 0.8),
+            ],
+          ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('次のスポット', style: navConstants.serifCaption.copyWith(fontSize: 14)),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: navConstants.serifTitle.copyWith(fontSize: 22),
-            ),
-            if (hasStoryName) ...[
-              const SizedBox(height: 2),
-              Text(
-                '（${nextSpot!.name}）',
-                style: navConstants.serifCaption.copyWith(
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            Row(
               children: [
-                _InfoChip(
-                  icon: Icons.straighten_rounded,
-                  label: '残り $distanceLabel',
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: navConstants.sepia,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _getInstructionIcon(instruction),
+                    color: navConstants.cream,
+                    size: 28,
+                  ),
                 ),
-                _InfoChip(
-                  icon: Icons.directions_walk_rounded,
-                  label: '約 $durationLabel',
-                ),
-                _InfoChip(
-                  icon: Icons.route_rounded,
-                  label: '${walkedDistanceKm.toStringAsFixed(2)} km',
-                ),
-                _InfoChip(
-                  icon: Icons.directions_run_rounded,
-                  label: '$steps 歩',
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$stepDistance$instruction',
+                        style: navConstants.serifTitle.copyWith(
+                          fontSize: 20,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.flag_rounded,
+                            size: 14,
+                            color: navConstants.textMuted,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '残り $distanceLabel',
+                            style: navConstants.serifCaption.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Icon(
+                            Icons.access_time_rounded,
+                            size: 14,
+                            color: navConstants.textMuted,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '約 $durationLabel',
+                            style: navConstants.serifCaption.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -91,38 +123,15 @@ class NextSpotHeader extends StatelessWidget {
       ),
     );
   }
-}
 
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _InfoChip({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final navConstants = NavigationUiConstants.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: navConstants.sepia.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: navConstants.sepia),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: navConstants.serifCaption.copyWith(
-              color: navConstants.sepia,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
+  IconData _getInstructionIcon(String instruction) {
+    if (instruction.contains('右')) return Icons.turn_right_rounded;
+    if (instruction.contains('左')) return Icons.turn_left_rounded;
+    if (instruction.contains('直進')) return Icons.straight_rounded;
+    if (instruction.contains('北')) return Icons.north_rounded;
+    if (instruction.contains('南')) return Icons.south_rounded;
+    if (instruction.contains('東')) return Icons.east_rounded;
+    if (instruction.contains('西')) return Icons.west_rounded;
+    return Icons.navigation_rounded;
   }
 }

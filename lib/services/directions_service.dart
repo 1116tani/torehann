@@ -28,66 +28,8 @@ class DirectionsService {
     required LatLng destination,
     List<LatLng> waypoints = const [],
   }) async {
-    final apiKeys = _candidateApiKeys();
-
-    if (apiKeys.isEmpty) {
-      debugPrint('Routes API key is empty.');
-      return const [];
-    }
-
-    for (final apiKey in apiKeys) {
-      try {
-        final response = await http.post(
-          _routesApiUri,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': apiKey,
-            'X-Goog-FieldMask':
-                'routes.polyline.encodedPolyline,routes.legs.polyline.encodedPolyline,routes.legs.steps.polyline.encodedPolyline',
-          },
-          body: jsonEncode({
-            'origin': _waypoint(origin),
-            'destination': _waypoint(destination),
-            if (waypoints.isNotEmpty)
-              'intermediates': waypoints.map(_waypoint).toList(),
-            'travelMode': 'WALK',
-            'computeAlternativeRoutes': false,
-            'polylineQuality': 'HIGH_QUALITY',
-            'polylineEncoding': 'ENCODED_POLYLINE',
-            'languageCode': 'ja',
-            'units': 'METRIC',
-          }),
-        );
-
-        if (response.statusCode != 200) {
-          debugPrint(
-            'Routes API HTTP ${response.statusCode}: ${response.body}',
-          );
-          continue;
-        }
-
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final routes = data['routes'] as List<dynamic>? ?? const [];
-        if (routes.isEmpty) continue;
-
-        final route = routes.first as Map<String, dynamic>;
-        final stepPoints = _decodeStepPolylines(route);
-        if (stepPoints.length >= 2) return stepPoints;
-
-        final legPoints = _decodeLegPolylines(route);
-        if (legPoints.length >= 2) return legPoints;
-
-        final routePoints = _decodePolyline(
-          (route['polyline'] as Map<String, dynamic>?)?['encodedPolyline']
-              as String?,
-        );
-        if (routePoints.length >= 2) return routePoints;
-      } catch (e) {
-        debugPrint('Routes API fetch failed: $e');
-      }
-    }
-
-    return const [];
+    final leg = await getWalkingLeg(origin: origin, destination: destination);
+    return leg?.points ?? const [];
   }
 
   Future<List<LatLng>> getMultiStopWalkingRoute(List<LatLng> stops) async {
@@ -117,6 +59,17 @@ class DirectionsService {
       return null;
     }
 
+    // Try Routes API (New)
+    for (final apiKey in apiKeys) {
+      final result = await _fetchWalkingLegRoutesApi(
+        apiKey: apiKey,
+        origin: origin,
+        destination: destination,
+      );
+      if (result != null) return result;
+    }
+
+    // Try Legacy Directions API
     for (final apiKey in apiKeys) {
       final result = await _fetchWalkingLegHttp(
         apiKey: apiKey,
@@ -126,20 +79,69 @@ class DirectionsService {
       if (result != null) return result;
     }
 
-    final points = await getDirectionsRoute(
-      origin: origin,
-      destination: destination,
-    );
-    if (points.length >= 2) {
-      final distance = _estimatePathMeters(points);
+    return null;
+  }
+
+  Future<WalkingLegResult?> _fetchWalkingLegRoutesApi({
+    required String apiKey,
+    required LatLng origin,
+    required LatLng destination,
+  }) async {
+    try {
+      final response = await http.post(
+        _routesApiUri,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask':
+              'routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline,routes.legs.steps.navigationInstruction,routes.legs.steps.distanceMeters,routes.legs.steps.polyline.encodedPolyline',
+        },
+        body: jsonEncode({
+          'origin': _waypoint(origin),
+          'destination': _waypoint(destination),
+          'travelMode': 'WALK',
+          'languageCode': 'ja',
+          'units': 'METRIC',
+        }),
+      );
+
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final routes = data['routes'] as List<dynamic>? ?? const [];
+      if (routes.isEmpty) return null;
+
+      final route = routes.first as Map<String, dynamic>;
+      
+      final distance = route['distanceMeters'] as num? ?? 0;
+      final durationStr = route['duration'] as String? ?? '0s';
+      final duration = int.tryParse(durationStr.replaceAll('s', '')) ?? 0;
+
+      final encoded = (route['polyline'] as Map<String, dynamic>?)?['encodedPolyline'] as String?;
+      final points = _decodePolyline(encoded);
+      
+      final steps = <RouteStep>[];
+      final legs = route['legs'] as List<dynamic>? ?? const [];
+      for (final leg in legs) {
+        final stepsData = (leg as Map<String, dynamic>)['steps'] as List<dynamic>? ?? const [];
+        for (final sData in stepsData) {
+          final step = sData as Map<String, dynamic>;
+          final instruction = (step['navigationInstruction'] as Map<String, dynamic>?)?['instructions'] as String? ?? '';
+          final dist = step['distanceMeters'] as num? ?? 0;
+          steps.add(RouteStep(instruction: instruction, distanceMeters: dist.round()));
+        }
+      }
+
       return WalkingLegResult(
         points: points,
         distanceMeters: distance.round(),
-        durationSeconds: (distance / 1.25).round(),
+        durationSeconds: duration,
+        steps: steps,
       );
+    } catch (e) {
+      debugPrint('[Directions] Routes API failed: $e');
+      return null;
     }
-
-    return null;
   }
 
   Future<WalkingLegResult?> _fetchWalkingLegHttp({
@@ -159,17 +161,11 @@ class DirectionsService {
       );
 
       final response = await http.get(uri);
-      if (response.statusCode != 200) {
-        debugPrint('[Directions] HTTP ${response.statusCode}');
-        return null;
-      }
+      if (response.statusCode != 200) return null;
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final status = data['status'] as String? ?? '';
-      if (status != 'OK') {
-        debugPrint('[Directions] status=$status ${data['error_message']}');
-        return null;
-      }
+      if (status != 'OK') return null;
 
       final routes = data['routes'] as List<dynamic>? ?? const [];
       if (routes.isEmpty) return null;
@@ -188,25 +184,25 @@ class DirectionsService {
               as Map<String, dynamic>?)?['points']
           as String?;
       final points = _decodePolyline(encoded);
-      if (points.length < 2) return null;
+      
+      final stepsData = leg['steps'] as List<dynamic>? ?? const [];
+      final steps = stepsData.map((s) {
+        final instruction = (s['html_instructions'] as String? ?? '')
+            .replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '');
+        final dist = (s['distance'] as Map<String, dynamic>?)?['value'] as num? ?? 0;
+        return RouteStep(instruction: instruction, distanceMeters: dist.round());
+      }).toList();
 
       return WalkingLegResult(
         points: points,
         distanceMeters: distance.round(),
         durationSeconds: duration.round(),
+        steps: steps,
       );
     } catch (e) {
-      debugPrint('[Directions] walking leg failed: $e');
+      debugPrint('[Directions] Legacy API failed: $e');
       return null;
     }
-  }
-
-  double _estimatePathMeters(List<LatLng> points) {
-    var total = 0.0;
-    for (var i = 0; i < points.length - 1; i++) {
-      total += _haversineMeters(points[i], points[i + 1]);
-    }
-    return total;
   }
 
   double _haversineMeters(LatLng a, LatLng b) {
@@ -239,40 +235,6 @@ class DirectionsService {
         'latLng': {'latitude': point.latitude, 'longitude': point.longitude},
       },
     };
-  }
-
-  List<LatLng> _decodeStepPolylines(Map<String, dynamic> route) {
-    final result = <LatLng>[];
-    final legs = route['legs'] as List<dynamic>? ?? const [];
-
-    for (final leg in legs) {
-      final steps =
-          (leg as Map<String, dynamic>)['steps'] as List<dynamic>? ?? const [];
-      for (final step in steps) {
-        final encoded =
-            ((step as Map<String, dynamic>)['polyline']
-                    as Map<String, dynamic>?)?['encodedPolyline']
-                as String?;
-        _appendPoints(result, _decodePolyline(encoded));
-      }
-    }
-
-    return result;
-  }
-
-  List<LatLng> _decodeLegPolylines(Map<String, dynamic> route) {
-    final result = <LatLng>[];
-    final legs = route['legs'] as List<dynamic>? ?? const [];
-
-    for (final leg in legs) {
-      final encoded =
-          ((leg as Map<String, dynamic>)['polyline']
-                  as Map<String, dynamic>?)?['encodedPolyline']
-              as String?;
-      _appendPoints(result, _decodePolyline(encoded));
-    }
-
-    return result;
   }
 
   List<LatLng> _decodePolyline(String? encoded) {

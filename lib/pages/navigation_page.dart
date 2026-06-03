@@ -460,6 +460,34 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     final sheetSize = _sheetController.isAttached ? _sheetController.size : 0.18;
     final bottomOffset = MediaQuery.sizeOf(context).height * sheetSize;
 
+    // アクションボタンの状態
+    final actionLabel = !nav.hasDeparted
+        ? '出発する'
+        : !nav.isArrivedAtCurrentSpot
+            ? '到着判定'
+            : '次のスポットへ';
+    
+    final actionIcon = !nav.hasDeparted
+        ? Icons.play_arrow_rounded
+        : !nav.isArrivedAtCurrentSpot
+            ? Icons.check_circle_outline
+            : Icons.navigate_next_rounded;
+
+    void onAction() {
+      if (!nav.hasDeparted) {
+        ref.read(navigationProvider.notifier).depart();
+      } else if (!nav.isArrivedAtCurrentSpot) {
+        _showArrivalDialog(nav.nextSpot!);
+      } else {
+        ref.read(navigationProvider.notifier).proceedToNextSpot();
+        _pendingArrivalSpotId = null;
+        _lastRouteFetchDestId = null;
+        if (_lastPosition != null) {
+          _maybeFetchRoute(_lastPosition!);
+        }
+      }
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -497,49 +525,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                   nextSpot: nav.nextSpot,
                   distanceLabel: distanceLabel,
                   durationLabel: durationLabel,
-                  walkedDistanceKm: nav.walkedDistanceKm,
-                  steps: nav.steps,
-                ),
-              ),
-            ),
-
-          if (!isCompleted && nav.nextSpot != null)
-            Positioned(
-              top: 175,
-              right: 16,
-              child: SafeArea(
-                child: FloatingActionButton.extended(
-                  onPressed: () {
-                    if (!nav.hasDeparted) {
-                      ref.read(navigationProvider.notifier).depart();
-                    } else if (!nav.isArrivedAtCurrentSpot) {
-                      _showArrivalDialog(nav.nextSpot!);
-                    } else {
-                      ref.read(navigationProvider.notifier).proceedToNextSpot();
-                      _pendingArrivalSpotId = null;
-                      _lastRouteFetchDestId = null;
-                      if (_lastPosition != null) {
-                        _maybeFetchRoute(_lastPosition!);
-                      }
-                    }
-                  },
-                  backgroundColor: AppColors.of(context).primary,
-                  foregroundColor: AppColors.of(context).background,
-                  icon: Icon(
-                    !nav.hasDeparted
-                        ? Icons.play_arrow_rounded
-                        : !nav.isArrivedAtCurrentSpot
-                            ? Icons.check_circle_outline
-                            : Icons.navigate_next_rounded,
-                  ),
-                  label: Text(
-                    !nav.hasDeparted
-                        ? '出発する'
-                        : !nav.isArrivedAtCurrentSpot
-                            ? '到着判定'
-                            : '次のスポットへ',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  steps: leg?.steps ?? const [],
                 ),
               ),
             ),
@@ -554,23 +540,11 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
             ),
           ),
 
-          if (!isCompleted)
-            Positioned(
-              top: MediaQuery.sizeOf(context).height * (1 - sheetSize) - 220,
-              left: 15,
-              child: Torenyan(
-                size: 210,
-                enableTap: true,
-                showSpeechBubble: true,
-                customLines: nav.torenyanLines,
-              ),
-            ),
-
           DraggableScrollableSheet(
             controller: _sheetController,
             initialChildSize: 0.18,
             minChildSize: 0.18,
-            maxChildSize: 0.5,
+            maxChildSize: 0.6,
             builder: (context, scrollController) {
               return NavigationDraggableSheet(
                 scrollController: scrollController,
@@ -583,9 +557,24 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                 steps: nav.steps,
                 progress: nav.progress,
                 onQuit: _confirmQuit,
+                actionLabel: actionLabel,
+                actionIcon: actionIcon,
+                onAction: onAction,
               );
             },
           ),
+
+          if (!isCompleted)
+            Positioned(
+              top: MediaQuery.sizeOf(context).height * (1 - sheetSize) - 200,
+              left: 0,
+              child: Torenyan(
+                size: 200,
+                enableTap: true,
+                showSpeechBubble: true,
+                customLines: nav.torenyanLines,
+              ),
+            ),
 
           if (isCompleted)
             Positioned(

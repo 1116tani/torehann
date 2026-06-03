@@ -2,16 +2,29 @@
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-/// Directions API 徒歩区間の結果（ポリライン + 距離・時間）
+/// ナビゲーションの1ステップ（曲がり角など）
+class RouteStep {
+  final String instruction;
+  final int distanceMeters;
+
+  const RouteStep({
+    required this.instruction,
+    required this.distanceMeters,
+  });
+}
+
+/// Directions API 徒歩区間の結果（ポリライン + 距離・時間 + ステップ）
 class WalkingLegResult {
   final List<LatLng> points;
   final int distanceMeters;
   final int durationSeconds;
+  final List<RouteStep> steps;
 
   const WalkingLegResult({
     required this.points,
     required this.distanceMeters,
     required this.durationSeconds,
+    this.steps = const [],
   });
 
   String get distanceLabel {
