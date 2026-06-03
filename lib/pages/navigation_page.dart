@@ -566,7 +566,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
           if (!isCompleted)
             Positioned(
-              top: MediaQuery.sizeOf(context).height * (1 - sheetSize) - 200,
+              top: MediaQuery.sizeOf(context).height * (1 - sheetSize) - 220,
               left: 0,
               child: Torenyan(
                 size: 200,
