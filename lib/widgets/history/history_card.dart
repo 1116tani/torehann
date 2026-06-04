@@ -222,9 +222,9 @@ class HistoryCard extends StatelessWidget {
 
                   // 断片
                   if (history
-                      .fragments
+                      .obtainedFragments
                       .isNotEmpty)
-                    ...history.fragments
+                    ...history.obtainedFragments
                         .take(3)
                         .map(
                       (f) => Container(
@@ -254,7 +254,7 @@ class HistoryCard extends StatelessWidget {
                         ),
 
                         child: Text(
-                          f,
+                          _getFragmentName(f.itemMasterId),
 
                           style:
                               TextStyle(
@@ -370,6 +370,29 @@ class HistoryCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getFragmentName(String masterId) {
+    final names = {
+      'item_01': '始まりの木の枝',
+      'item_02': '幸運の10円硬貨',
+      'item_03': '迷い鳥の羽',
+      'item_04': '奇跡のレシート',
+      'item_05': '破られた白地図',
+      'item_06': '絆のウォーキングシューズ',
+      'item_07': '社の御守札',
+      'item_08': '転移切符',
+      'item_09': '迷宮の魔導書',
+      'item_10': 'カフェのスタンプカード',
+      'item_11': '黄昏の硝子玉',
+      'item_12': '雨粒の小瓶',
+      'item_13': '商店街の福引券',
+      'item_14': '公園の夕暮れ石',
+      'item_15': '絆の編纂珠',
+      'item_16': '境界のスマートフォン',
+      'item_17': 'この街の記憶地図',
+    };
+    return names[masterId] ?? '未知の断片';
   }
 
   String _formatDate(

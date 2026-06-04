@@ -17,6 +17,7 @@ import '../models/spot_model.dart';
 import '../models/walking_leg_result.dart';
 import '../providers/location_provider.dart';
 import '../providers/navigation_provider.dart';
+import '../providers/result_provider.dart';
 import '../providers/settings_provider.dart';
 import '../router/route_names.dart';
 import '../services/directions_service.dart';
@@ -224,6 +225,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
           Navigator.of(dialogContext).pop();
           if (isLast) {
             ref.read(navigationProvider.notifier).checkInNextSpot();
+            ref.read(resultProvider.notifier).generateResult();
             Future.microtask(() {
               if (mounted) {
                 context.go(AppRoutes.result);
@@ -582,7 +584,10 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
               right: 16,
               bottom: MediaQuery.paddingOf(context).bottom + 16,
               child: ElevatedButton(
-                onPressed: () => context.go(AppRoutes.result),
+                onPressed: () {
+                  ref.read(resultProvider.notifier).generateResult();
+                  context.go(AppRoutes.result);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: navConstants.sepia,
                   foregroundColor: navConstants.cream,

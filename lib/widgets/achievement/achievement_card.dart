@@ -1,6 +1,7 @@
 // lib/widgets/achievement/achievement_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../constants/app_colors.dart';
 import '../../models/achievement_model.dart';
 
@@ -15,19 +16,21 @@ class AchievementCard extends StatelessWidget {
   // ── 🎁 宝箱を開けるような詳細ダイアログを表示する関数 ──
   void _showAchievementDetail(BuildContext context, bool isUnearned) {
     final colors = AppColors.of(context);
+    final dateFormat = DateFormat('yyyy/MM/dd');
+    
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          backgroundColor: colors.surface, // 💡 共通のsurfaceカラー
+          backgroundColor: colors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: colors.primary, width: 1.5), // 金の縁取り
+            side: BorderSide(color: colors.primary, width: 1.5),
           ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
-              mainAxisSize: MainAxisSize.min, // 中身のサイズに合わせるよ
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
                   '✦ 勲章 ✦',
@@ -39,50 +42,56 @@ class AchievementCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // 大きな未解放／解放アイコン
                 Text(
-                  isUnearned ? '❓' : '🏅',
+                  isUnearned ? '🔒' : '🏅',
                   style: const TextStyle(fontSize: 48),
                 ),
                 const SizedBox(height: 16),
-                // 詳細タイトルの表示
                 Text(
-                  isUnearned ? '？？？？？？' : achievement.title,
+                  isUnearned ? '？？？' : achievement.title,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isUnearned ? const Color(0xFFD2C2B2) : const Color(0xFFF5EDD8), // 💡 0xFFB5A189 → 0xFFD2C2B2 (さらに明るく)
+                    color: isUnearned ? const Color(0xFFD2C2B2) : const Color(0xFFF5EDD8),
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                if (!isUnearned && achievement.unlockedAt != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '${dateFormat.format(achievement.unlockedAt!)} 解除',
+                    style: TextStyle(
+                      color: colors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
                  const SizedBox(height: 12),
                  Divider(color: colors.divider, thickness: 1),
                  const SizedBox(height: 10),
-                 // 🎯 解放・達成条件を大きく表示
                  Text(
                    '達成目標: ${achievement.nextThreshold.toStringAsFixed(achievement.unit == 'km' ? 1 : 0)} ${achievement.unit}',
                    style: const TextStyle(
-                     color: Color(0xFFE5A93C), // 輝くゴールド
+                     color: Color(0xFFE5A93C),
                      fontSize: 15,
                      fontWeight: FontWeight.bold,
                      letterSpacing: 1.1,
                    ),
                  ),
                  const SizedBox(height: 10),
-                 // 詳細な説明文（宝のフレーバーテキスト風）
                 Text(
                   isUnearned
                       ? 'まだ見ぬ冒険の記憶が、ここに刻まれる。\n（条件を満たすと詳細が解放されるよ）'
                       : achievement.description,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isUnearned ? const Color(0xFFBCAFA0) : const Color(0xFFC8A97A), // 💡 0xFF9E8E7C → 0xFFBCAFA0 (さらに明るく)
+                    color: isUnearned ? const Color(0xFFBCAFA0) : const Color(0xFFC8A97A),
                     fontSize: 13,
                     height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 24),
-                // 閉じるボタン
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -111,8 +120,7 @@ class AchievementCard extends StatelessWidget {
     final colors = AppColors.of(context);
     final rank = achievement.currentRank;
 
-    final isUnearned =
-        rank == AchievementRank.none && achievement.currentCount == 0;
+    final isUnearned = rank == AchievementRank.none;
 
     // ── ランク別カラー設定 ──
     Color medalColor;
@@ -133,7 +141,7 @@ class AchievementCard extends StatelessWidget {
         break;
       case AchievementRank.none:
         medalColor = const Color(0xFF6B6B6B);
-        medalText = '?';
+        medalText = '🔒';
         break;
     }
 

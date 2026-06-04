@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../constants/app_colors.dart';
 import '../providers/history_provider.dart';
+import '../providers/result_provider.dart';
 import '../router/route_names.dart';
 
 import '../widgets/history/history_card.dart';
@@ -96,7 +97,8 @@ class HistoryPage extends ConsumerWidget {
                               history,
 
                           onTap: () {
-                            context.go(
+                            ref.read(resultProvider.notifier).setResult(history.toResult());
+                            context.push(
                               AppRoutes.result,
                               extra: {'isFromHistory': true},
                             );

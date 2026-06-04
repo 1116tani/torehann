@@ -66,7 +66,7 @@ class AchievementPage extends ConsumerWidget {
               child: Column(
                 children: [
                   const Text(
-                    '現在の実績達成度',
+                    '実績数',
 
                     style: TextStyle(
                       color: Color(0xFFC8A97A),
@@ -84,6 +84,16 @@ class AchievementPage extends ConsumerWidget {
                     textBaseline: TextBaseline.alphabetic,
 
                     children: [
+                      const Text(
+                        '解除済み ',
+
+                        style: TextStyle(
+                          color: Color(0xFFC8A97A),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
                       Text(
                         '$earnedCount',
 
@@ -100,18 +110,6 @@ class AchievementPage extends ConsumerWidget {
                         style: const TextStyle(
                           color: Color(0xFFE5D5BC),
                           fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(width: 6),
-
-                      const Text(
-                        '個解放',
-
-                        style: TextStyle(
-                          color: Color(0xFFE5D5BC),
-                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

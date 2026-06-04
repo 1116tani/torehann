@@ -28,6 +28,7 @@ class FragmentGridItem extends StatelessWidget {
   void _showItemDetails(BuildContext context) {
     final colors = AppColors.of(context);
     final rarityColor = _getRarityColor(context);
+    final isLegend = item.rarity == FragmentRarity.legend;
 
     showGeneralDialog(
       context: context,
@@ -58,9 +59,11 @@ class FragmentGridItem extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 🏷️ アイテム名（未取得なら ？？？ 表示）
+                  // 🏷️ アイテム名（未取得なら ？？？ 表示、レジェンドならさらに隠す）
                   Text(
-                    item.isUnlocked ? item.name : '？？？',
+                    item.isUnlocked 
+                      ? item.name 
+                      : (isLegend ? '？？？？？？？' : '？？？'),
                     style: TextStyle(
                       color: item.isUnlocked ? rarityColor : colors.textMuted,
                       fontSize: 22,
@@ -81,21 +84,22 @@ class FragmentGridItem extends StatelessWidget {
                   // 💡 段階解放テキスト部分
                   if (!item.isUnlocked) ...[
                     // 未取得時のメッセージ
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: Text(
-                        item.rarity == FragmentRarity.rare
-                            ? 'まだ見ぬ街の記憶。どうやら「${item.conditionHint}」の近くで気配を感じるようだ……。'
-                            : 'まだ見ぬ日常の断片。街を歩き回ることで、ふと見つかるかもしれない。',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: colors.textMuted,
-                          fontSize: 14,
-                          height: 1.5,
-                          fontStyle: FontStyle.italic,
+                    if (!isLegend) // レジェンド未取得時は説明非表示
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(
+                          item.rarity == FragmentRarity.rare
+                              ? 'まだ見ぬ街の記憶。どうやら「${item.conditionHint}」の近くで気配を感じるようだ……。'
+                              : 'まだ見ぬ日常の断片。街を歩き回ることで、ふと見つかるかもしれない。',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: colors.textMuted,
+                            fontSize: 14,
+                            height: 1.5,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       ),
-                    ),
                   ] else ...[
                     // 解放済みの時の段階テキスト表示
                     ...List.generate(item.descriptions.length, (index) {
@@ -196,6 +200,7 @@ class FragmentGridItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     final rarityColor = _getRarityColor(context);
+    final isLegend = item.rarity == FragmentRarity.legend;
 
     return GestureDetector(
       onTap: () => _showItemDetails(context),
@@ -219,11 +224,15 @@ class FragmentGridItem extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // 💎 中央のアイコン
+            // 💎 中央のアイコン（未取得はシルエット風）
             Center(
               child: Icon(
-                item.isUnlocked ? Icons.diamond_outlined : Icons.question_mark_rounded,
-                color: rarityColor.withValues(alpha: item.isUnlocked ? 1.0 : 0.2),
+                item.isUnlocked 
+                  ? Icons.auto_stories_rounded 
+                  : (isLegend ? Icons.stars_rounded : Icons.auto_stories_rounded),
+                color: item.isUnlocked 
+                  ? rarityColor 
+                  : colors.textDisabled.withValues(alpha: 0.3),
                 size: 36,
               ),
             ),
@@ -234,7 +243,9 @@ class FragmentGridItem extends StatelessWidget {
               left: 4,
               right: 4,
               child: Text(
-                item.isUnlocked ? item.name : '？？？',
+                item.isUnlocked 
+                  ? item.name 
+                  : (isLegend ? '？？？？' : '？？？'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: item.isUnlocked ? colors.textPrimary : colors.textDisabled,

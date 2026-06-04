@@ -189,16 +189,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
       }
     });
 
-    ref.listen<ResultState>(resultProvider, (previous, next) {
-      if (widget.isFromHistory) return;
-      if (next.result != null && (previous == null || previous.result == null)) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          _startAnimationsSequence();
-        });
-      }
-    });
-
     final resultState = ref.watch(resultProvider);
     final result = resultState.result;
 
@@ -439,6 +429,839 @@ class _ResultPageState extends ConsumerState<ResultPage> {
             icon: Icons.directions_run_rounded,
             label: '歩数',
             value: result.steps.toString(),
+            unit: '歩',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _StatusCard(
+            icon: Icons.stars_rounded,
+            label: '獲得EXP',
+            value: '+${result.expGained}',
+            unit: '',
+            isHighlight: true,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMapSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    final routePoints = result.routePoints.isNotEmpty
+        ? result.routePoints
+        : [
+            const LatLng(35.681236, 139.767125),
+            const LatLng(35.683236, 139.769125),
+          ];
+
+    final startPoint = routePoints.first;
+    final endPoint = routePoints.last;
+
+    final markers = <Marker>{
+      Marker(
+        markerId: const MarkerId('start'),
+        position: startPoint,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      ),
+      Marker(
+        markerId: const MarkerId('end'),
+        position: endPoint,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+      ),
+    };
+
+    final polylines = <Polyline>{
+      Polyline(
+        polylineId: const PolylineId('route_core'),
+        points: routePoints,
+        color: colors.primary,
+        width: 4,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+      ),
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '旅の軌跡',
+          style: GoogleFonts.notoSerifJp(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: colors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          height: 240,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.border, width: 1.5),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Stack(
+              children: [
+                GoogleMap(
+                  myLocationEnabled: false,
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                  compassEnabled: false,
+                  mapToolbarEnabled: false,
+                  initialCameraPosition: CameraPosition(
+                    target: startPoint,
+                    zoom: 14.5,
+                  ),
+                  style: _mapStyle,
+                  markers: markers,
+                  polylines: polylines,
+                  gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                    Factory<OneSequenceGestureRecognizer>(
+                      () => EagerGestureRecognizer(),
+                    ),
+                  },
+                ),
+                Positioned(
+                  right: 12,
+                  bottom: 12,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _openFullscreenMap(context, startPoint, markers, polylines),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.surface,
+                      foregroundColor: colors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    ),
+                    icon: const Icon(Icons.fullscreen, size: 18),
+                    label: Text(
+                      '拡大する',
+                      style: GoogleFonts.notoSerifJp(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openFullscreenMap(BuildContext context, LatLng startPoint, Set<Marker> markers, Set<Polyline> polylines) {
+    final colors = AppColors.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        backgroundColor: colors.background,
+        child: Stack(
+          children: [
+            GoogleMap(
+              myLocationEnabled: false,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: true,
+              compassEnabled: true,
+              initialCameraPosition: CameraPosition(
+                target: startPoint,
+                zoom: 15,
+              ),
+              style: _mapStyle,
+              markers: markers,
+              polylines: polylines,
+            ),
+            Positioned(
+              top: 40,
+              left: 16,
+              child: SafeArea(
+                child: CircleAvatar(
+                  backgroundColor: colors.surface,
+                  child: IconButton(
+                    icon: Icon(Icons.close, color: colors.textPrimary),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlbumSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    final angles = [-0.04, 0.03, -0.02];
+    final alignments = [Alignment.centerLeft, Alignment.centerRight, Alignment.centerLeft];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '冒険アルバム',
+          style: GoogleFonts.notoSerifJp(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: colors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Column(
+          children: List.generate(result.photos.length, (i) {
+            final photo = result.photos[i];
+            return Transform.rotate(
+              angle: angles[i % angles.length],
+              child: Align(
+                alignment: alignments[i % alignments.length],
+                child: Container(
+                  width: MediaQuery.sizeOf(context).width * 0.75,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: () => _openFullscreenImage(context, photo.imageUrl, photo.caption),
+                        child: AspectRatio(
+                          aspectRatio: 4 / 3,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: Hero(
+                              tag: photo.imageUrl,
+                              child: Image.network(
+                                photo.imageUrl,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Center(
+                        child: Text(
+                          photo.caption,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.notoSerifJp(
+                            fontSize: 12,
+                            color: Colors.black87,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  void _openFullscreenImage(BuildContext context, String imageUrl, String caption) {
+    final colors = AppColors.of(context);
+    Navigator.of(context).push(
+      PageRouteBuilder<void>(
+        opaque: false,
+        barrierDismissible: true,
+        pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
+          backgroundColor: Colors.black.withValues(alpha: 0.9),
+          body: Stack(
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.of(context).pop(),
+                child: const SizedBox.expand(),
+              ),
+              Center(
+                child: Hero(
+                  tag: imageUrl,
+                  child: InteractiveViewer(
+                    child: Image.network(imageUrl),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 40,
+                right: 16,
+                child: SafeArea(
+                  child: CircleAvatar(
+                    backgroundColor: colors.surface,
+                    child: IconButton(
+                      icon: Icon(Icons.close, color: colors.textPrimary),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 40,
+                child: SafeArea(
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: colors.surface.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        caption,
+                        style: GoogleFonts.notoSerifJp(
+                          color: colors.textPrimary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAiJournalSection(BuildContext context, AdventureResult result) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '冒険日誌',
+          style: GoogleFonts.notoSerifJp(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppColors.of(context).textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.parchment,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.parchmentDark, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                result.aiStory,
+                style: GoogleFonts.notoSerifJp(
+                  fontSize: 16,
+                  color: AppColors.textDark,
+                  height: 1.6,
+                ),
+              ),
+              if (result.closingMessage.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                Center(
+                  child: Text(
+                    result.closingMessage,
+                    style: GoogleFonts.notoSerifJp(
+                      fontSize: 14,
+                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w700,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFragmentsSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '手に入れた街の断片',
+          style: GoogleFonts.notoSerifJp(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: colors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.border, width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ...result.obtainedFragments.map((fragment) {
+                final rarityColor = _getRarityColor(fragment.rarity);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.auto_stories_rounded,
+                        color: rarityColor,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '・ ${_getFragmentName(fragment.itemMasterId)}',
+                        style: GoogleFonts.notoSerifJp(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getRarityColor(FragmentRarity rarity) {
+    return switch (rarity) {
+      FragmentRarity.normal => Colors.brown.shade300,
+      FragmentRarity.rare => Colors.blue.shade400,
+      FragmentRarity.legend => Colors.amber.shade600,
+    };
+  }
+
+  String _getFragmentName(String masterId) {
+    final names = {
+      'item_01': '始まりの木の枝',
+      'item_02': '幸運の10円硬貨',
+      'item_03': '迷い鳥の羽',
+      'item_04': '奇跡のレシート',
+      'item_05': '破られた白地図',
+      'item_06': '絆のウォーキングシューズ',
+      'item_07': '社の御守札',
+      'item_08': '転移切符',
+      'item_09': '迷宮の魔導書',
+      'item_10': 'カフェのスタンプカード',
+      'item_11': '黄昏の硝子玉',
+      'item_12': '雨粒の小瓶',
+      'item_13': '商店街の福引券',
+      'item_14': '公園の夕暮れ石',
+      'item_15': '絆の編纂珠',
+      'item_16': '境界のスマートフォン',
+      'item_17': 'この街の記憶地図',
+    };
+    return names[masterId] ?? '未知の断片';
+  }
+
+  Widget _buildAchievementsSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '解除した実績',
+          style: GoogleFonts.notoSerifJp(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: colors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Column(
+          children: result.unlockedAchievements.map((achievement) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              color: colors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: colors.border, width: 1),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceLight,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: colors.primary, width: 1.5),
+                      ),
+                      child: Icon(
+                        Icons.emoji_events_rounded,
+                        color: colors.primary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '実績解除！',
+                            style: GoogleFonts.notoSerifJp(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: colors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            achievement,
+                            style: GoogleFonts.notoSerifJp(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: colors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildShareSection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(child: Divider(color: colors.divider, thickness: 0.5)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                '冒険を振り返る',
+                style: TextStyle(
+                  color: colors.secondary,
+                  fontSize: 12,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+            Expanded(child: Divider(color: colors.divider, thickness: 0.5)),
+          ],
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: OutlinedButton.icon(
+            onPressed: () => _onShare(context, result),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colors.textPrimary,
+              side: BorderSide(color: colors.primary, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            icon: Icon(Icons.share_rounded, color: colors.primary, size: 20),
+            label: Text(
+              'この冒険を共有する',
+              style: GoogleFonts.notoSerifJp(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: colors.primary,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _onShare(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    final shareText = '''
+📜 ${result.title}
+🗺️ ${result.distanceKm.toStringAsFixed(1)}km を冒険しました！
+⏱️ ${result.durationMinutes}分 / 👣 ${result.steps}歩
+🌟 獲得EXP: +${result.expGained} EXP
+
+#TaleTrace #街の記憶 #冒険ログ
+''';
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: colors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: colors.primary, width: 1.5),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.mark_email_unread_outlined, color: colors.primary),
+            const SizedBox(width: 10),
+            Text(
+              'シェア用ポストカード',
+              style: GoogleFonts.notoSerifJp(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: colors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        content: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.parchment,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.parchmentDark, width: 1),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Tale Trace - Adventure Log',
+                style: GoogleFonts.notoSerifJp(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF8B6C3F),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                result.title,
+                style: GoogleFonts.notoSerifJp(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const Divider(color: Color(0xFFC8A97A), thickness: 1, height: 16),
+              Text(
+                '🐾 距離: ${result.distanceKm.toStringAsFixed(1)} km\n👣 歩数: ${result.steps} 歩\n⏱️ 時間: ${result.durationMinutes} 分\n✨ 獲得EXP: +${result.expGained} XP',
+                style: GoogleFonts.notoSerifJp(
+                  fontSize: 13,
+                  color: AppColors.textDark,
+                  height: 1.6,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('閉じる', style: TextStyle(color: colors.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: shareText));
+              Navigator.pop(context);
+              _showSnackBar('📋 クリップボードに共有テキストをコピーしました！');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.primary,
+              foregroundColor: colors.background,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('コピーしてシェア'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSnackBar(String text) {
+    final colors = AppColors.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: colors.surface,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        content: Text(
+          text,
+          style: TextStyle(
+            color: colors.textPrimary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummarySection(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    final levelState = ref.watch(levelProvider);
+    final dateStr = DateFormat('yyyy/MM/dd').format(result.completedAt);
+    final remainingXp = levelState.nextLevelXp - levelState.currentLevelXp;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          result.title,
+          style: GoogleFonts.notoSerifJp(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: colors.primary,
+            height: 1.3,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Text(
+              dateStr,
+              style: GoogleFonts.notoSerifJp(
+                fontSize: 13,
+                color: colors.textMuted,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+              decoration: BoxDecoration(
+                border: Border.all(color: colors.primary, width: 1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '完走',
+                style: GoogleFonts.notoSerifJp(
+                  fontSize: 11,
+                  color: colors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        if (!widget.isFromHistory) ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colors.border, width: 1),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '現在のレベル: Lv.${levelState.level}',
+                      style: GoogleFonts.notoSerifJp(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      '次のレベルまで あと $remainingXp EXP',
+                      style: GoogleFonts.notoSerifJp(
+                        fontSize: 12,
+                        color: colors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Stack(
+                  children: [
+                    Container(
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: colors.background,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 1000),
+                      curve: Curves.easeInOut,
+                      height: 10,
+                      width: (MediaQuery.sizeOf(context).width - 68) * levelState.progress,
+                      decoration: BoxDecoration(
+                        gradient: AppGradients.of(context).gold,
+                        borderRadius: BorderRadius.circular(5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.primary.withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildStatusCards(BuildContext context, AdventureResult result) {
+    final colors = AppColors.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: _StatusCard(
+            icon: Icons.directions_walk_rounded,
+            label: '距離',
+            value: '${result.distanceKm.toStringAsFixed(1)}',
+            unit: 'km',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _StatusCard(
+            icon: Icons.directions_walk_rounded,
+            label: '歩数',
+            value: '${result.steps}',
             unit: '歩',
           ),
         ),

@@ -4,26 +4,66 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/achievement_model.dart'; // 👈 さっき切り出したモデルをインポート
 
+import 'auth_provider.dart';
+
 /// ── 💡 ユーザーの生の統計データをFirestoreから引いてくるStreamProvider ──
 final userStatsProvider = StreamProvider.autoDispose<Map<String, dynamic>>((ref) {
-  // 本来は認証されたUIDを使うけど、デモ用に固定値にしておくね
-  const dummyUserId = 'dummy_user_123';
+  final user = ref.watch(firebaseAuthProvider).currentUser;
+  if (user == null) return Stream.value({});
+
   return FirebaseFirestore.instance
       .collection('users')
-      .doc(dummyUserId)
+      .doc(user.uid)
       .collection('stats')
       .doc('counters')
       .snapshots()
       .map((doc) => doc.data() ?? {});
 });
 
-/// ── 💡 生データと実績マスタをマージして、UI用の【厳選9種】の実績リストに仕立てるProvider ──
+/// ── 💡 実績の解放状況をFirestoreから引いてくるStreamProvider ──
+final userAchievementsProvider = StreamProvider.autoDispose<Map<String, DateTime>>((ref) {
+  final user = ref.watch(firebaseAuthProvider).currentUser;
+  if (user == null) return Stream.value({});
+
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .collection('achievements')
+      .snapshots()
+      .map((snapshot) {
+    final unlocks = <String, DateTime>{};
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      if (data['unlockedAt'] != null) {
+        unlocks[doc.id] = (data['unlockedAt'] as Timestamp).toDate();
+      }
+    }
+    return unlocks;
+  });
+});
+
+/// ── 💡 生データと実績マスタをマージして、UI用の【厳選10種】の実績リストに仕立てるProvider ──
 final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((ref) {
-  // 生データを監視
+  // 生データと解放状況を監視
   final statsAsync = ref.watch(userStatsProvider);
   final stats = statsAsync.value ?? {};
+  
+  final unlocksAsync = ref.watch(userAchievementsProvider);
+  final unlocks = unlocksAsync.value ?? {};
 
   return [
+    // ── 【冒険の始まり】 ──
+    AchievementModel(
+      id: 'first_adventure',
+      title: '冒険者の第一歩',
+      description: '初めての冒険を完了した。ここからあなたの物語が始まる。',
+      currentCount: unlocks.containsKey('first_adventure') ? 1.0 : 0.0,
+      copperValue: 1.0,
+      silverValue: 1.0,
+      goldValue: 1.0,
+      unit: '回',
+      unlockedAt: unlocks['first_adventure'],
+    ),
     // ── 【移動・継続】 ──
     AchievementModel(
       id: 'shoyo_mujin',
@@ -34,6 +74,7 @@ final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((re
       silverValue: 15.0,
       goldValue: 50.0,
       unit: 'km',
+      unlockedAt: unlocks['shoyo_mujin'],
     ),
     AchievementModel(
       id: 'manyu_sokyu',
