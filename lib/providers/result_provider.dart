@@ -1,17 +1,13 @@
 // lib/providers/result_provider.dart
 
 import 'dart:async';
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/result_model.dart';
 import '../models/adventure_history_model.dart';
 import '../models/fragment_model.dart';
-import '../models/spot_model.dart';
-import '../repositories/history_repository.dart';
 import '../repositories/fragment_repository.dart';
-import '../repositories/user_repository.dart';
 import '../utils/exp_utils.dart';
 import '../utils/fragment_lottery.dart';
 import 'auth_provider.dart';
@@ -346,6 +342,8 @@ class ResultNotifier extends Notifier<ResultState> {
 
     state = ResultState(
       isLoading: false,
+      isSaved: false,
+      rewardClaimed: false,
       result: result,
       newAchievementIds: newlyUnlockedAchievementIds,
     );
