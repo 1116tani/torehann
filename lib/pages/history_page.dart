@@ -98,7 +98,10 @@ class HistoryPage extends ConsumerWidget {
                           onTap: () {
                             context.go(
                               AppRoutes.result,
-                              extra: {'isFromHistory': true},
+                              extra: {
+                                'isFromHistory': true,
+                                'history': history,
+                              },
                             );
                           },
                         );

@@ -29,6 +29,10 @@ class FragmentGridItem extends StatelessWidget {
     final colors = AppColors.of(context);
     final rarityColor = _getRarityColor(context);
 
+    final String displayName = !item.isUnlocked
+        ? (item.rarity == FragmentRarity.legend ? '？？？？？？？' : '？？？')
+        : item.name;
+
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -58,9 +62,9 @@ class FragmentGridItem extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 🏷️ アイテム名（未取得なら ？？？ 表示）
+                  // 🏷️ アイテム名
                   Text(
-                    item.isUnlocked ? item.name : '？？？',
+                    displayName,
                     style: TextStyle(
                       color: item.isUnlocked ? rarityColor : colors.textMuted,
                       fontSize: 22,
@@ -81,21 +85,22 @@ class FragmentGridItem extends StatelessWidget {
                   // 💡 段階解放テキスト部分
                   if (!item.isUnlocked) ...[
                     // 未取得時のメッセージ
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: Text(
-                        item.rarity == FragmentRarity.rare
-                            ? 'まだ見ぬ街の記憶。どうやら「${item.conditionHint}」の近くで気配を感じるようだ……。'
-                            : 'まだ見ぬ日常の断片。街を歩き回ることで、ふと見つかるかもしれない。',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: colors.textMuted,
-                          fontSize: 14,
-                          height: 1.5,
-                          fontStyle: FontStyle.italic,
+                    if (item.rarity != FragmentRarity.legend)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(
+                          item.rarity == FragmentRarity.rare
+                              ? 'まだ見ぬ街の記憶。どうやら「${item.conditionHint}」の近くで気配を感じるようだ……。'
+                              : 'まだ見ぬ日常の断片。街を歩き回ることで、ふと見つかるかもしれない。',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: colors.textMuted,
+                            fontSize: 14,
+                            height: 1.5,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       ),
-                    ),
                   ] else ...[
                     // 解放済みの時の段階テキスト表示
                     ...List.generate(item.descriptions.length, (index) {
@@ -107,11 +112,14 @@ class FragmentGridItem extends StatelessWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // 🔓 / 🔒 アイコンの表示
-                            Icon(
-                              isUnlocked ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
-                              color: isUnlocked ? rarityColor : colors.textDisabled,
-                              size: 16,
+                            // LvX 🔓 or LvX 🔒 の表示
+                            Text(
+                              'Lv${index + 1} ${isUnlocked ? '🔓' : '🔒'}',
+                              style: TextStyle(
+                                color: isUnlocked ? rarityColor : colors.textDisabled,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -119,7 +127,7 @@ class FragmentGridItem extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    isUnlocked ? item.descriptions[index] : '？？？？？？',
+                                    isUnlocked ? item.descriptions[index] : '？？？',
                                     style: TextStyle(
                                       color: isUnlocked ? colors.textPrimary : colors.textDisabled,
                                       fontSize: 14,
@@ -147,7 +155,7 @@ class FragmentGridItem extends StatelessWidget {
                     }),
                   ],
                   const SizedBox(height: 16),
-                  
+
                   // 🚪 閉じるボタン
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -186,9 +194,27 @@ class FragmentGridItem extends StatelessWidget {
         style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold),
       );
     }
-    return Text(
-      '収集状況: ${item.progressString} （総所持数: ${item.currentCount}個）',
-      style: TextStyle(color: colors.secondary, fontSize: 13),
+
+    int unlockedStages = 0;
+    for (int i = 0; i < item.thresholds.length; i++) {
+      if (item.isStageUnlocked(i)) {
+        unlockedStages++;
+      }
+    }
+    final totalStages = item.thresholds.length;
+
+    return Column(
+      children: [
+        Text(
+          '収集状況: ${item.progressString} （総所持数: ${item.currentCount}個）',
+          style: TextStyle(color: colors.secondary, fontSize: 13),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '進捗 $unlockedStages / $totalStages',
+          style: TextStyle(color: colors.primary, fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+      ],
     );
   }
 
@@ -196,6 +222,10 @@ class FragmentGridItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     final rarityColor = _getRarityColor(context);
+
+    final String displayName = !item.isUnlocked
+        ? (item.rarity == FragmentRarity.legend ? '？？？？？？？' : '？？？')
+        : item.name;
 
     return GestureDetector(
       onTap: () => _showItemDetails(context),
@@ -219,11 +249,11 @@ class FragmentGridItem extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // 💎 中央のアイコン
+            // 💎 中央のアイコン（未取得時はダークなシルエット）
             Center(
               child: Icon(
-                item.isUnlocked ? Icons.diamond_outlined : Icons.question_mark_rounded,
-                color: rarityColor.withValues(alpha: item.isUnlocked ? 1.0 : 0.2),
+                item.isUnlocked ? Icons.diamond_outlined : Icons.diamond,
+                color: item.isUnlocked ? rarityColor : const Color(0xFF2C251E),
                 size: 36,
               ),
             ),
@@ -234,7 +264,7 @@ class FragmentGridItem extends StatelessWidget {
               left: 4,
               right: 4,
               child: Text(
-                item.isUnlocked ? item.name : '？？？',
+                displayName,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: item.isUnlocked ? colors.textPrimary : colors.textDisabled,

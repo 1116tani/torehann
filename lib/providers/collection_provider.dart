@@ -2,51 +2,26 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/fragment_model.dart';
+import '../repositories/fragment_repository.dart';
+import 'auth_provider.dart';
 
-/// ── 💡 ユーザーのFirestore所持データ（スタック数）をシミュレートするProvider ──
-/// 本番は `StreamProvider` などで `List<FragmentModel>` をFirestoreから取得してね！
-final userInventoryProvider = Provider.autoDispose<Map<String, FragmentModel>>((ref) {
-  // テストしやすいように、いくつか持っている状態にしておく
-  final now = DateTime.now();
-  return {
-    'item_01': FragmentModel(
-      id: 'user_frag_01',
-      itemMasterId: 'item_01',
-      stackCount: 4, // 始まりの木の枝を4つ（ノーマル：段階2まで解放！）
-      rarity: FragmentRarity.normal,
-      locationName: 'いつもの中央公園',
-      collectedAt: now,
-    ),
-    'item_03': FragmentModel(
-      id: 'user_frag_03',
-      itemMasterId: 'item_03',
-      stackCount: 1, // 迷い鳥の羽を1つ
-      rarity: FragmentRarity.normal,
-      locationName: '通学路の並木道',
-      collectedAt: now,
-    ),
-    'item_10': FragmentModel(
-      id: 'user_frag_10',
-      itemMasterId: 'item_10',
-      stackCount: 2, // カフェのスタンプカードを2つ（レア：段階2まで解放！）
-      rarity: FragmentRarity.rare,
-      locationName: '坂の上の純喫茶',
-      collectedAt: now,
-    ),
-    'item_15': FragmentModel(
-      id: 'user_frag_15',
-      itemMasterId: 'item_15',
-      stackCount: 1, // 絆の編纂珠（レジェンド解放！）
-      rarity: FragmentRarity.legend,
-      locationName: '冒険の終着点',
-      collectedAt: now,
-    ),
-  };
+final fragmentRepositoryProvider = Provider<FragmentRepository>((ref) {
+  return FragmentRepository();
+});
+
+/// ── 💡 ユーザーのFirestore所持データ（スタック数）を監視するStreamProvider ──
+final userInventoryProvider = StreamProvider.autoDispose<Map<String, FragmentModel>>((ref) {
+  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final userId = user?.uid ?? 'dummy_user_123';
+  return ref.watch(fragmentRepositoryProvider).watchFragments(userId).map((list) {
+    return {for (final f in list) f.itemMasterId: f};
+  });
 });
 
 /// ── 💡 17種類の宝物マスタデータ＆ユーザーの所持状況を完全統合するProvider ──
 final collectionListProvider = Provider.autoDispose<List<CollectionItemUIModel>>((ref) {
-  final inventory = ref.watch(userInventoryProvider);
+  final inventoryAsync = ref.watch(userInventoryProvider);
+  final inventory = inventoryAsync.value ?? const <String, FragmentModel>{};
 
   // 17種類のテキストデータ！
   return [

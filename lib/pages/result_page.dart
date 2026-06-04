@@ -17,14 +17,17 @@ import '../providers/result_provider.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/settings_provider.dart';
 import '../router/route_names.dart';
+import '../models/adventure_history_model.dart';
 import '../utils/map_style_loader.dart';
 
 class ResultPage extends ConsumerStatefulWidget {
   final bool isFromHistory;
+  final AdventureHistoryModel? history;
 
   const ResultPage({
     super.key,
     this.isFromHistory = false,
+    this.history,
   });
 
   @override
@@ -38,6 +41,9 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.isFromHistory && widget.history != null) {
+        ref.read(resultProvider.notifier).initForHistory(widget.history!);
+      }
       final themeMode = ref.read(settingsProvider).themeMode;
       _loadMapStyle(themeMode);
     });

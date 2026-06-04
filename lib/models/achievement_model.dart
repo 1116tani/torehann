@@ -13,6 +13,7 @@ class AchievementModel {
   final double silverValue; // 銀の基準
   final double goldValue; // 金の基準
   final String unit; // 単位（km, 回, 個など）
+  final DateTime? unlockedAt; // 解除日時
 
   AchievementModel({
     required this.id,
@@ -23,7 +24,10 @@ class AchievementModel {
     required this.silverValue,
     required this.goldValue,
     required this.unit,
+    this.unlockedAt,
   });
+
+  bool get isUnlocked => unlockedAt != null;
 
   // 現在どのランクにいるかを判定するよ
   AchievementRank get currentRank {

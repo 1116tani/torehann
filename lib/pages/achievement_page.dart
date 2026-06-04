@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../constants/app_colors.dart';
-import '../../models/achievement_model.dart';
 import '../../providers/achievement_provider.dart';
 import '../../widgets/achievement/achievement_card.dart';
 import '../widgets/common/custom_header.dart';
@@ -21,10 +20,7 @@ class AchievementPage extends ConsumerWidget {
     );
 
     final earnedCount = achievements
-        .where(
-          (a) =>
-              a.currentRank != AchievementRank.none,
-        )
+        .where((a) => a.isUnlocked)
         .length;
 
     return Scaffold(

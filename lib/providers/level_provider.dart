@@ -3,6 +3,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../utils/exp_utils.dart';
 import '../models/rank_definition.dart';
+import '../models/user_model.dart';
+import 'auth_provider.dart';
 
 // ─────────────────────────────────────────
 // レベル状態モデル
@@ -68,12 +70,32 @@ class LevelCalculator {
 }
 
 // ─────────────────────────────────────────
+// UserModel Stream Provider
+// ─────────────────────────────────────────
+final userModelProvider = StreamProvider.autoDispose<UserModel?>((ref) {
+  final user = ref.watch(firebaseAuthProvider).currentUser;
+  if (user == null) return Stream.value(null);
+  return ref.watch(userRepositoryProvider).watchUser(user.uid);
+});
+
+// ─────────────────────────────────────────
 // Notifier
 // ─────────────────────────────────────────
 class LevelNotifier extends Notifier<LevelState> {
   @override
   LevelState build() {
-    // 初期値: 総XP = 0（認証後に loadFromXp で更新する想定）
+    final user = ref.watch(firebaseAuthProvider).currentUser;
+    if (user != null) {
+      ref.listen(userModelProvider, (previous, next) {
+        if (next.hasValue && next.value != null) {
+          state = LevelCalculator.fromTotalXp(next.value!.exp);
+        }
+      });
+      final initialVal = ref.read(userModelProvider).value;
+      if (initialVal != null) {
+        return LevelCalculator.fromTotalXp(initialVal.exp);
+      }
+    }
     return LevelCalculator.fromTotalXp(0);
   }
 

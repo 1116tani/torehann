@@ -10,6 +10,7 @@ import '../pages/party/party_mode_page.dart';
 import '../pages/party/party_host_page.dart';
 import '../pages/party/party_join_page.dart';
 
+import '../models/adventure_history_model.dart';
 import 'route_names.dart';
 
 final adventureRoutes = [
@@ -33,8 +34,12 @@ final adventureRoutes = [
     builder: (context, state) {
       final extra = state.extra as Map<String, dynamic>?;
       final isFromHistoryExtra = extra?['isFromHistory'] as bool?;
+      final historyModel = extra?['history'] as AdventureHistoryModel?;
       final isFromHistoryQuery = state.uri.queryParameters['isFromHistory'] == 'true';
-      return ResultPage(isFromHistory: isFromHistoryExtra ?? isFromHistoryQuery);
+      return ResultPage(
+        isFromHistory: isFromHistoryExtra ?? isFromHistoryQuery,
+        history: historyModel,
+      );
     },
   ),
 
