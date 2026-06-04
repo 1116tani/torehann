@@ -18,33 +18,61 @@ final userStatsProvider = StreamProvider.autoDispose<Map<String, dynamic>>((ref)
       .map((doc) => doc.data() ?? {});
 });
 
-/// ── 💡 生データと実績マスタをマージして、UI用の【厳選9種】の実績リストに仕立てるProvider ──
+/// ── 💡 実績の解放状況をFirestoreから引いてくるStreamProvider ──
+final userAchievementsProvider = StreamProvider.autoDispose<Map<String, DateTime>>((ref) {
+  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final userId = user?.uid ?? 'dummy_user_123';
+
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(userId)
+      .collection('achievements')
+      .snapshots()
+      .map((snapshot) {
+    final unlocks = <String, DateTime>{};
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      if (data['unlockedAt'] != null) {
+        unlocks[doc.id] = (data['unlockedAt'] as Timestamp).toDate();
+      }
+    }
+    return unlocks;
+  });
+});
+
+/// ── 💡 生データと実績マスタをマージして、UI用の【厳選10種】の実績リストに仕立てるProvider ──
 final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((ref) {
-  // 生データを監視
+  // 生データと解放状況を監視
   final statsAsync = ref.watch(userStatsProvider);
   final stats = statsAsync.value ?? {};
-  final unlockedMap = stats['unlockedAchievements'] as Map<String, dynamic>? ?? {};
-
-  DateTime? getUnlockDate(String id) {
-    final val = unlockedMap[id];
-    if (val == null) return null;
-    if (val is Timestamp) return val.toDate();
-    if (val is String) return DateTime.tryParse(val);
-    return null;
-  }
+  
+  final unlocksAsync = ref.watch(userAchievementsProvider);
+  final unlocks = unlocksAsync.value ?? {};
 
   return [
+    // ── 【冒険の始まり】 ──
+    AchievementModel(
+      id: 'first_adventure',
+      title: '冒険者の第一歩',
+      description: '初めての冒険を完了した。ここからあなたの物語が始まる。',
+      currentCount: unlocks.containsKey('first_adventure') ? 1.0 : 0.0,
+      copperValue: 1.0,
+      silverValue: 1.0,
+      goldValue: 1.0,
+      unit: '回',
+      unlockedAt: unlocks['first_adventure'],
+    ),
     // ── 【移動・継続】 ──
     AchievementModel(
       id: 'shoyo_mujin',
       title: '逍遥無尽（しょうようむじん）',
-      description: '歩いた距離は、地図に残る。1kmも、50kmも、あなたの足が実際にそこを踏んだという事実は消えない。',
+      description: '歩いた距離は、地図に残る。1kmも、50kmも、あなたの足が実際にそこを踏んだという事事実消えない。',
       currentCount: (stats['totalDistance'] ?? 0.0).toDouble(),
       copperValue: 1.0,
       silverValue: 15.0,
       goldValue: 50.0,
       unit: 'km',
-      unlockedAt: getUnlockDate('shoyo_mujin'),
+      unlockedAt: unlocks['shoyo_mujin'],
     ),
     AchievementModel(
       id: 'manyu_sokyu',
@@ -55,7 +83,7 @@ final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((re
       silverValue: 10.0,
       goldValue: 30.0,
       unit: '回',
-      unlockedAt: getUnlockDate('manyu_sokyu'),
+      unlockedAt: unlocks['manyu_sokyu'],
     ),
     AchievementModel(
       id: 'remmen_fuzetsu',
@@ -66,7 +94,7 @@ final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((re
       silverValue: 15.0,
       goldValue: 50.0,
       unit: '日',
-      unlockedAt: getUnlockDate('remmen_fuzetsu'),
+      unlockedAt: unlocks['remmen_fuzetsu'],
     ),
 
     // ── 【寄り道・探索】 ──
@@ -79,7 +107,7 @@ final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((re
       silverValue: 10.0,
       goldValue: 30.0,
       unit: '回',
-      unlockedAt: getUnlockDate('itsuro_tankyu'),
+      unlockedAt: unlocks['itsuro_tankyu'],
     ),
     AchievementModel(
       id: 'ukai_mukyu',
@@ -90,7 +118,7 @@ final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((re
       silverValue: 15.0,
       goldValue: 40.0,
       unit: '回',
-      unlockedAt: getUnlockDate('ukai_mukyu'),
+      unlockedAt: unlocks['ukai_mukyu'],
     ),
     AchievementModel(
       id: 'dokuo_danko',
@@ -101,7 +129,7 @@ final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((re
       silverValue: 5.0,
       goldValue: 15.0,
       unit: '回',
-      unlockedAt: getUnlockDate('dokuo_danko'),
+      unlockedAt: unlocks['dokuo_danko'],
     ),
 
     // ── 【コレクション】 ──
@@ -114,7 +142,7 @@ final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((re
       silverValue: 6.0,
       goldValue: 12.0,
       unit: '種',
-      unlockedAt: getUnlockDate('shushu_temmo'),
+      unlockedAt: unlocks['shushu_temmo'],
     ),
     AchievementModel(
       id: 'tsuioku_hensan',
@@ -125,7 +153,7 @@ final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((re
       silverValue: 3.0,
       goldValue: 6.0,
       unit: '種',
-      unlockedAt: getUnlockDate('tsuioku_hensan'),
+      unlockedAt: unlocks['tsuioku_hensan'],
     ),
     AchievementModel(
       id: 'saikei_setsuna',
@@ -136,7 +164,7 @@ final achievementListProvider = Provider.autoDispose<List<AchievementModel>>((re
       silverValue: 5.0,
       goldValue: 10.0,
       unit: '枚',
-      unlockedAt: getUnlockDate('saikei_setsuna'),
+      unlockedAt: unlocks['saikei_setsuna'],
     ),
   ];
 });

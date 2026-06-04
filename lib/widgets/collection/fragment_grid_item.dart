@@ -28,9 +28,10 @@ class FragmentGridItem extends StatelessWidget {
   void _showItemDetails(BuildContext context) {
     final colors = AppColors.of(context);
     final rarityColor = _getRarityColor(context);
+    final isLegend = item.rarity == FragmentRarity.legend;
 
     final String displayName = !item.isUnlocked
-        ? (item.rarity == FragmentRarity.legend ? '？？？？？？？' : '？？？')
+        ? (isLegend ? '？？？？？？？' : '？？？')
         : item.name;
 
     showGeneralDialog(
@@ -85,7 +86,7 @@ class FragmentGridItem extends StatelessWidget {
                   // 💡 段階解放テキスト部分
                   if (!item.isUnlocked) ...[
                     // 未取得時のメッセージ
-                    if (item.rarity != FragmentRarity.legend)
+                    if (!isLegend) // レジェンド未取得時は説明非表示
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 24),
                         child: Text(
@@ -222,9 +223,10 @@ class FragmentGridItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     final rarityColor = _getRarityColor(context);
+    final isLegend = item.rarity == FragmentRarity.legend;
 
     final String displayName = !item.isUnlocked
-        ? (item.rarity == FragmentRarity.legend ? '？？？？？？？' : '？？？')
+        ? (isLegend ? '？？？？？？？' : '？？？')
         : item.name;
 
     return GestureDetector(
@@ -249,11 +251,15 @@ class FragmentGridItem extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // 💎 中央のアイコン（未取得時はダークなシルエット）
+            // 💎 中央のアイコン（未取得はシルエット風）
             Center(
               child: Icon(
-                item.isUnlocked ? Icons.diamond_outlined : Icons.diamond,
-                color: item.isUnlocked ? rarityColor : const Color(0xFF2C251E),
+                item.isUnlocked
+                    ? (isLegend ? Icons.stars_rounded : Icons.auto_stories_rounded)
+                    : (isLegend ? Icons.stars_rounded : Icons.auto_stories_rounded),
+                color: item.isUnlocked
+                    ? rarityColor
+                    : colors.textDisabled.withValues(alpha: 0.3),
                 size: 36,
               ),
             ),

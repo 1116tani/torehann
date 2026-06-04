@@ -13,7 +13,7 @@ class AchievementModel {
   final double silverValue; // 銀の基準
   final double goldValue; // 金の基準
   final String unit; // 単位（km, 回, 個など）
-  final DateTime? unlockedAt; // 解除日時
+  final DateTime? unlockedAt; // 解放日時
 
   AchievementModel({
     required this.id,
@@ -27,8 +27,6 @@ class AchievementModel {
     this.unlockedAt,
   });
 
-  bool get isUnlocked => unlockedAt != null;
-
   // 現在どのランクにいるかを判定するよ
   AchievementRank get currentRank {
     if (currentCount >= goldValue) return AchievementRank.gold;
@@ -36,6 +34,8 @@ class AchievementModel {
     if (currentCount >= copperValue) return AchievementRank.copper;
     return AchievementRank.none;
   }
+
+  bool get isUnlocked => unlockedAt != null;
 
   // 次の目標値を設定するよ
   double get nextThreshold {
@@ -55,5 +55,29 @@ class AchievementModel {
   double get progressRatio {
     if (currentCount >= goldValue) return 1.0;
     return (currentCount / nextThreshold).clamp(0.0, 1.0);
+  }
+
+  AchievementModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    double? currentCount,
+    double? copperValue,
+    double? silverValue,
+    double? goldValue,
+    String? unit,
+    DateTime? unlockedAt,
+  }) {
+    return AchievementModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      currentCount: currentCount ?? this.currentCount,
+      copperValue: copperValue ?? this.copperValue,
+      silverValue: silverValue ?? this.silverValue,
+      goldValue: goldValue ?? this.goldValue,
+      unit: unit ?? this.unit,
+      unlockedAt: unlockedAt ?? this.unlockedAt,
+    );
   }
 }

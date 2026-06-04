@@ -1,6 +1,7 @@
 // lib/widgets/achievement/achievement_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../constants/app_colors.dart';
 import '../../models/achievement_model.dart';
 
@@ -15,6 +16,8 @@ class AchievementCard extends StatelessWidget {
   // ── 🎁 詳細ダイアログを表示する関数 ──
   void _showAchievementDetail(BuildContext context, bool isUnearned) {
     final colors = AppColors.of(context);
+    final dateFormat = DateFormat('yyyy/MM/dd');
+
     showDialog(
       context: context,
       builder: (context) {
@@ -22,7 +25,7 @@ class AchievementCard extends StatelessWidget {
           backgroundColor: colors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: colors.primary, width: 1.5), // 金の縁取り
+            side: BorderSide(color: colors.primary, width: 1.5),
           ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -55,6 +58,17 @@ class AchievementCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                if (!isUnearned && achievement.unlockedAt != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '${dateFormat.format(achievement.unlockedAt!)} 解除',
+                    style: TextStyle(
+                      color: colors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 Divider(color: colors.divider, thickness: 1),
                 const SizedBox(height: 10),
@@ -81,17 +95,6 @@ class AchievementCard extends StatelessWidget {
                     height: 1.5,
                   ),
                 ),
-                if (!isUnearned && achievement.unlockedAt != null) ...[
-                  const SizedBox(height: 14),
-                  Text(
-                    '解除日: ${achievement.unlockedAt!.year}/${achievement.unlockedAt!.month.toString().padLeft(2, '0')}/${achievement.unlockedAt!.day.toString().padLeft(2, '0')}',
-                    style: const TextStyle(
-                      color: Color(0xFFE5A93C),
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
                 const SizedBox(height: 24),
                 // 閉じるボタン
                 SizedBox(
@@ -145,8 +148,8 @@ class AchievementCard extends StatelessWidget {
           medalText = '金';
           break;
         case AchievementRank.none:
-          medalColor = const Color(0xFFCD7F32); // 銅をデフォルトに
-          medalText = '銅';
+          medalColor = const Color(0xFF6B6B6B);
+          medalText = '🔒';
           break;
       }
     }

@@ -1,5 +1,8 @@
 // lib/models/result_model.dart
 
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'fragment_model.dart';
+
 class AdventureResult {
   // ── 基本情報 ──────────────────────────
   final String id;
@@ -25,14 +28,18 @@ class AdventureResult {
 
   // ── 写真・マップ ─────────────────────
   final String routeMapImageUrl;
+  final List<LatLng> routePoints; // 👈 軌跡保存用に追加
   final List<ResultPhoto> photos;
 
   // ── フレンド ─────────────────────────
   final List<ResultFriend> friends;
 
   // ── 獲得物・実績 ──────────────────────
-  final List<String> fragments;
-  final List<String> achievements;
+  final List<FragmentModel> obtainedFragments; // 👈 型を変更
+  final List<String> unlockedAchievements;
+
+  // ── 完了フラグ ───────────────────────
+  final bool isCompleted;
 
   const AdventureResult({
     required this.id,
@@ -50,25 +57,22 @@ class AdventureResult {
     required this.weather,
     required this.themeIcon,
     required this.routeMapImageUrl,
+    this.routePoints = const [],
     required this.photos,
     required this.friends,
-    required this.fragments,
-    required this.achievements,
+    required this.obtainedFragments,
+    required this.unlockedAchievements,
+    this.isCompleted = true,
   });
 
   // ── ダミーデータ生成用 ─────────────────
   factory AdventureResult.dummy() {
     return AdventureResult(
       id: 'result_001',
-
       title: '星灯りの古書街探索録',
-
       subTitle: '雨上がりの路地に眠る、静かな記憶を辿った。',
-
       completedAt: DateTime.now(),
-
-      aiStory:
-          '''
+      aiStory: '''
 雨の止んだ石畳には、
 まだ夜の気配が少し残っていた。
 
@@ -83,67 +87,50 @@ class AdventureResult {
 それでも確かに、
 今日だけの物語がそこにあった。
 ''',
-
       closingMessage: '「寄り道は、きっと無駄じゃない。」',
-
       distanceKm: 4.2,
-
       steps: 8421,
-
       calories: 221,
-
       durationMinutes: 68,
-
       fragmentCount: 3,
-
       expGained: 204,
-
       weather: '☔ 雨上がり',
-
       themeIcon: '📚',
-
-      routeMapImageUrl:
-          'https://images.unsplash.com/photo-1526772662000-3f88f10405ff',
-
+      routeMapImageUrl: 'https://images.unsplash.com/photo-1526772662000-3f88f10405ff',
+      routePoints: const [
+        LatLng(35.681236, 139.767125),
+        LatLng(35.683236, 139.769125),
+        LatLng(35.682236, 139.772125),
+        LatLng(35.680236, 139.774125),
+      ],
       photos: [
         ResultPhoto(
-          imageUrl:
-              'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee',
+          imageUrl: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee',
           caption: '古いランプが静かに灯っていた。',
         ),
-
         ResultPhoto(
-          imageUrl:
-              'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
+          imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085',
           caption: '雨上がりのパン屋から、甘い香りがした。',
         ),
-
         ResultPhoto(
-          imageUrl:
-              'https://images.unsplash.com/photo-1511920170033-f8396924c348',
+          imageUrl: 'https://images.unsplash.com/photo-1511920170033-f8396924c348',
           caption: '最後に立ち寄った小さな喫茶店。',
         ),
       ],
-
       friends: const [
-        ResultFriend(
-          id: 'friend_001',
-          name: 'ユナ',
-        ),
-
-        ResultFriend(
-          id: 'friend_002',
-          name: 'レオ',
+        ResultFriend(id: 'friend_001', name: 'ユナ'),
+        ResultFriend(id: 'friend_002', name: 'レオ'),
+      ],
+      obtainedFragments: [
+        FragmentModel(
+          id: 'frag_001',
+          itemMasterId: 'item_01',
+          rarity: FragmentRarity.normal,
+          locationName: '星灯りの古書街',
+          collectedAt: DateTime.now(),
         ),
       ],
-
-      fragments: const [
-        '風の記憶',
-        '水鏡のささやき',
-        '黄金の砂時計',
-      ],
-
-      achievements: const [
+      unlockedAchievements: const [
         '初めての冒険',
         '総歩行距離5km',
       ],

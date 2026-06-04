@@ -2,15 +2,18 @@
 
 import 'dart:async';
 import 'dart:math';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/result_model.dart';
 import '../models/adventure_history_model.dart';
 import '../models/fragment_model.dart';
 import '../models/spot_model.dart';
 import '../repositories/history_repository.dart';
 import '../repositories/fragment_repository.dart';
+import '../repositories/user_repository.dart';
 import '../utils/exp_utils.dart';
+import '../utils/fragment_lottery.dart';
 import 'auth_provider.dart';
 import 'navigation_provider.dart';
 import 'history_provider.dart';
@@ -25,12 +28,14 @@ class ResultState {
   final bool rewardClaimed;
   final bool isSaved;
   final AdventureResult? result;
+  final List<String> newAchievementIds;
 
   const ResultState({
     required this.isLoading,
     required this.rewardClaimed,
     required this.isSaved,
     required this.result,
+    this.newAchievementIds = const [],
   });
 
   factory ResultState.initial() {
@@ -39,6 +44,7 @@ class ResultState {
       rewardClaimed: false,
       isSaved: false,
       result: null,
+      newAchievementIds: [],
     );
   }
 
@@ -47,12 +53,14 @@ class ResultState {
     bool? rewardClaimed,
     bool? isSaved,
     AdventureResult? result,
+    List<String>? newAchievementIds,
   }) {
     return ResultState(
       isLoading: isLoading ?? this.isLoading,
       rewardClaimed: rewardClaimed ?? this.rewardClaimed,
       isSaved: isSaved ?? this.isSaved,
       result: result ?? this.result,
+      newAchievementIds: newAchievementIds ?? this.newAchievementIds,
     );
   }
 }
@@ -61,10 +69,9 @@ class ResultState {
 // 🎮 Provider
 // ─────────────────────────────────────
 
-final resultProvider =
-    NotifierProvider<ResultNotifier, ResultState>(
-      ResultNotifier.new,
-    );
+final resultProvider = NotifierProvider<ResultNotifier, ResultState>(
+  ResultNotifier.new,
+);
 
 // ─────────────────────────────────────
 // 🗺️ Constants & Helpers for Fragments
@@ -102,11 +109,11 @@ const Map<String, String> fragmentMasterNames = {
   'item_10': 'カフェのスタンプカード',
   'item_11': '黄昏の硝子玉',
   'item_12': '雨粒の小瓶',
-  'item_13': '商店街 of 福引券',
+  'item_13': '商店街の福引券',
   'item_14': '公園の夕暮れ石',
-  'item_15': '絆の編纂珠',
-  'item_16': '境界のスマートフォン',
-  'item_17': 'この街の記憶地図',
+  'item_15': '始まりの木の伝説',
+  'item_16': '黄金の羅針盤',
+  'item_17': '古の冒険者の日誌',
 };
 
 const Map<String, FragmentRarity> fragmentMasterRarities = {
@@ -136,8 +143,6 @@ const Map<String, FragmentRarity> fragmentMasterRarities = {
 class ResultNotifier extends Notifier<ResultState> {
   @override
   ResultState build() {
-    // 💡 初期化時にリザルトを読み込む
-    Future.microtask(() => loadResult());
     return ResultState.initial();
   }
 
@@ -152,18 +157,19 @@ class ResultNotifier extends Notifier<ResultState> {
       aiStory: history.aiReport,
       closingMessage: '「寄り道は、きっと無駄じゃない。」',
       distanceKm: history.distanceKm,
-      steps: (history.distanceKm * 1400).round(), // 1kmあたり約1400歩換算
-      calories: ((history.distanceKm * 1400) * 0.04).round(),
+      steps: history.steps > 0 ? history.steps : (history.distanceKm * 1400).round(), // 1kmあたり約1400歩換算
+      calories: ((history.steps > 0 ? history.steps : (history.distanceKm * 1400).round()) * 0.04).round(),
       durationMinutes: history.durationMinutes,
-      fragmentCount: history.fragments.length,
-      expGained: history.fragments.length * 50 + 100,
+      fragmentCount: history.obtainedFragments.length,
+      expGained: history.expGained,
       weather: history.weather,
       themeIcon: history.themeIcon,
       routeMapImageUrl: 'https://images.unsplash.com/photo-1526772662000-3f88f10405ff',
+      routePoints: history.routePoints,
       photos: history.imageUrls.map((url) => ResultPhoto(imageUrl: url, caption: '冒険中に撮影した景色')).toList(),
       friends: const [],
-      fragments: history.fragments,
-      achievements: const [], // 過去実績はブランク
+      obtainedFragments: history.obtainedFragments,
+      unlockedAchievements: history.unlockedAchievements,
     );
 
     state = ResultState(
@@ -174,19 +180,21 @@ class ResultNotifier extends Notifier<ResultState> {
     );
   }
 
-  // ── 新規リザルト生成＆自動保存 ───────
-  Future<void> loadResult() async {
-    if (state.isSaved || state.isLoading) return;
+  // ── 履歴からセット ───────────────────
+  void setResult(AdventureResult result) {
+    state = state.copyWith(result: result, isSaved: true, rewardClaimed: true);
+  }
 
+  // ── リザルト生成 ────────────────────
+  Future<void> generateResult() async {
     state = state.copyWith(isLoading: true);
 
-    // 💡 ロード演出用の少しの待ち時間
-    await Future.delayed(const Duration(milliseconds: 800));
+    // AIの生成待ちをシミュレート
+    await Future.delayed(const Duration(milliseconds: 1500));
 
     final navState = ref.read(navigationProvider);
     final baseDummy = AdventureResult.dummy();
 
-    // 冒険中かどうかのチェック
     final bool hasActiveAdventure = navState.isAdventureStarted || navState.walkedDistanceKm > 0;
 
     final actualDistance = hasActiveAdventure ? navState.walkedDistanceKm : baseDummy.distanceKm;
@@ -205,134 +213,41 @@ class ResultNotifier extends Notifier<ResultState> {
     final user = ref.read(firebaseAuthProvider).currentUser;
     final userId = user?.uid ?? 'dummy_user_123';
 
-    // 1. 獲得する断片の決定
-    final List<String> earnedFragmentIds = [];
-    final List<String> earnedFragmentNames = [];
-    final routeSpots = navState.currentRoute?.generatedSpots ?? [];
-    final random = Random();
+    // 軌跡データの取得（本番はLocationProviderなどから）
+    final routePoints = navState.currentRoute?.generatedSpots
+            .map((s) => LatLng(s.lat, s.lng))
+            .toList() ??
+        baseDummy.routePoints;
 
+    // 街の断片の抽選
+    final List<FragmentModel> obtainedFragments;
     if (hasActiveAdventure) {
-      for (final spotId in navState.visitedSpotIds) {
-        final spot = routeSpots.firstWhere(
-          (s) => s.id == spotId,
-          orElse: () => SpotModel(id: spotId, lat: 0, lng: 0, name: '未知のスポット'),
-        );
-        String? matchedMasterId;
-        for (final entry in categoryToFragmentId.entries) {
-          if (spot.category.contains(entry.key)) {
-            matchedMasterId = entry.value;
-            break;
-          }
-        }
-        // 夕方17時以降なら30%の確率で黄昏の硝子玉を付与
-        if (matchedMasterId == null && DateTime.now().hour >= 17 && random.nextDouble() < 0.3) {
-          matchedMasterId = 'item_11';
-        }
-        // マッチしなければノーマル(item_01~item_06)からランダム
-        if (matchedMasterId == null) {
-          final idx = random.nextInt(6) + 1;
-          matchedMasterId = 'item_0$idx';
-        }
+      final routeSpots = navState.currentRoute?.generatedSpots ?? [];
+      final visitedSpots = routeSpots.where((s) => navState.visitedSpotIds.contains(s.id)).toList();
+      final visitedSpotCategories = visitedSpots.map((s) => s.category).toList();
+      final lastLocationName = visitedSpots.isNotEmpty ? visitedSpots.last.name : '街のどこか';
 
-        earnedFragmentIds.add(matchedMasterId);
-        earnedFragmentNames.add(fragmentMasterNames[matchedMasterId] ?? '日常の断片');
-      }
-
-      // 長距離（5km以上）または訪問スポット3個以上なら15%の確率でレジェンド断片付与
-      if ((actualDistance >= 5.0 || navState.visitedSpotIds.length >= 3) && random.nextDouble() < 0.15) {
-        final idx = random.nextInt(3) + 15; // item_15, 16, 17
-        earnedFragmentIds.add('item_$idx');
-        earnedFragmentNames.add(fragmentMasterNames['item_$idx'] ?? '伝説の断片');
-      }
+      obtainedFragments = FragmentLottery.draw(
+        weather: '晴れ', // TODO: WeatherProviderから
+        time: DateTime.now(),
+        visitedSpotCategories: visitedSpotCategories,
+        lastLocationName: lastLocationName,
+      );
     } else {
-      // 非アクティブ（デモ画面）の場合はダミー断片
-      earnedFragmentNames.addAll(baseDummy.fragments);
+      obtainedFragments = baseDummy.obtainedFragments;
     }
 
     final int earnedExp = hasActiveAdventure ? (navState.visitedSpotIds.length * 50 + 100) : baseDummy.expGained;
     final List<String> newlyUnlockedAchievementTitles = [];
+    final List<String> newlyUnlockedAchievementIds = [];
 
-    // 2. Firestore自動保存処理
     if (hasActiveAdventure) {
       try {
-        // A. ユーザー経験値＆レベル更新
-        final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
-        final userSnapshot = await userDocRef.get();
-        int currentExp = 0;
-        if (userSnapshot.exists) {
-          currentExp = (userSnapshot.data()?['exp'] as num?)?.toInt() ?? 0;
-        }
-        final newExp = currentExp + earnedExp;
-        final newLevel = ExpUtils.getLevelFromXp(newExp);
-
-        await userDocRef.set({
-          'exp': newExp,
-          'level': newLevel,
-          'rank': ExpUtils.getRank(newLevel).nameJa,
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-
-        // B. 履歴データ保存
-        final history = AdventureHistoryModel(
-          id: baseDummy.id + '_${DateTime.now().millisecondsSinceEpoch}',
-          createdAt: DateTime.now(),
-          title: navState.currentRoute?.themeName ?? '日常の散歩',
-          themeName: navState.currentRoute?.themeName ?? 'ノーマル',
-          themeDescription: navState.currentRoute?.themeDescription ?? '',
-          themeIcon: baseDummy.themeIcon,
-          weather: '晴れ',
-          aiReport: baseDummy.aiStory,
-          distanceKm: actualDistance,
-          durationMinutes: durationMin > 0 ? durationMin : 1,
-          isCompleted: true,
-          imageUrls: actualPhotos.map((p) => p.imageUrl).toList(),
-          fragments: earnedFragmentNames,
-          friendIds: const [],
-          tags: navState.currentRoute?.tags ?? [],
-        );
-        final HistoryRepository historyRepo = ref.read(historyRepositoryProvider);
-        await historyRepo.saveHistory(userId: userId, history: history);
-
-        // C. 街の断片コレクション更新
-        final FragmentRepository fragRepo = ref.read(fragmentRepositoryProvider);
-        final currentFragments = await fragRepo.fetchFragmentsMap(userId);
-
-        for (final itemMasterId in earnedFragmentIds) {
-          final existing = currentFragments[itemMasterId];
-          final locationName = routeSpots.firstWhere(
-            (s) => navState.visitedSpotIds.contains(s.id),
-            orElse: () => SpotModel(id: '', lat: 0, lng: 0, name: '街のどこか'),
-          ).name;
-
-          final updatedFrag = FragmentModel(
-            id: existing?.id ?? 'user_frag_${itemMasterId}_${DateTime.now().millisecondsSinceEpoch}',
-            itemMasterId: itemMasterId,
-            stackCount: (existing?.stackCount ?? 0) + 1,
-            rarity: fragmentMasterRarities[itemMasterId] ?? FragmentRarity.normal,
-            locationName: locationName,
-            collectedAt: existing?.collectedAt ?? DateTime.now(),
-          );
-          await fragRepo.saveFragment(userId, updatedFrag);
-          currentFragments[itemMasterId] = updatedFrag; // ローカル参照キャッシュも更新
-        }
-
-        // 統計値用のユニーク所持数・全解放数カウント
-        final uniqueFragmentsCount = currentFragments.keys.length;
-        int fullyUnlockedCount = 0;
-        for (final frag in currentFragments.values) {
-          final maxThreshold = frag.rarity == FragmentRarity.normal ? 5 : (frag.rarity == FragmentRarity.rare ? 3 : 1);
-          if (frag.stackCount >= maxThreshold) {
-            fullyUnlockedCount++;
-          }
-        }
-
-        // D. 実績＆統計データの更新
         final statsDocRef = FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
             .collection('stats')
             .doc('counters');
-
         final statsSnapshot = await statsDocRef.get();
         final statsData = statsSnapshot.data() ?? {};
 
@@ -340,33 +255,55 @@ class ResultNotifier extends Notifier<ResultState> {
         final int prevAdventures = (statsData['adventureCount'] ?? 0).toInt();
         final int prevSpotVisits = (statsData['spotVisitCount'] ?? 0).toInt();
         final int prevPhotos = (statsData['photoPinCount'] ?? 0).toInt();
+        final int prevLoginDays = (statsData['loginDaysCount'] ?? 0).toInt();
 
         final double newDistance = prevDistance + actualDistance;
         final int newAdventures = prevAdventures + 1;
         final int newSpotVisits = prevSpotVisits + navState.visitedSpotIds.length;
         final int newPhotos = prevPhotos + actualPhotos.length;
-        final int newLoginDays = (statsData['loginDaysCount'] ?? 0).toInt() + 1;
+        final int newLoginDays = prevLoginDays + 1;
 
-        final Map<String, dynamic> newStats = {
-          'totalDistance': newDistance,
-          'adventureCount': newAdventures,
-          'loginDaysCount': newLoginDays,
-          'spotVisitCount': newSpotVisits,
-          'photoPinCount': newPhotos,
-          'treasureKindsCount': uniqueFragmentsCount,
-          'fullyUnlockedFragmentsCount': fullyUnlockedCount,
-        };
+        final FragmentRepository fragRepo = ref.read(fragmentRepositoryProvider);
+        final currentFragments = await fragRepo.fetchFragmentsMap(userId);
 
-        // 解除チェック
-        final Map<String, dynamic> unlockedMap = Map<String, dynamic>.from(statsData['unlockedAchievements'] ?? {});
+        final Map<String, FragmentModel> tempFragments = Map.from(currentFragments);
+        for (final frag in obtainedFragments) {
+          final existing = tempFragments[frag.itemMasterId];
+          tempFragments[frag.itemMasterId] = FragmentModel(
+            id: existing?.id ?? frag.id,
+            itemMasterId: frag.itemMasterId,
+            stackCount: (existing?.stackCount ?? 0) + 1,
+            rarity: frag.rarity,
+            locationName: frag.locationName,
+            collectedAt: existing?.collectedAt ?? frag.collectedAt,
+          );
+        }
 
-        void checkUnlock(String id, String title, double current, double threshold) {
-          if (current >= threshold && !unlockedMap.containsKey(id)) {
-            unlockedMap[id] = DateTime.now().toIso8601String();
-            newlyUnlockedAchievementTitles.add(title);
+        final int uniqueFragmentsCount = tempFragments.keys.length;
+        int fullyUnlockedCount = 0;
+        for (final frag in tempFragments.values) {
+          final maxThreshold = frag.rarity == FragmentRarity.normal ? 5 : (frag.rarity == FragmentRarity.rare ? 3 : 1);
+          if (frag.stackCount >= maxThreshold) {
+            fullyUnlockedCount++;
           }
         }
 
+        // 解除状況の取得
+        final achievementsSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('achievements')
+            .get();
+        final Set<String> unlockedIds = achievementsSnapshot.docs.map((doc) => doc.id).toSet();
+
+        void checkUnlock(String id, String title, double current, double threshold) {
+          if (current >= threshold && !unlockedIds.contains(id)) {
+            newlyUnlockedAchievementTitles.add(title);
+            newlyUnlockedAchievementIds.add(id);
+          }
+        }
+
+        checkUnlock('first_adventure', '冒険者の第一歩', newAdventures.toDouble(), 1.0);
         checkUnlock('shoyo_mujin', '逍遥無尽', newDistance, 1.0);
         checkUnlock('manyu_sokyu', '漫遊蒼穹', newAdventures.toDouble(), 1.0);
         checkUnlock('remmen_fuzetsu', '連綿不絶', newLoginDays.toDouble(), 3.0);
@@ -377,16 +314,15 @@ class ResultNotifier extends Notifier<ResultState> {
         checkUnlock('tsuioku_hensan', '追憶編纂', fullyUnlockedCount.toDouble(), 1.0);
         checkUnlock('saikei_setsuna', '採景刹那', newPhotos.toDouble(), 1.0);
 
-        newStats['unlockedAchievements'] = unlockedMap;
-        await statsDocRef.set(newStats, SetOptions(merge: true));
-
       } catch (e) {
-        print('Error saving adventure results: $e');
+        print('Error checking achievements: $e');
       }
+    } else {
+      newlyUnlockedAchievementTitles.addAll(baseDummy.unlockedAchievements);
     }
 
-    final updatedResult = AdventureResult(
-      id: baseDummy.id + '_${DateTime.now().millisecondsSinceEpoch}',
+    final result = AdventureResult(
+      id: 'res_${DateTime.now().millisecondsSinceEpoch}',
       title: hasActiveAdventure ? (navState.currentRoute?.themeName ?? '日常の散歩') : baseDummy.title,
       subTitle: hasActiveAdventure ? (navState.currentRoute?.themeDescription ?? '新しい街角を見つける旅') : baseDummy.subTitle,
       completedAt: DateTime.now(),
@@ -396,23 +332,149 @@ class ResultNotifier extends Notifier<ResultState> {
       steps: actualSteps,
       calories: (actualSteps * 0.04).round(),
       durationMinutes: durationMin > 0 ? durationMin : 1,
-      fragmentCount: earnedFragmentNames.length,
+      fragmentCount: obtainedFragments.length,
       expGained: earnedExp,
-      weather: baseDummy.weather,
-      themeIcon: baseDummy.themeIcon,
+      weather: hasActiveAdventure ? '☀️ 晴天' : baseDummy.weather,
+      themeIcon: hasActiveAdventure ? '🗺️' : baseDummy.themeIcon,
       routeMapImageUrl: baseDummy.routeMapImageUrl,
+      routePoints: routePoints,
       photos: actualPhotos,
       friends: baseDummy.friends,
-      fragments: earnedFragmentNames,
-      achievements: newlyUnlockedAchievementTitles.isNotEmpty ? newlyUnlockedAchievementTitles : baseDummy.achievements,
+      obtainedFragments: obtainedFragments,
+      unlockedAchievements: newlyUnlockedAchievementTitles,
     );
 
     state = ResultState(
       isLoading: false,
-      rewardClaimed: true,
-      isSaved: true,
-      result: updatedResult,
+      result: result,
+      newAchievementIds: newlyUnlockedAchievementIds,
     );
+
+    if (hasActiveAdventure) {
+      await saveMemory();
+    } else {
+      state = state.copyWith(isSaved: true, rewardClaimed: true);
+    }
+  }
+
+  // ── 思い出保存 ─────────────────────
+  Future<void> saveMemory() async {
+    final res = state.result;
+    if (res == null || state.isSaved) return;
+
+    final user = ref.read(firebaseAuthProvider).currentUser;
+    if (user == null) return;
+    final userId = user.uid;
+
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final userRepo = ref.read(userRepositoryProvider);
+
+      // 1. 街の断片（インベントリ）更新
+      await userRepo.updateInventory(userId, res.obtainedFragments);
+
+      // 2. 統計データ（Stats）更新
+      final statsDocRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('stats')
+          .doc('counters');
+      final statsSnapshot = await statsDocRef.get();
+      final statsData = statsSnapshot.data() ?? {};
+
+      final double prevDistance = (statsData['totalDistance'] ?? 0.0).toDouble();
+      final int prevAdventures = (statsData['adventureCount'] ?? 0).toInt();
+      final int prevSpotVisits = (statsData['spotVisitCount'] ?? 0).toInt();
+      final int prevPhotos = (statsData['photoPinCount'] ?? 0).toInt();
+      final int prevLoginDays = (statsData['loginDaysCount'] ?? 0).toInt();
+      final int prevNewWay = (statsData['newWayCount'] ?? 0).toInt();
+
+      final double newDistance = prevDistance + res.distanceKm;
+      final int newAdventures = prevAdventures + 1;
+      final int newSpotVisits = prevSpotVisits + res.obtainedFragments.length;
+      final int newPhotos = prevPhotos + res.photos.length;
+      final int newLoginDays = prevLoginDays + 1;
+      final int newNewWay = prevNewWay + 1;
+
+      final FragmentRepository fragRepo = ref.read(fragmentRepositoryProvider);
+      final currentFragments = await fragRepo.fetchFragmentsMap(userId);
+      final int uniqueFragmentsCount = currentFragments.keys.length;
+      int fullyUnlockedCount = 0;
+      for (final frag in currentFragments.values) {
+        final maxThreshold = frag.rarity == FragmentRarity.normal ? 5 : (frag.rarity == FragmentRarity.rare ? 3 : 1);
+        if (frag.stackCount >= maxThreshold) {
+          fullyUnlockedCount++;
+        }
+      }
+
+      final Map<String, dynamic> newStats = {
+        'totalDistance': newDistance,
+        'adventureCount': newAdventures,
+        'loginDaysCount': newLoginDays,
+        'spotVisitCount': newSpotVisits,
+        'photoPinCount': newPhotos,
+        'treasureKindsCount': uniqueFragmentsCount,
+        'fullyUnlockedFragmentsCount': fullyUnlockedCount,
+        'newWayCount': newNewWay,
+        'lastAdventureAt': FieldValue.serverTimestamp(),
+      };
+
+      await userRepo.updateStats(userId, newStats);
+
+      // 実績解除の適用
+      for (final achId in state.newAchievementIds) {
+        await userRepo.unlockAchievement(userId, achId);
+      }
+
+      // 3. ユーザー経験値＆レベル更新
+      final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
+      final userSnapshot = await userDocRef.get();
+      int currentExp = 0;
+      if (userSnapshot.exists) {
+        currentExp = (userSnapshot.data()?['exp'] as num?)?.toInt() ?? 0;
+      }
+      final newExp = currentExp + res.expGained;
+      final newLevel = ExpUtils.getLevelFromXp(newExp);
+
+      await userDocRef.set({
+        'exp': newExp,
+        'level': newLevel,
+        'rank': ExpUtils.getRank(newLevel).nameJa,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      // 4. 履歴保存
+      final history = AdventureHistoryModel(
+        id: res.id,
+        createdAt: res.completedAt,
+        title: res.title,
+        themeName: 'ノーマル',
+        themeDescription: res.subTitle,
+        themeIcon: res.themeIcon,
+        weather: res.weather,
+        aiReport: res.aiStory,
+        distanceKm: res.distanceKm,
+        steps: res.steps,
+        expGained: res.expGained,
+        durationMinutes: res.durationMinutes,
+        isCompleted: res.isCompleted,
+        imageUrls: res.photos.map((p) => p.imageUrl).toList(),
+        routePoints: res.routePoints,
+        obtainedFragments: res.obtainedFragments,
+        unlockedAchievements: res.unlockedAchievements,
+      );
+
+      await ref.read(historyRepositoryProvider).saveHistory(
+            userId: userId,
+            history: history,
+          );
+
+      state = state.copyWith(isLoading: false, isSaved: true);
+    } catch (e) {
+      print('Error saving memory: $e');
+      state = state.copyWith(isLoading: false);
+    }
   }
 
   // ── 報酬受け取り ────────────────────
@@ -426,19 +488,13 @@ class ResultNotifier extends Notifier<ResultState> {
     );
   }
 
-  // ── 思い出保存 ─────────────────────
-  Future<void> saveMemory() async {
-    if (state.isSaved) return;
-    state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(milliseconds: 700));
-    state = state.copyWith(
-      isLoading: false,
-      isSaved: true,
-    );
+  // ── 報酬受け取り（演出用フラグ） ──────
+  void markRewardClaimed() {
+    state = state.copyWith(rewardClaimed: true);
   }
 
   // ── SNSシェア ──────────────────────
   Future<void> shareResult() async {
-    // TODO:
+    // TODO: SNSシェアの実装
   }
 }

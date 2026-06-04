@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/user_model.dart';
+import '../models/fragment_model.dart';
 
 class UserRepository {
   final FirebaseFirestore _firestore;
@@ -84,6 +85,36 @@ class UserRepository {
       'reminderTime': reminderTime,
       'settings': settings,
       'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> updateStats(String userId, Map<String, dynamic> stats) {
+    return _userRef(userId).collection('stats').doc('counters').set(
+      stats,
+      SetOptions(merge: true),
+    );
+  }
+
+  Future<void> updateInventory(String userId, List<FragmentModel> fragments) async {
+    final batch = _firestore.batch();
+    final inventoryRef = _userRef(userId).collection('inventory');
+
+    for (final fragment in fragments) {
+      final docRef = inventoryRef.doc(fragment.itemMasterId);
+      batch.set(docRef, {
+        ...fragment.toMap(),
+        'stackCount': FieldValue.increment(1),
+        'collectedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+
+    return batch.commit();
+  }
+
+  Future<void> unlockAchievement(String userId, String achievementId) {
+    return _userRef(userId).collection('achievements').doc(achievementId).set({
+      'id': achievementId,
+      'unlockedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
 

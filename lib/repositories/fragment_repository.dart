@@ -10,7 +10,7 @@ class FragmentRepository {
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> _fragmentsRef(String userId) {
-    return _firestore.collection('users').doc(userId).collection('fragments');
+    return _firestore.collection('users').doc(userId).collection('inventory');
   }
 
   /// ユーザーの断片コレクションを監視するストリームを取得する

@@ -20,22 +20,22 @@ class NavigationUiConstants {
   static const double offRouteThresholdMeters = 50;
 
   static TextStyle get serifTitle => GoogleFonts.notoSerifJp(
-        fontSize: 20, // 💡 18 → 20 (大きく)
+        fontSize: 22, // 💡 さらに大きく
         fontWeight: FontWeight.w700,
         color: textDark,
         height: 1.3,
       );
 
   static TextStyle get serifBody => GoogleFonts.notoSerifJp(
-        fontSize: 15, // 💡 14 → 15 (大きく)
-        fontWeight: FontWeight.w500, // 💡 w400 → w500 (視認性向上)
+        fontSize: 18, // 💡 さらに大きく
+        fontWeight: FontWeight.w500,
         color: textDark,
         height: 1.5,
       );
 
   static TextStyle get serifCaption => GoogleFonts.notoSerifJp(
-        fontSize: 13, // 💡 12 → 13 (大きく)
-        fontWeight: FontWeight.w600, // 💡 w500 → w600 (視認性向上)
+        fontSize: 15, // 💡 さらに大きく
+        fontWeight: FontWeight.w600,
         color: textMuted,
         height: 1.4,
       );
@@ -58,21 +58,21 @@ class NavigationUiScheme {
   Color get textMuted => _colors.textMuted;
 
   TextStyle get serifTitle => GoogleFonts.notoSerifJp(
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: FontWeight.w700,
         color: _colors.textPrimary,
         height: 1.3,
       );
 
   TextStyle get serifBody => GoogleFonts.notoSerifJp(
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: FontWeight.w500,
         color: _colors.textPrimary,
         height: 1.5,
       );
 
   TextStyle get serifCaption => GoogleFonts.notoSerifJp(
-        fontSize: 13,
+        fontSize: 15,
         fontWeight: FontWeight.w600,
         color: _colors.textMuted,
         height: 1.4,

@@ -1,5 +1,9 @@
 // lib/models/adventure_history_model.dart
 
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'fragment_model.dart';
+import 'result_model.dart';
+
 class AdventureHistoryModel {
   final String id;
   final DateTime createdAt;
@@ -10,10 +14,14 @@ class AdventureHistoryModel {
   final String weather;
   final String aiReport;
   final double distanceKm;
+  final int steps; // 👈 追加
+  final int expGained; // 👈 追加
   final int durationMinutes;
   final bool isCompleted;
   final List<String> imageUrls;
-  final List<String> fragments;
+  final List<LatLng> routePoints; // 👈 追加
+  final List<FragmentModel> obtainedFragments; // 👈 追加（型変更）
+  final List<String> unlockedAchievements; // 👈 追加
   final List<String> friendIds;
   final List<String> tags;
 
@@ -27,10 +35,14 @@ class AdventureHistoryModel {
     this.weather = '晴れ',
     this.aiReport = '',
     this.distanceKm = 0.0,
+    this.steps = 0,
+    this.expGained = 0,
     this.durationMinutes = 0,
     this.isCompleted = true,
     this.imageUrls = const [],
-    this.fragments = const [],
+    this.routePoints = const [],
+    this.obtainedFragments = const [],
+    this.unlockedAchievements = const [],
     this.friendIds = const [],
     this.tags = const [],
   });
@@ -45,19 +57,50 @@ class AdventureHistoryModel {
       themeIcon: map['themeIcon'] as String? ?? 'map',
       weather: map['weather'] as String? ?? '晴れ',
       aiReport: map['aiReport'] as String? ?? '',
-      distanceKm: (map['distanceKm'] as num?)?.toDouble() ??
-          (map['totalDistance'] as num?)?.toDouble() ??
-          0.0,
-      durationMinutes: (map['durationMinutes'] as num?)?.toInt() ??
-          (map['estimatedTime'] as num?)?.toInt() ??
-          0,
+      distanceKm: (map['distanceKm'] as num?)?.toDouble() ?? 0.0,
+      steps: (map['steps'] as num?)?.toInt() ?? 0,
+      expGained: (map['expGained'] as num?)?.toInt() ?? 0,
+      durationMinutes: (map['durationMinutes'] as num?)?.toInt() ?? 0,
       isCompleted: map['isCompleted'] as bool? ?? true,
-      imageUrls: List<String>.from(
-        (map['imageUrls'] ?? map['photoUrls']) as List? ?? const [],
-      ),
-      fragments: List<String>.from(map['fragments'] as List? ?? const []),
+      imageUrls: List<String>.from(map['imageUrls'] as List? ?? const []),
+      routePoints: (map['routePoints'] as List? ?? const [])
+          .map((p) => LatLng(
+                (p['lat'] as num).toDouble(),
+                (p['lng'] as num).toDouble(),
+              ))
+          .toList(),
+      obtainedFragments: (map['obtainedFragments'] as List? ?? const [])
+          .map((f) => FragmentModel.fromMap(Map<String, dynamic>.from(f)))
+          .toList(),
+      unlockedAchievements: List<String>.from(map['unlockedAchievements'] as List? ?? const []),
       friendIds: List<String>.from(map['friendIds'] as List? ?? const []),
       tags: List<String>.from(map['tags'] as List? ?? const []),
+    );
+  }
+
+  AdventureResult toResult() {
+    return AdventureResult(
+      id: id,
+      title: title,
+      subTitle: themeDescription,
+      completedAt: createdAt,
+      aiStory: aiReport,
+      closingMessage: '', // 履歴からは空でOK
+      distanceKm: distanceKm,
+      steps: steps,
+      calories: (steps * 0.04).round(),
+      durationMinutes: durationMinutes,
+      fragmentCount: obtainedFragments.length,
+      expGained: expGained,
+      weather: weather,
+      themeIcon: themeIcon,
+      routeMapImageUrl: '', // 必要なら別のURL
+      routePoints: routePoints,
+      photos: imageUrls.map((url) => ResultPhoto(imageUrl: url, caption: '冒険の思い出')).toList(),
+      friends: friendIds.map((fid) => ResultFriend(id: fid, name: 'フレンド')).toList(),
+      obtainedFragments: obtainedFragments,
+      unlockedAchievements: unlockedAchievements,
+      isCompleted: isCompleted,
     );
   }
 
@@ -72,10 +115,14 @@ class AdventureHistoryModel {
       'weather': weather,
       'aiReport': aiReport,
       'distanceKm': distanceKm,
+      'steps': steps,
+      'expGained': expGained,
       'durationMinutes': durationMinutes,
       'isCompleted': isCompleted,
       'imageUrls': imageUrls,
-      'fragments': fragments,
+      'routePoints': routePoints.map((p) => {'lat': p.latitude, 'lng': p.longitude}).toList(),
+      'obtainedFragments': obtainedFragments.map((f) => f.toMap()).toList(),
+      'unlockedAchievements': unlockedAchievements,
       'friendIds': friendIds,
       'tags': tags,
     };
@@ -84,6 +131,10 @@ class AdventureHistoryModel {
   static DateTime? _dateTimeFromMap(dynamic value) {
     if (value == null) return null;
     if (value is DateTime) return value;
-    return (value as dynamic).toDate() as DateTime;
+    try {
+      return (value as dynamic).toDate() as DateTime;
+    } catch (_) {
+      return null;
+    }
   }
 }
