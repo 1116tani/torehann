@@ -13,7 +13,6 @@ class AchievementPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final achievements = ref.watch(
       achievementListProvider,

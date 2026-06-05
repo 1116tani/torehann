@@ -14,14 +14,15 @@ class AdventureHistoryModel {
   final String weather;
   final String aiReport;
   final double distanceKm;
-  final int steps; // 👈 追加
-  final int expGained; // 👈 追加
+  final int steps;
+  final int expGained;
   final int durationMinutes;
-  final bool isCompleted;
+  final AdventureStatus status; // 👈 isCompletedから変更
+  final double progressRatio; // 👈 追加
   final List<String> imageUrls;
-  final List<LatLng> routePoints; // 👈 追加
-  final List<FragmentModel> obtainedFragments; // 👈 追加（型変更）
-  final List<String> unlockedAchievements; // 👈 追加
+  final List<LatLng> routePoints;
+  final List<FragmentModel> obtainedFragments;
+  final List<String> unlockedAchievements;
   final List<String> friendIds;
   final List<String> tags;
 
@@ -38,7 +39,8 @@ class AdventureHistoryModel {
     this.steps = 0,
     this.expGained = 0,
     this.durationMinutes = 0,
-    this.isCompleted = true,
+    this.status = AdventureStatus.completed,
+    this.progressRatio = 1.0,
     this.imageUrls = const [],
     this.routePoints = const [],
     this.obtainedFragments = const [],
@@ -61,7 +63,12 @@ class AdventureHistoryModel {
       steps: (map['steps'] as num?)?.toInt() ?? 0,
       expGained: (map['expGained'] as num?)?.toInt() ?? 0,
       durationMinutes: (map['durationMinutes'] as num?)?.toInt() ?? 0,
-      isCompleted: map['isCompleted'] as bool? ?? true,
+      status: map['status'] != null
+          ? AdventureStatus.values.byName(map['status'] as String)
+          : (map['isCompleted'] as bool? ?? true
+              ? AdventureStatus.completed
+              : AdventureStatus.abandoned),
+      progressRatio: (map['progressRatio'] as num?)?.toDouble() ?? 1.0,
       imageUrls: List<String>.from(map['imageUrls'] as List? ?? const []),
       routePoints: (map['routePoints'] as List? ?? const [])
           .map((p) => LatLng(
@@ -85,7 +92,9 @@ class AdventureHistoryModel {
       subTitle: themeDescription,
       completedAt: createdAt,
       aiStory: aiReport,
-      closingMessage: '', // 履歴からは空でOK
+      closingMessage: status == AdventureStatus.completed
+          ? '「寄り道は、きっと無駄じゃない。」'
+          : '「旅は途中で終わった。しかし、その足跡は確かにこの街へ刻まれた。」',
       distanceKm: distanceKm,
       steps: steps,
       calories: (steps * 0.04).round(),
@@ -94,13 +103,14 @@ class AdventureHistoryModel {
       expGained: expGained,
       weather: weather,
       themeIcon: themeIcon,
-      routeMapImageUrl: '', // 必要なら別のURL
+      routeMapImageUrl: '',
       routePoints: routePoints,
       photos: imageUrls.map((url) => ResultPhoto(imageUrl: url, caption: '冒険の思い出')).toList(),
       friends: friendIds.map((fid) => ResultFriend(id: fid, name: 'フレンド')).toList(),
       obtainedFragments: obtainedFragments,
       unlockedAchievements: unlockedAchievements,
-      isCompleted: isCompleted,
+      status: status,
+      progressRatio: progressRatio,
     );
   }
 
@@ -118,7 +128,8 @@ class AdventureHistoryModel {
       'steps': steps,
       'expGained': expGained,
       'durationMinutes': durationMinutes,
-      'isCompleted': isCompleted,
+      'status': status.name,
+      'progressRatio': progressRatio,
       'imageUrls': imageUrls,
       'routePoints': routePoints.map((p) => {'lat': p.latitude, 'lng': p.longitude}).toList(),
       'obtainedFragments': obtainedFragments.map((f) => f.toMap()).toList(),

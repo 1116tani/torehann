@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/result_model.dart';
@@ -144,35 +145,11 @@ class ResultNotifier extends Notifier<ResultState> {
 
   // ── 過去の履歴データから初期化 ───────
   void initForHistory(AdventureHistoryModel history) {
-    // 履歴データから表示用リザルトモデルに変換
-    final result = AdventureResult(
-      id: history.id,
-      title: history.title,
-      subTitle: history.themeDescription.isNotEmpty ? history.themeDescription : '過去の冒険の記録',
-      completedAt: history.createdAt,
-      aiStory: history.aiReport,
-      closingMessage: '「寄り道は、きっと無駄じゃない。」',
-      distanceKm: history.distanceKm,
-      steps: history.steps > 0 ? history.steps : (history.distanceKm * 1400).round(), // 1kmあたり約1400歩換算
-      calories: ((history.steps > 0 ? history.steps : (history.distanceKm * 1400).round()) * 0.04).round(),
-      durationMinutes: history.durationMinutes,
-      fragmentCount: history.obtainedFragments.length,
-      expGained: history.expGained,
-      weather: history.weather,
-      themeIcon: history.themeIcon,
-      routeMapImageUrl: 'https://images.unsplash.com/photo-1526772662000-3f88f10405ff',
-      routePoints: history.routePoints,
-      photos: history.imageUrls.map((url) => ResultPhoto(imageUrl: url, caption: '冒険中に撮影した景色')).toList(),
-      friends: const [],
-      obtainedFragments: history.obtainedFragments,
-      unlockedAchievements: history.unlockedAchievements,
-    );
-
     state = ResultState(
       isLoading: false,
       rewardClaimed: true,
       isSaved: true,
-      result: result,
+      result: history.toResult(),
     );
   }
 
@@ -182,46 +159,57 @@ class ResultNotifier extends Notifier<ResultState> {
   }
 
   // ── リザルト生成 ────────────────────
-  Future<void> generateResult() async {
+  Future<void> generateResult({
+    AdventureStatus status = AdventureStatus.completed,
+    double? manualProgressRatio,
+  }) async {
     state = state.copyWith(isLoading: true);
 
     // AIの生成待ちをシミュレート
     await Future.delayed(const Duration(milliseconds: 1500));
 
     final navState = ref.read(navigationProvider);
-    final baseDummy = AdventureResult.dummy();
 
-    final bool hasActiveAdventure = navState.isAdventureStarted || navState.walkedDistanceKm > 0;
+    // ナビゲーション中であれば、そのデータを使用する
+    final bool hasActiveAdventure =
+        navState.isAdventureStarted || navState.walkedDistanceKm > 0;
 
-    final actualDistance = hasActiveAdventure ? navState.walkedDistanceKm : baseDummy.distanceKm;
-    final actualSteps = hasActiveAdventure ? navState.steps : baseDummy.steps;
+    // 写真データの整理（実際に撮影されたもののみ）
+    final List<ResultPhoto> actualPhotos = navState.capturedPhotos
+        .map((path) => ResultPhoto(imageUrl: path, caption: '冒険中に撮影した景色'))
+        .toList();
 
-    final actualPhotos = hasActiveAdventure && navState.capturedPhotos.isNotEmpty
-        ? navState.capturedPhotos
-            .map((path) => ResultPhoto(imageUrl: path, caption: '冒険中に撮影した景色'))
-            .toList()
-        : baseDummy.photos;
+    final actualDistance = hasActiveAdventure ? navState.walkedDistanceKm : 0.0;
+    final actualSteps = hasActiveAdventure ? navState.steps : 0;
 
     final durationMin = navState.adventureStartTime != null
         ? DateTime.now().difference(navState.adventureStartTime!).inMinutes
-        : baseDummy.durationMinutes;
+        : 0;
 
     final user = ref.read(firebaseAuthProvider).currentUser;
     final userId = user?.uid ?? 'dummy_user_123';
 
-    // 軌跡データの取得（本番はLocationProviderなどから）
+    // 軌跡データの取得
     final routePoints = navState.currentRoute?.generatedSpots
             .map((s) => LatLng(s.lat, s.lng))
             .toList() ??
-        baseDummy.routePoints;
+        [];
 
-    // 街の断片の抽選
+    // 進行率の計算
+    final double progressRatio = manualProgressRatio ??
+        (hasActiveAdventure ? navState.progress : 1.0);
+
+    // 街の断片の抽選（完走時のみ）
     final List<FragmentModel> obtainedFragments;
-    if (hasActiveAdventure) {
+    if (hasActiveAdventure && status == AdventureStatus.completed) {
       final routeSpots = navState.currentRoute?.generatedSpots ?? [];
-      final visitedSpots = routeSpots.where((s) => navState.visitedSpotIds.contains(s.id)).toList();
-      final visitedSpotCategories = visitedSpots.map((s) => s.category).toList();
-      final lastLocationName = visitedSpots.isNotEmpty ? visitedSpots.last.name : '街のどこか';
+      final visitedSpots = routeSpots
+          .where((s) => navState.visitedSpotIds.contains(s.id))
+          .toList();
+      final visitedSpotCategories =
+          visitedSpots.map((s) => s.category).toList();
+      final lastLocationName =
+          visitedSpots.isNotEmpty ? visitedSpots.last.name : '街のどこか';
 
       obtainedFragments = FragmentLottery.draw(
         weather: '晴れ', // TODO: WeatherProviderから
@@ -230,10 +218,14 @@ class ResultNotifier extends Notifier<ResultState> {
         lastLocationName: lastLocationName,
       );
     } else {
-      obtainedFragments = baseDummy.obtainedFragments;
+      obtainedFragments = const [];
     }
 
-    final int earnedExp = hasActiveAdventure ? (navState.visitedSpotIds.length * 50 + 100) : baseDummy.expGained;
+    // 経験値計算
+    final int baseExp =
+        hasActiveAdventure ? (navState.visitedSpotIds.length * 50 + 100) : 0;
+    final int earnedExp = _calculateExp(baseExp, progressRatio);
+
     final List<String> newlyUnlockedAchievementTitles = [];
     final List<String> newlyUnlockedAchievementIds = [];
 
@@ -247,7 +239,8 @@ class ResultNotifier extends Notifier<ResultState> {
         final statsSnapshot = await statsDocRef.get();
         final statsData = statsSnapshot.data() ?? {};
 
-        final double prevDistance = (statsData['totalDistance'] ?? 0.0).toDouble();
+        final double prevDistance =
+            (statsData['totalDistance'] ?? 0.0).toDouble();
         final int prevAdventures = (statsData['adventureCount'] ?? 0).toInt();
         final int prevSpotVisits = (statsData['spotVisitCount'] ?? 0).toInt();
         final int prevPhotos = (statsData['photoPinCount'] ?? 0).toInt();
@@ -255,14 +248,17 @@ class ResultNotifier extends Notifier<ResultState> {
 
         final double newDistance = prevDistance + actualDistance;
         final int newAdventures = prevAdventures + 1;
-        final int newSpotVisits = prevSpotVisits + navState.visitedSpotIds.length;
+        final int newSpotVisits =
+            prevSpotVisits + navState.visitedSpotIds.length;
         final int newPhotos = prevPhotos + actualPhotos.length;
         final int newLoginDays = prevLoginDays + 1;
 
-        final FragmentRepository fragRepo = ref.read(fragmentRepositoryProvider);
+        final FragmentRepository fragRepo =
+            ref.read(fragmentRepositoryProvider);
         final currentFragments = await fragRepo.fetchFragmentsMap(userId);
 
-        final Map<String, FragmentModel> tempFragments = Map.from(currentFragments);
+        final Map<String, FragmentModel> tempFragments =
+            Map.from(currentFragments);
         for (final frag in obtainedFragments) {
           final existing = tempFragments[frag.itemMasterId];
           tempFragments[frag.itemMasterId] = FragmentModel(
@@ -278,7 +274,9 @@ class ResultNotifier extends Notifier<ResultState> {
         final int uniqueFragmentsCount = tempFragments.keys.length;
         int fullyUnlockedCount = 0;
         for (final frag in tempFragments.values) {
-          final maxThreshold = frag.rarity == FragmentRarity.normal ? 5 : (frag.rarity == FragmentRarity.rare ? 3 : 1);
+          final maxThreshold = frag.rarity == FragmentRarity.normal
+              ? 5
+              : (frag.rarity == FragmentRarity.rare ? 3 : 1);
           if (frag.stackCount >= maxThreshold) {
             fullyUnlockedCount++;
           }
@@ -290,7 +288,8 @@ class ResultNotifier extends Notifier<ResultState> {
             .doc(userId)
             .collection('achievements')
             .get();
-        final Set<String> unlockedIds = achievementsSnapshot.docs.map((doc) => doc.id).toSet();
+        final Set<String> unlockedIds =
+            achievementsSnapshot.docs.map((doc) => doc.id).toSet();
 
         void checkUnlock(String id, String title, double current, double threshold) {
           if (current >= threshold && !unlockedIds.contains(id)) {
@@ -303,41 +302,71 @@ class ResultNotifier extends Notifier<ResultState> {
         checkUnlock('shoyo_mujin', '逍遥無尽', newDistance, 1.0);
         checkUnlock('manyu_sokyu', '漫遊蒼穹', newAdventures.toDouble(), 1.0);
         checkUnlock('remmen_fuzetsu', '連綿不絶', newLoginDays.toDouble(), 3.0);
-        checkUnlock('itsuro_tankyu', '逸路探求', (statsData['newWayCount'] ?? 0).toDouble() + 1.0, 1.0);
+        checkUnlock(
+            'itsuro_tankyu', '逸路探求', (statsData['newWayCount'] ?? 0).toDouble() + 1.0, 1.0);
         checkUnlock('ukai_mukyu', '迂回無窮', newSpotVisits.toDouble(), 1.0);
-        checkUnlock('dokuo_danko', '独往断行', (statsData['ignoreNaviCount'] ?? 0).toDouble(), 1.0);
-        checkUnlock('shushu_temmo', '蒐集天網', uniqueFragmentsCount.toDouble(), 1.0);
-        checkUnlock('tsuioku_hensan', '追憶編纂', fullyUnlockedCount.toDouble(), 1.0);
-        checkUnlock('saikei_setsuna', '採景刹那', newPhotos.toDouble(), 1.0);
-
+        checkUnlock(
+            'dokuo_danko', '独往断行', (statsData['ignoreNaviCount'] ?? 0).toDouble(), 1.0);
+        checkUnlock(
+            'shushu_temmo', '蒐集天網', uniqueFragmentsCount.toDouble(), 1.0);
+        checkUnlock(
+            'tsuioku_hensan', '追憶編纂', fullyUnlockedCount.toDouble(), 1.0);
+        checkUnlock('saikei_setsuna', '採景刹な', newPhotos.toDouble(), 1.0);
       } catch (e) {
-        print('Error checking achievements: $e');
+        debugPrint('Error checking achievements: $e');
       }
-    } else {
-      newlyUnlockedAchievementTitles.addAll(baseDummy.unlockedAchievements);
     }
 
     final result = AdventureResult(
       id: 'res_${DateTime.now().millisecondsSinceEpoch}',
-      title: hasActiveAdventure ? (navState.currentRoute?.themeName ?? '日常の散歩') : baseDummy.title,
-      subTitle: hasActiveAdventure ? (navState.currentRoute?.themeDescription ?? '新しい街角を見つける旅') : baseDummy.subTitle,
+      title: hasActiveAdventure
+          ? (navState.currentRoute?.themeName ?? '日常の散歩')
+          : '静かな探索',
+      subTitle: hasActiveAdventure
+          ? (navState.currentRoute?.themeDescription ?? '新しい街角を見つける旅')
+          : '今日だけの物語がそこにあった。',
       completedAt: DateTime.now(),
-      aiStory: baseDummy.aiStory,
-      closingMessage: baseDummy.closingMessage,
+      aiStory: status == AdventureStatus.completed
+          ? '''
+今日の道程は、
+静かな発見に満ちていた。
+
+君が歩いた一歩一歩が、
+街の記憶を紡ぎ出し、
+新しい物語の地図を描いていく。
+
+寄り道した路地裏、
+ふと見上げた空、
+それらすべてが君の冒険の証だ。
+'''
+          : '''
+旅は途中で幕を閉じた。
+
+しかし、歩んだ距離、見つけた景色、
+そのすべてが無に帰すわけではない。
+
+君の足跡は確かにこの街へ刻まれ、
+また次の旅へと繋がっていく。
+''',
+      closingMessage: status == AdventureStatus.completed
+          ? '「寄り道は、きっと無駄じゃない。」'
+          : '「旅は途中で終わった。しかし、その足跡は確かにこの街へ刻まれた。」',
       distanceKm: actualDistance,
       steps: actualSteps,
       calories: (actualSteps * 0.04).round(),
       durationMinutes: durationMin > 0 ? durationMin : 1,
       fragmentCount: obtainedFragments.length,
       expGained: earnedExp,
-      weather: hasActiveAdventure ? '☀️ 晴天' : baseDummy.weather,
-      themeIcon: hasActiveAdventure ? '🗺️' : baseDummy.themeIcon,
-      routeMapImageUrl: baseDummy.routeMapImageUrl,
+      weather: '☀️ 晴天',
+      themeIcon: '🗺️',
+      routeMapImageUrl: '',
       routePoints: routePoints,
       photos: actualPhotos,
-      friends: baseDummy.friends,
+      friends: const [],
       obtainedFragments: obtainedFragments,
       unlockedAchievements: newlyUnlockedAchievementTitles,
+      status: status,
+      progressRatio: progressRatio,
     );
 
     state = ResultState(
@@ -355,6 +384,14 @@ class ResultNotifier extends Notifier<ResultState> {
     }
   }
 
+  int _calculateExp(int baseExp, double progress) {
+    if (progress >= 1.0) return baseExp;
+    if (progress >= 0.75) return (baseExp * 0.8).round();
+    if (progress >= 0.50) return (baseExp * 0.5).round();
+    if (progress >= 0.25) return (baseExp * 0.3).round();
+    return (baseExp * 0.1).round();
+  }
+
   // ── 思い出保存 ─────────────────────
   Future<void> saveMemory() async {
     final res = state.result;
@@ -370,7 +407,9 @@ class ResultNotifier extends Notifier<ResultState> {
       final userRepo = ref.read(userRepositoryProvider);
 
       // 1. 街の断片（インベントリ）更新
-      await userRepo.updateInventory(userId, res.obtainedFragments);
+      if (res.status == AdventureStatus.completed) {
+        await userRepo.updateInventory(userId, res.obtainedFragments);
+      }
 
       // 2. 統計データ（Stats）更新
       final statsDocRef = FirebaseFirestore.instance
@@ -456,7 +495,8 @@ class ResultNotifier extends Notifier<ResultState> {
         steps: res.steps,
         expGained: res.expGained,
         durationMinutes: res.durationMinutes,
-        isCompleted: res.isCompleted,
+        status: res.status, // 👈 修正
+        progressRatio: res.progressRatio, // 👈 修正
         imageUrls: res.photos.map((p) => p.imageUrl).toList(),
         routePoints: res.routePoints,
         obtainedFragments: res.obtainedFragments,
@@ -470,7 +510,7 @@ class ResultNotifier extends Notifier<ResultState> {
 
       state = state.copyWith(isLoading: false, isSaved: true);
     } catch (e) {
-      print('Error saving memory: $e');
+      debugPrint('Error saving memory: $e');
       state = state.copyWith(isLoading: false);
     }
   }

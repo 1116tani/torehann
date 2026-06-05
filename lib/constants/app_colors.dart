@@ -58,6 +58,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? primaryLight,
     Color? primaryDark,
     Color? secondary,
+    Color? speechText,
     Color? speechBubble,
     Color? speechAccent,
     Color? textPrimary,

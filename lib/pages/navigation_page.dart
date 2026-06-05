@@ -13,6 +13,7 @@ import 'package:vibration/vibration.dart';
 
 import '../constants/app_colors.dart';
 import '../constants/navigation_ui_constants.dart';
+import '../models/result_model.dart';
 import '../models/spot_model.dart';
 import '../models/walking_leg_result.dart';
 import '../providers/location_provider.dart';
@@ -328,6 +329,8 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
   Future<void> _confirmQuit() async {
     final navConstants = NavigationUiConstants.of(context);
+    final navState = ref.read(navigationProvider);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => Dialog(
@@ -342,15 +345,54 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '冒険を終了しますか？',
+                '冒険を中断しますか？',
                 style: navConstants.serifTitle.copyWith(fontSize: 20),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                'ここまでの進行状況は保存されます',
-                style: navConstants.serifBody.copyWith(fontSize: 15),
+                'ここまでの歩みを記録として保存できます',
+                style: navConstants.serifBody.copyWith(fontSize: 14),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: navConstants.creamBorder.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    _buildStatRow(
+                      context,
+                      '歩行距離',
+                      '${navState.walkedDistanceKm.toStringAsFixed(2)} km',
+                      Icons.directions_walk,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildStatRow(
+                      context,
+                      '歩数',
+                      '${navState.steps} 歩',
+                      Icons.show_chart,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildStatRow(
+                      context,
+                      'チェックポイント',
+                      '${navState.visitedSpotIds.length} / ${navState.currentRoute?.generatedSpots.length ?? 0}',
+                      Icons.place,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildStatRow(
+                      context,
+                      '撮影写真',
+                      '${navState.capturedPhotos.length} 枚',
+                      Icons.photo_camera,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
               Row(
@@ -378,7 +420,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
                       ),
                       onPressed: () => Navigator.pop(context, true),
                       child: const Text(
-                        '終了する',
+                        '保存して中断',
                         style: TextStyle(
                           color: AppColors.error,
                           fontWeight: FontWeight.bold,
@@ -396,15 +438,43 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
 
     if (confirmed != true || !mounted) return;
 
+    // 位置情報取得を停止
     await _locationSub?.cancel();
     _locationSub = null;
+
     if (!mounted) return;
+
+    // 中断リザルトを生成
+    await ref.read(resultProvider.notifier).generateResult(
+          status: AdventureStatus.abandoned,
+          manualProgressRatio: navState.progress,
+        );
+
+    if (!mounted) return;
+
+    // 進行中の状態をクリアして結果画面へ
     ref.read(navigationProvider.notifier).finishAdventure();
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go(AppRoutes.home);
-    }
+    context.pushReplacement(AppRoutes.result);
+  }
+
+  Widget _buildStatRow(
+      BuildContext context, String label, String value, IconData icon) {
+    final navConstants = NavigationUiConstants.of(context);
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: navConstants.sepia),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: navConstants.serifBody.copyWith(fontSize: 13),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: navConstants.serifTitle.copyWith(fontSize: 14),
+        ),
+      ],
+    );
   }
 
   Set<Marker> _buildMarkers(NavigationState nav) {

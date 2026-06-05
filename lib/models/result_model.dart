@@ -3,6 +3,11 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'fragment_model.dart';
 
+enum AdventureStatus {
+  completed,
+  abandoned,
+}
+
 class AdventureResult {
   // ── 基本情報 ──────────────────────────
   final String id;
@@ -21,6 +26,8 @@ class AdventureResult {
   final int durationMinutes;
   final int fragmentCount;
   final int expGained;
+  final double progressRatio; // 👈 進行率追加
+  final AdventureStatus status; // 👈 isCompletedから変更
 
   // ── 表示用データ ─────────────────────
   final String weather;
@@ -28,18 +35,15 @@ class AdventureResult {
 
   // ── 写真・マップ ─────────────────────
   final String routeMapImageUrl;
-  final List<LatLng> routePoints; // 👈 軌跡保存用に追加
+  final List<LatLng> routePoints;
   final List<ResultPhoto> photos;
 
   // ── フレンド ─────────────────────────
   final List<ResultFriend> friends;
 
   // ── 獲得物・実績 ──────────────────────
-  final List<FragmentModel> obtainedFragments; // 👈 型を変更
+  final List<FragmentModel> obtainedFragments;
   final List<String> unlockedAchievements;
-
-  // ── 完了フラグ ───────────────────────
-  final bool isCompleted;
 
   const AdventureResult({
     required this.id,
@@ -62,8 +66,11 @@ class AdventureResult {
     required this.friends,
     required this.obtainedFragments,
     required this.unlockedAchievements,
-    this.isCompleted = true,
+    this.progressRatio = 1.0,
+    this.status = AdventureStatus.completed,
   });
+
+  bool get isCompleted => status == AdventureStatus.completed;
 
   // ── ダミーデータ生成用 ─────────────────
   factory AdventureResult.dummy() {
@@ -134,6 +141,8 @@ class AdventureResult {
         '初めての冒険',
         '総歩行距離5km',
       ],
+      status: AdventureStatus.completed,
+      progressRatio: 1.0,
     );
   }
 }

@@ -1,5 +1,6 @@
 //lib/pages/result_page.dart
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -345,14 +346,26 @@ class _ResultPageState extends ConsumerState<ResultPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
               decoration: BoxDecoration(
-                border: Border.all(color: colors.primary, width: 1),
+                border: Border.all(
+                  color: result.status == AdventureStatus.completed
+                      ? AppColors.success
+                      : colors.textMuted,
+                  width: 1,
+                ),
                 borderRadius: BorderRadius.circular(12),
+                color: result.status == AdventureStatus.completed
+                    ? AppColors.success.withValues(alpha: 0.1)
+                    : colors.surfaceLight,
               ),
               child: Text(
-                '完走',
+                result.status == AdventureStatus.completed
+                    ? '完走'
+                    : '中断 ${(result.progressRatio * 100).round()}%',
                 style: GoogleFonts.notoSerifJp(
                   fontSize: 11,
-                  color: colors.primary,
+                  color: result.status == AdventureStatus.completed
+                      ? AppColors.success
+                      : colors.textSecondary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -474,50 +487,84 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     final startPoint = routePoints.first;
     final endPoint = routePoints.last;
 
+    // マーカーの生成
     final markers = <Marker>{
+      // スタート地点（緑）
       Marker(
         markerId: const MarkerId('start'),
         position: startPoint,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        infoWindow: const InfoWindow(title: 'スタート地点'),
       ),
+      // ゴール地点（オレンジ）
       Marker(
         markerId: const MarkerId('end'),
         position: endPoint,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        infoWindow: const InfoWindow(title: 'ゴール地点'),
       ),
     };
 
+    // 街の断片（チェックポイント）も表示
+    for (var i = 0; i < result.obtainedFragments.length; i++) {
+      // Note: 実際にはFragmentに座標を持たせるか、Spotから取得する必要があるが、
+      // ここでは簡易的にルート上の適当な点をチェックポイントとする（演出用）
+      if (routePoints.length > 2 && i + 1 < routePoints.length - 1) {
+        markers.add(
+          Marker(
+            markerId: MarkerId('checkpoint_$i'),
+            position: routePoints[(routePoints.length * (i + 1) ~/ (result.obtainedFragments.length + 1))],
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+          ),
+        );
+      }
+    }
+
     final polylines = <Polyline>{
       Polyline(
-        polylineId: const PolylineId('route_core'),
+        polylineId: const PolylineId('actual_route'),
         points: routePoints,
-        color: colors.primary,
-        width: 4,
+        color: const Color(0xFF3DE0C1), // エメラルドグリーン系
+        width: 7,
         startCap: Cap.roundCap,
         endCap: Cap.roundCap,
+        jointType: JointType.round,
       ),
     };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '旅の軌跡',
-          style: GoogleFonts.notoSerifJp(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: colors.textPrimary,
-          ),
+        Row(
+          children: [
+            Icon(Icons.map_outlined, color: colors.primary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              '旅の軌跡',
+              style: GoogleFonts.notoSerifJp(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: colors.textPrimary,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Container(
-          height: 240,
+          height: 280,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colors.border, width: 1.5),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: colors.border, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(18),
             child: Stack(
               children: [
                 GoogleMap(
@@ -528,7 +575,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   mapToolbarEnabled: false,
                   initialCameraPosition: CameraPosition(
                     target: startPoint,
-                    zoom: 14.5,
+                    zoom: 15,
                   ),
                   style: _mapStyle,
                   markers: markers,
@@ -538,25 +585,27 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                       () => EagerGestureRecognizer(),
                     ),
                   },
+                  onMapCreated: (controller) {
+                    // 全ルートが収まるように調整
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      controller.animateCamera(
+                        CameraUpdate.newLatLngBounds(
+                          _getBounds(routePoints),
+                          50,
+                        ),
+                      );
+                    });
+                  },
                 ),
                 Positioned(
                   right: 12,
                   bottom: 12,
-                  child: ElevatedButton.icon(
+                  child: FloatingActionButton.small(
+                    heroTag: 'map_expand',
                     onPressed: () => _openFullscreenMap(context, startPoint, markers, polylines),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.surface,
-                      foregroundColor: colors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    ),
-                    icon: const Icon(Icons.fullscreen, size: 18),
-                    label: Text(
-                      '拡大する',
-                      style: GoogleFonts.notoSerifJp(fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
+                    backgroundColor: colors.surface.withValues(alpha: 0.9),
+                    foregroundColor: colors.primary,
+                    child: const Icon(Icons.fullscreen),
                   ),
                 ),
               ],
@@ -564,6 +613,23 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           ),
         ),
       ],
+    );
+  }
+
+  LatLngBounds _getBounds(List<LatLng> points) {
+    double minLat = points.first.latitude;
+    double maxLat = points.first.latitude;
+    double minLng = points.first.longitude;
+    double maxLng = points.first.longitude;
+    for (final p in points) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+    }
+    return LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
     );
   }
 
@@ -587,13 +653,21 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               style: _mapStyle,
               markers: markers,
               polylines: polylines,
+              onMapCreated: (controller) {
+                controller.animateCamera(
+                  CameraUpdate.newLatLngBounds(
+                    _getBounds(polylines.first.points),
+                    60,
+                  ),
+                );
+              },
             ),
             Positioned(
-              top: 40,
+              top: 16,
               left: 16,
               child: SafeArea(
                 child: CircleAvatar(
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surface.withValues(alpha: 0.8),
                   child: IconButton(
                     icon: Icon(Icons.close, color: colors.textPrimary),
                     onPressed: () => Navigator.pop(context),
@@ -608,86 +682,107 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   Widget _buildAlbumSection(BuildContext context, AdventureResult result) {
+    if (result.photos.isEmpty) return const SizedBox.shrink();
+
     final colors = AppColors.of(context);
-    final angles = [-0.04, 0.03, -0.02];
-    final alignments = [Alignment.centerLeft, Alignment.centerRight, Alignment.centerLeft];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '冒険アルバム',
-          style: GoogleFonts.notoSerifJp(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: colors.textPrimary,
-          ),
+        Row(
+          children: [
+            Icon(Icons.photo_library_outlined, color: colors.primary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              '冒険アルバム',
+              style: GoogleFonts.notoSerifJp(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: colors.textPrimary,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
-        Column(
-          children: List.generate(result.photos.length, (i) {
-            final photo = result.photos[i];
-            return Transform.rotate(
-              angle: angles[i % angles.length],
-              child: Align(
-                alignment: alignments[i % alignments.length],
+        SizedBox(
+          height: 280,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: result.photos.length,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            itemBuilder: (context, index) {
+              final photo = result.photos[index];
+              // ポラロイド風の回転を交互につける
+              final rotation = index.isEven ? -0.03 : 0.02;
+
+              return Transform.rotate(
+                angle: rotation,
                 child: Container(
-                  width: MediaQuery.sizeOf(context).width * 0.75,
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
+                  width: 220,
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 30),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      GestureDetector(
-                        onTap: () => _openFullscreenImage(context, photo.imageUrl, photo.caption),
-                        child: AspectRatio(
-                          aspectRatio: 4 / 3,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(2),
-                            child: Hero(
-                              tag: photo.imageUrl,
-                              child: Image.network(
-                                photo.imageUrl,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => _openFullscreenImage(context, photo.imageUrl, photo.caption),
+                          child: Hero(
+                            tag: 'photo_$index',
+                            child: _buildPhotoImage(photo.imageUrl),
                           ),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Center(
-                        child: Text(
-                          photo.caption,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.notoSerifJp(
-                            fontSize: 12,
-                            color: Colors.black87,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      Text(
+                        photo.caption,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.notoSerifJp(
+                          fontSize: 12,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ),
       ],
     );
+  }
+
+  Widget _buildPhotoImage(String url) {
+    if (url.startsWith('http')) {
+      return Image.network(
+        url,
+        fit: BoxFit.cover,
+        width: double.infinity,
+      );
+    } else {
+      return Image.file(
+        File(url),
+        fit: BoxFit.cover,
+        width: double.infinity,
+      );
+    }
   }
 
   void _openFullscreenImage(BuildContext context, String imageUrl, String caption) {
@@ -706,11 +801,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                 child: const SizedBox.expand(),
               ),
               Center(
-                child: Hero(
-                  tag: imageUrl,
-                  child: InteractiveViewer(
-                    child: Image.network(imageUrl),
-                  ),
+                child: InteractiveViewer(
+                  child: _buildPhotoImage(imageUrl),
                 ),
               ),
               Positioned(
@@ -718,7 +810,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                 right: 16,
                 child: SafeArea(
                   child: CircleAvatar(
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surface.withValues(alpha: 0.8),
                     child: IconButton(
                       icon: Icon(Icons.close, color: colors.textPrimary),
                       onPressed: () => Navigator.of(context).pop(),
@@ -726,29 +818,30 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   ),
                 ),
               ),
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: 40,
-                child: SafeArea(
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: colors.surface.withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        caption,
-                        style: GoogleFonts.notoSerifJp(
-                          color: colors.textPrimary,
-                          fontSize: 14,
+              if (caption.isNotEmpty)
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 40,
+                  child: SafeArea(
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: colors.surface.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          caption,
+                          style: GoogleFonts.notoSerifJp(
+                            color: colors.textPrimary,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -757,6 +850,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   Widget _buildAiJournalSection(BuildContext context, AdventureResult result) {
+    final isCompleted = result.status == AdventureStatus.completed;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -795,20 +890,21 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   height: 1.6,
                 ),
               ),
-              if (result.closingMessage.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                Center(
-                  child: Text(
-                    result.closingMessage,
-                    style: GoogleFonts.notoSerifJp(
-                      fontSize: 14,
-                      color: AppColors.textDark,
-                      fontWeight: FontWeight.w700,
-                      fontStyle: FontStyle.italic,
-                    ),
+              const SizedBox(height: 20),
+              Center(
+                child: Text(
+                  isCompleted
+                      ? '「寄り道は、きっと無駄じゃない。」'
+                      : '「旅は途中で終わった。しかし、その足跡は確かにこの街へ刻まれた。」',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.notoSerifJp(
+                    fontSize: 14,
+                    color: AppColors.textDark.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w700,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
-              ],
+              ),
             ],
           ),
         ),

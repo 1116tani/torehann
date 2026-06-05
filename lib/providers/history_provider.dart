@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/adventure_history_model.dart';
+import '../models/result_model.dart';
 import '../repositories/history_repository.dart';
 import 'auth_provider.dart';
 
@@ -65,8 +66,8 @@ class HistoryState {
     for (final filter in activeFilters) {
       result = result.where((history) {
         return switch (filter) {
-          FilterTag.completedOnly => history.isCompleted,
-          FilterTag.withAbandoned => !history.isCompleted,
+          FilterTag.completedOnly => history.status == AdventureStatus.completed,
+          FilterTag.withAbandoned => history.status == AdventureStatus.abandoned,
           FilterTag.withPhotos => history.imageUrls.isNotEmpty,
           FilterTag.morning =>
             history.createdAt.hour >= 6 && history.createdAt.hour < 12,

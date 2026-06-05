@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_sizes.dart';
 import '../../models/adventure_history_model.dart';
+import '../../models/result_model.dart';
 
 class HistoryCard extends StatelessWidget {
   final AdventureHistoryModel history;
@@ -37,7 +38,7 @@ class HistoryCard extends StatelessWidget {
               ),
 
           border: Border.all(
-            color: history.isCompleted
+            color: history.status == AdventureStatus.completed
                 ? colors.primary.withValues(alpha: 0.6)
                 : colors.border,
             width: 0.8,
@@ -127,13 +128,27 @@ class HistoryCard extends StatelessWidget {
                   ),
 
                   _StatusBadge(
-                    isCompleted:
-                        history
-                            .isCompleted,
+                    status: history.status,
+                    progress: history.progressRatio,
                   ),
                 ],
               ),
             ),
+
+            // 中断時のプログレスバー
+            if (history.status == AdventureStatus.abandoned)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: history.progressRatio,
+                    backgroundColor: colors.surfaceLight,
+                    valueColor: AlwaysStoppedAnimation<Color>(colors.textMuted),
+                    minHeight: 4,
+                  ),
+                ),
+              ),
 
             // ─────────────────────
             // タイトル
@@ -409,52 +424,40 @@ class HistoryCard extends StatelessWidget {
 // ─────────────────────────────
 
 class _StatusBadge extends StatelessWidget {
-  final bool isCompleted;
+  final AdventureStatus status;
+  final double progress;
 
   const _StatusBadge({
-    required this.isCompleted,
+    required this.status,
+    required this.progress,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
+    final isCompleted = status == AdventureStatus.completed;
+
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: 10,
         vertical: 5,
       ),
-
       decoration: BoxDecoration(
         color: isCompleted
             ? AppColors.success.withValues(alpha: 0.15)
-            : AppColors.warning.withValues(alpha: 0.15),
-
-        borderRadius:
-            BorderRadius.circular(20),
-
+            : colors.surfaceLight,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isCompleted
-              ? AppColors.success
-              : colors.primary,
+          color: isCompleted ? AppColors.success : colors.border,
           width: 0.6,
         ),
       ),
-
       child: Text(
-        isCompleted
-            ? '✦ 完走'
-            : '中断',
-
+        isCompleted ? '✦ 完走' : '中断 ${(progress * 100).round()}%',
         style: TextStyle(
-          color: isCompleted
-              ? AppColors.success
-              : colors.primary,
-
+          color: isCompleted ? AppColors.success : colors.textSecondary,
           fontSize: 10,
-
-          fontWeight:
-              FontWeight.bold,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
