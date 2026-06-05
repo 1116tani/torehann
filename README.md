@@ -1,17 +1,83 @@
-# tale_trace
+# Treasure Navigation
 
-A new Flutter project.
+> いつもの散歩を、今日だけの冒険に。
 
-## Getting Started
+**Treasure Navigation** は、AI・地図・ゲーミフィケーションを組み合わせ、普段の散歩を物語のある冒険に変えるFlutter製モバイルアプリです。
 
-This project is a starting point for a Flutter application.
+![Treasure Navigation](docs/images/treasure-navigation-overview.png)
 
-A few resources to get you started if this is your first Flutter project:
+## 背景
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+散歩は「行き先がない」「同じ道ばかりで飽きる」「思い出として残らない」と、続ける理由を見失いがちです。
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Treasure Navigationは、歩く理由をつくり、寄り道を冒険に変えます。
+
+## コンセプト
+
+**今日の気分・好きな場所・現在地から、AIが物語のあるルートを提案します。**
+
+ユーザーは提案されたルートを選び、マスコットの「トレにゃん」と街を歩きます。道中でスポットを巡り、「街の断片」を見つけ、歩いた記憶を冒険の記録として残せます。
+
+![コンセプト](docs/images/concept.png)
+
+## 体験フロー
+
+### 選ぶ。歩く。見つける。
+
+1. 気分・目的地・興味などを設定する
+2. AIが提案するテーマ付きルートから選ぶ
+3. 地図とGPSナビを使って街を歩く
+4. スポットに到着して「街の断片」を見つける
+5. 経験値・写真・歩いた軌跡を記録する
+
+![デモフロー](docs/images/demo-flow.png)
+
+## 主な機能
+
+- Geminiによる物語・テーマ付き散歩ルートの生成
+- Google Mapsを使ったルート表示と徒歩ナビ
+- GPSによる現在地追跡、到着判定、チェックイン
+- Google Placesによる目的地検索
+- 街の断片コレクション、経験値、レベル、ランク、実績
+- 冒険中の写真撮影
+- 冒険結果と履歴のFirestore保存
+- ライト・ダークテーマ
+
+![歩いた記憶が次の散歩になる](docs/images/value.png)
+
+## 技術構成
+
+| 分野 | 技術 |
+| --- | --- |
+| アプリ | Flutter / Dart |
+| AI・物語生成 | Gemini API |
+| 地図・経路 | Google Maps / Places / Routes API |
+| データ・認証 | Firebase Authentication / Firestore / Storage |
+| 状態管理 | Riverpod |
+| 画面遷移 | GoRouter |
+| API通信 | Dio / http |
+| 位置情報 | Geolocator |
+
+![技術構成](docs/images/tech-stack.png)
+
+## セットアップ
+
+1. `.env.example` をコピーして `.env` を作成します。
+2. `.env` に必要なAPIキーを設定します。
+3. FirebaseとGoogle Mapsの各プラットフォーム設定を行います。
+4. アプリを起動します。
+
+```bash
+flutter pub get
+flutter run
+```
+
+必要な環境変数は [`.env.example`](.env.example) を参照してください。
+
+## 開発状況
+
+AIルート生成、徒歩ナビ、チェックイン、コレクション、実績、冒険履歴などのコア機能を実装しています。
+
+フレンド、パーティ、健康管理、ミッション、SNS共有などの一部機能はプロトタイプ・モック実装です。
+
+![Treasure Navigation Summary](docs/images/summary.png)
