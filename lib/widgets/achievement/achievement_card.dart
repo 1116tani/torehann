@@ -32,10 +32,10 @@ class AchievementCard extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   '✦ 勲章 ✦',
                   style: TextStyle(
-                    color: Color(0xFFC8A97A),
+                    color: colors.secondary,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.5,
@@ -53,7 +53,7 @@ class AchievementCard extends StatelessWidget {
                   isUnearned ? '？？？' : achievement.title,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isUnearned ? const Color(0xFFD2C2B2) : const Color(0xFFF5EDD8),
+                    color: isUnearned ? colors.textDisabled : colors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -75,8 +75,8 @@ class AchievementCard extends StatelessWidget {
                 // 🎯 解放・達成条件を表示
                 Text(
                   '達成目標: ${achievement.nextThreshold.toStringAsFixed(achievement.unit == 'km' ? 1 : 0)} ${achievement.unit}',
-                  style: const TextStyle(
-                    color: Color(0xFFE5A93C),
+                  style: TextStyle(
+                    color: colors.primary,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.1,
@@ -90,7 +90,7 @@ class AchievementCard extends StatelessWidget {
                       : achievement.description,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isUnearned ? const Color(0xFFBCAFA0) : const Color(0xFFC8A97A),
+                    color: isUnearned ? colors.textMuted : colors.textSecondary,
                     fontSize: 13,
                     height: 1.5,
                   ),
@@ -131,24 +131,24 @@ class AchievementCard extends StatelessWidget {
     String medalText;
 
     if (isUnearned) {
-      medalColor = const Color(0xFF6B6B6B);
+      medalColor = colors.textDisabled;
       medalText = '🔒';
     } else {
       switch (rank) {
         case AchievementRank.copper:
-          medalColor = const Color(0xFFCD7F32);
+          medalColor = AppColors.bronze;
           medalText = '銅';
           break;
         case AchievementRank.silver:
-          medalColor = const Color(0xFFC0C0C0);
+          medalColor = AppColors.silver;
           medalText = '銀';
           break;
         case AchievementRank.gold:
-          medalColor = const Color(0xFFFFD700);
+          medalColor = AppColors.gold;
           medalText = '金';
           break;
         case AchievementRank.none:
-          medalColor = const Color(0xFF6B6B6B);
+          medalColor = colors.textDisabled;
           medalText = '🔒';
           break;
       }
@@ -167,7 +167,7 @@ class AchievementCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
+              color: colors.textPrimary.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -179,7 +179,7 @@ class AchievementCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             onTap: () => _showAchievementDetail(context, isUnearned),
             splashColor: medalColor.withValues(alpha: 0.1),
-            highlightColor: Colors.black12,
+            highlightColor: colors.primary.withValues(alpha: 0.05),
             child: Padding(
               padding: const EdgeInsets.all(18),
               child: Row(
@@ -230,8 +230,8 @@ class AchievementCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: isUnearned
-                                ? const Color(0xFFD2C2B2)
-                                : const Color(0xFFF5EDD8),
+                                ? colors.textDisabled
+                                : colors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -247,8 +247,8 @@ class AchievementCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: isUnearned
-                                ? const Color(0xFFBCAFA0)
-                                : const Color(0xFFC8A97A),
+                                ? colors.textMuted
+                                : colors.textSecondary,
                             fontSize: 13,
                             height: 1.4,
                           ),
@@ -257,8 +257,8 @@ class AchievementCard extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             '${achievement.unlockedAt!.year}/${achievement.unlockedAt!.month.toString().padLeft(2, '0')}/${achievement.unlockedAt!.day.toString().padLeft(2, '0')}解除',
-                            style: const TextStyle(
-                              color: Color(0xFFE5A93C),
+                            style: TextStyle(
+                              color: colors.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -277,8 +277,8 @@ class AchievementCard extends StatelessWidget {
                                   isUnearned ? '未解放の試練' : '進行中',
                                   style: TextStyle(
                                     color: isUnearned
-                                        ? const Color(0xFFA59078)
-                                        : const Color(0xFFC8A97A),
+                                        ? colors.textMuted
+                                        : colors.secondary,
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -290,8 +290,8 @@ class AchievementCard extends StatelessWidget {
                                   '${achievement.unit}',
                                   style: TextStyle(
                                     color: isUnearned
-                                        ? const Color(0xFFEBE0D0)
-                                        : const Color(0xFFE5A93C),
+                                        ? colors.textSecondary
+                                        : colors.primary,
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 1.0,
@@ -305,11 +305,11 @@ class AchievementCard extends StatelessWidget {
                               child: LinearProgressIndicator(
                                 value: achievement.progressRatio,
                                 minHeight: 7,
-                                backgroundColor: const Color(0xFF1C1610),
+                                backgroundColor: colors.divider,
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                   rank == AchievementRank.gold
-                                      ? const Color(0xFFFFD700)
-                                      : const Color(0xFFB8860B),
+                                      ? AppColors.gold
+                                      : colors.primary,
                                 ),
                               ),
                             ),

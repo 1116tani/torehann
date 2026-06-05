@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../constants/app_colors.dart';
 import '../../constants/navigation_ui_constants.dart';
 import '../../models/spot_model.dart';
 
@@ -116,19 +117,27 @@ class NavigationDraggableSheet extends StatelessWidget {
                   const SizedBox(height: 40),
 
                   // ── 冒険終了ボタン ────────────────────────────
-                  TextButton.icon(
+                  ElevatedButton.icon(
                     onPressed: onQuit,
-                    icon: const Icon(Icons.close_rounded, size: 22),
+                    icon: const Icon(Icons.flag_rounded),
                     label: const Text('冒険を終了する'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: navConstants.textMuted,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      textStyle: navConstants.serifBody.copyWith(
-                        fontSize: 16,
-                        decoration: TextDecoration.underline,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.error.withValues(alpha: 0.1),
+                      foregroundColor: AppColors.error,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: const Size(double.infinity, 54),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(color: AppColors.error, width: 1.5),
                       ),
+                      textStyle: navConstants.serifTitle.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      elevation: 0,
                     ),
                   ),
+                  SizedBox(height: MediaQuery.paddingOf(context).bottom + 16),
                 ],
               ),
             ),

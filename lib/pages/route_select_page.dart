@@ -220,27 +220,38 @@ class _RouteSpotPanel extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 240),
         curve: Curves.easeOutCubic,
-        width: isExpanded ? 148 : 52,
-        height: isExpanded ? 148 : 52,
+        width: isExpanded ? 220 : 54,
+        padding: isExpanded
+            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 18)
+            : EdgeInsets.zero,
         decoration: BoxDecoration(
-          color: colors.surface.withValues(alpha: 0.84),
-          borderRadius: BorderRadius.circular(isExpanded ? 18 : 999),
-          border: Border.all(color: colors.border.withValues(alpha: 0.85)),
+          color: colors.surface.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(isExpanded ? 24 : 999),
+          border: Border.all(
+            color: colors.primary.withValues(alpha: isExpanded ? 0.6 : 0.4),
+            width: isExpanded ? 1.5 : 1.0,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.22),
-              blurRadius: 14,
-              offset: const Offset(0, 5),
+              color: Colors.black.withValues(alpha: 0.28),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 160),
+          duration: const Duration(milliseconds: 180),
           child: isExpanded
-              ? _ExpandedSpotPanel(routeTitle: route.themeName, spots: spots)
-              : _CollapsedSpotPanel(count: spots.length),
+              ? _ExpandedSpotPanel(
+                  key: const ValueKey('expanded'),
+                  spots: spots,
+                )
+              : _CollapsedSpotPanel(
+                  key: const ValueKey('collapsed'),
+                  count: spots.length,
+                ),
         ),
       ),
     );
@@ -248,116 +259,174 @@ class _RouteSpotPanel extends StatelessWidget {
 }
 
 class _ExpandedSpotPanel extends StatelessWidget {
-  final String routeTitle;
   final List<SpotModel> spots;
 
-  const _ExpandedSpotPanel({required this.routeTitle, required this.spots});
+  const _ExpandedSpotPanel({super.key, required this.spots});
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final visibleSpots = spots.take(3).toList();
+    // 最大4つまで表示
+    final displayLimit = 4;
+    final visibleSpots = spots.take(displayLimit).toList();
 
-    return Padding(
-      key: const ValueKey('expanded_spots'),
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'SPOTS TO VISIT',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: colors.secondary,
-                    fontSize: 8,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.1,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.keyboard_arrow_left_rounded,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'この冒険で訪れる場所',
+              style: TextStyle(
                 color: colors.secondary,
-                size: 16,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.2,
               ),
-            ],
+            ),
+            Icon(
+              Icons.keyboard_arrow_left_rounded,
+              color: colors.secondary,
+              size: 20,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        for (var i = 0; i < visibleSpots.length; i++) ...[
+          _SpotItem(
+            index: i + 1,
+            name: visibleSpots[i].name,
+            isLast: i == visibleSpots.length - 1 && spots.length <= displayLimit,
+          ),
+          if (i < visibleSpots.length - 1 || spots.length > displayLimit)
+            Padding(
+              padding: const EdgeInsets.only(left: 11, top: 4, bottom: 4),
+              child: Icon(
+                Icons.south_rounded,
+                size: 14,
+                color: colors.primary.withValues(alpha: 0.5),
+              ),
+            ),
+        ],
+        if (spots.length > displayLimit) ...[
+          Text(
+            '  ...',
+            style: TextStyle(
+              color: colors.textMuted,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 4),
-          Text(
-            routeTitle,
+        ],
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: colors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            '全${spots.length}スポット',
+            textAlign: Alignment.center.x == 0 ? TextAlign.center : null,
+            style: TextStyle(
+              color: colors.primary,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SpotItem extends StatelessWidget {
+  final int index;
+  final String name;
+  final bool isLast;
+
+  const _SpotItem({
+    required this.index,
+    required this.name,
+    required this.isLast,
+  });
+
+  String _getCircleNumber(int n) {
+    const numbers = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
+    if (n > 0 && n <= 10) return numbers[n - 1];
+    return '$n';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return Row(
+      children: [
+        Text(
+          _getCircleNumber(index),
+          style: TextStyle(
+            color: colors.primary,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: colors.textPrimary,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-              height: 1.05,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 7),
-          for (var i = 0; i < visibleSpots.length; i++) ...[
-            _SpotLine(
-              index: i,
-              label: visibleSpots[i].aiStoryName.isNotEmpty
-                  ? visibleSpots[i].aiStoryName
-                  : visibleSpots[i].name,
-            ),
-            if (i != visibleSpots.length - 1) const SizedBox(height: 5),
-          ],
-          if (spots.length > visibleSpots.length) ...[
-            const Spacer(),
-            Text(
-              '+${spots.length - visibleSpots.length} more',
-              style: TextStyle(
-                color: colors.textMuted,
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ] else
-            const Spacer(),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 class _CollapsedSpotPanel extends StatelessWidget {
+  const _CollapsedSpotPanel({super.key, required this.count});
   final int count;
-
-  const _CollapsedSpotPanel({required this.count});
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
 
-    return Center(
-      key: const ValueKey('collapsed_spots'),
+    return Container(
+      width: 54,
+      height: 54,
+      alignment: Alignment.center,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Icon(Icons.explore_outlined, color: colors.secondary, size: 24),
+          Icon(Icons.map_outlined, color: colors.secondary, size: 28),
           Positioned(
-            right: -9,
-            top: -9,
+            right: -8,
+            top: -8,
             child: Container(
-              constraints: const BoxConstraints(minWidth: 18),
-              height: 18,
+              constraints: const BoxConstraints(minWidth: 20),
+              height: 20,
               alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 color: colors.primary,
                 shape: BoxShape.circle,
-                border: Border.all(color: colors.surface, width: 1.5),
+                border: Border.all(color: colors.surface, width: 2),
               ),
               child: Text(
                 '$count',
                 style: TextStyle(
                   color: colors.background,
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -365,55 +434,6 @@ class _CollapsedSpotPanel extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SpotLine extends StatelessWidget {
-  final int index;
-  final String label;
-
-  const _SpotLine({required this.index, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final prefix = index == 0 ? 'S' : '$index';
-
-    return Row(
-      children: [
-        Container(
-          width: 19,
-          height: 19,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: colors.background.withValues(alpha: 0.72),
-            shape: BoxShape.circle,
-          ),
-          child: Text(
-            prefix,
-            style: TextStyle(
-              color: colors.primary,
-              fontSize: 9,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: colors.textPrimary,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              height: 1.1,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

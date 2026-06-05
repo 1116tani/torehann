@@ -52,7 +52,7 @@ class AchievementPage extends ConsumerWidget {
 
                 boxShadow: [
                   BoxShadow(
-                    color: isDark ? Colors.black54 : Colors.black12,
+                    color: colors.textPrimary.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -61,11 +61,11 @@ class AchievementPage extends ConsumerWidget {
 
               child: Column(
                 children: [
-                  const Text(
+                  Text(
                     '実績数',
 
                     style: TextStyle(
-                      color: Color(0xFFC8A97A),
+                      color: colors.secondary,
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.1,
@@ -80,11 +80,11 @@ class AchievementPage extends ConsumerWidget {
                     textBaseline: TextBaseline.alphabetic,
 
                     children: [
-                      const Text(
+                      Text(
                         '解除済み ',
 
                         style: TextStyle(
-                          color: Color(0xFFC8A97A),
+                          color: colors.secondary,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -93,8 +93,8 @@ class AchievementPage extends ConsumerWidget {
                       Text(
                         '$earnedCount',
 
-                        style: const TextStyle(
-                          color: Color(0xFFE5A93C),
+                        style: TextStyle(
+                          color: colors.primary,
                           fontSize: 38,
                           fontWeight: FontWeight.bold,
                         ),
@@ -103,8 +103,8 @@ class AchievementPage extends ConsumerWidget {
                       Text(
                         ' / ${achievements.length}',
 
-                        style: const TextStyle(
-                          color: Color(0xFFE5D5BC),
+                        style: TextStyle(
+                          color: colors.textSecondary,
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
                         ),
@@ -125,11 +125,11 @@ class AchievementPage extends ConsumerWidget {
                               achievements.length,
 
                       backgroundColor:
-                          Color(0xFF1C1610),
+                          colors.divider,
 
                       valueColor:
                           AlwaysStoppedAnimation<Color>(
-                        Color(0xFFB8860B),
+                        colors.primary,
                       ),
 
                       minHeight: 4,

@@ -330,39 +330,67 @@ class _NavigationPageState extends ConsumerState<NavigationPage> {
     final navConstants = NavigationUiConstants.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => Dialog(
         backgroundColor: navConstants.cream,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: navConstants.creamBorder,
-            width: 1.5,
-          ),
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: navConstants.creamBorder, width: 1.5),
         ),
-        title: Text('冒険をやめる', style: navConstants.serifTitle),
-        content: Text(
-          'ナビゲーションを中断して戻ります。よろしいですか？',
-          style: navConstants.serifBody,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'キャンセル',
-              style: TextStyle(color: navConstants.textMuted),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'やめる',
-              style: TextStyle(
-                color: navConstants.sepia,
-                fontWeight: FontWeight.bold,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '冒険を終了しますか？',
+                style: navConstants.serifTitle.copyWith(fontSize: 20),
+                textAlign: TextAlign.center,
               ),
-            ),
+              const SizedBox(height: 12),
+              Text(
+                'ここまでの進行状況は保存されます',
+                style: navConstants.serifBody.copyWith(fontSize: 15),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () => Navigator.pop(context, false),
+                      child: Text(
+                        'キャンセル',
+                        style: TextStyle(
+                          color: navConstants.textMuted,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text(
+                        '終了する',
+                        style: TextStyle(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
 
