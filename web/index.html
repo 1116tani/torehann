@@ -23,14 +23,27 @@
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="tale_trace">
+  <meta name="apple-mobile-web-app-title" content="Treasure Navigation">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>tale_trace</title>
+  <title>Treasure Navigation</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- 💡 【ここがポイント！】秘密のローカルファイルを読み込むよ -->
+  <script src="config.js"></script>
+  <script>
+    // config.js から読み込んだキーを使って、動的にマップの準備をするよ
+    if (window.GOOGLE_MAPS_API_KEY) {
+      const script = document.createElement('script');
+      script.src = 'https://maps.googleapis.com/maps/api/js?key=' + window.GOOGLE_MAPS_API_KEY;
+      document.head.appendChild(script);
+    } else {
+      console.error('Google Maps API Key が見つからない,config.jsを確認してね。');
+    }
+  </script>
 </head>
 <body>
   <!--
